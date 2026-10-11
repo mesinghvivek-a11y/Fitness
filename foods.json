@@ -1,37 +1,4118 @@
 [
-  {"id":"food_101","name":"Soya Chunks (Dry/Raw)","type":"raw_ingredient","serving_unit":"g","default_serving_size":50,"macros_per_100g":{"calories":345,"protein":52,"carbs":33,"fat":0.5,"fiber":13},"tags":["vegan","high-protein","pantry"]},
-  {"id":"food_102","name":"Paneer / Cottage Cheese (Low Fat)","type":"raw_ingredient","serving_unit":"g","default_serving_size":100,"macros_per_100g":{"calories":265,"protein":18,"carbs":2.5,"fat":20,"fiber":0},"tags":["vegetarian","dairy","high-protein"]},
-  {"id":"food_103","name":"Moong Dal / Yellow Lentils (Dry/Raw)","type":"raw_ingredient","serving_unit":"g","default_serving_size":50,"macros_per_100g":{"calories":348,"protein":24.5,"carbs":59,"fat":1.2,"fiber":16},"tags":["vegetarian","pantry","complex-carbs"]},
-  {"id":"food_104","name":"Whey Protein Isolate (Unflavored)","type":"raw_ingredient","serving_unit":"scoop","default_serving_size":30,"macros_per_100g":{"calories":370,"protein":90,"carbs":1.5,"fat":1,"fiber":0},"tags":["supplement","dairy","ultra-high-protein"]},
-  {"id":"food_105","name":"Rice (Dry/Raw)","type":"raw_ingredient","serving_unit":"g","default_serving_size":75,"macros_per_100g":{"calories":365,"protein":7.1,"carbs":80,"fat":0.7,"fiber":1.3},"tags":["vegetarian","pantry","carbs"]},
-  {"id":"food_106","name":"Oats (Dry)","type":"raw_ingredient","serving_unit":"g","default_serving_size":50,"macros_per_100g":{"calories":389,"protein":16.9,"carbs":66.3,"fat":6.9,"fiber":10.6},"tags":["vegetarian","breakfast","fiber"]},
-  {"id":"food_107","name":"Whole Wheat Atta (Dry)","type":"raw_ingredient","serving_unit":"g","default_serving_size":40,"macros_per_100g":{"calories":340,"protein":13.2,"carbs":72,"fat":2.5,"fiber":10.7},"tags":["vegetarian","pantry"]},
-  {"id":"food_108","name":"Milk ( toned, 3% fat)","type":"raw_ingredient","serving_unit":"ml","default_serving_size":200,"macros_per_100g":{"calories":60,"protein":3.2,"carbs":4.8,"fat":3,"fiber":0},"tags":["vegetarian","dairy","calcium"]},
-  {"id":"food_109","name":"Curd / Plain Yogurt","type":"raw_ingredient","serving_unit":"g","default_serving_size":150,"macros_per_100g":{"calories":61,"protein":3.5,"carbs":4.7,"fat":3.3,"fiber":0},"tags":["vegetarian","dairy","probiotic"]},
-  {"id":"food_110","name":"Chickpeas (Dry/Raw)","type":"raw_ingredient","serving_unit":"g","default_serving_size":50,"macros_per_100g":{"calories":364,"protein":19.3,"carbs":60.7,"fat":6,"fiber":17.4},"tags":["vegan","pantry","fiber"]},
-  {"id":"food_111","name":"Lentils / Masoor Dal (Dry/Raw)","type":"raw_ingredient","serving_unit":"g","default_serving_size":50,"macros_per_100g":{"calories":352,"protein":24.6,"carbs":63.1,"fat":1.1,"fiber":10.7},"tags":["vegan","pantry","high-protein"]},
-  {"id":"food_112","name":"Peanuts","type":"raw_ingredient","serving_unit":"g","default_serving_size":20,"macros_per_100g":{"calories":567,"protein":25.8,"carbs":16.1,"fat":49.2,"fiber":8.5},"tags":["vegan","snack","healthy-fats"]},
-  {"id":"food_113","name":"Almonds","type":"raw_ingredient","serving_unit":"g","default_serving_size":15,"macros_per_100g":{"calories":579,"protein":21.2,"carbs":21.6,"fat":49.9,"fiber":12.5},"tags":["vegan","snack","healthy-fats"]},
-  {"id":"food_114","name":"Banana (Raw)","type":"raw_ingredient","serving_unit":"g","default_serving_size":120,"macros_per_100g":{"calories":89,"protein":1.1,"carbs":22.8,"fat":0.3,"fiber":2.6},"tags":["vegan","fruit","pre-workout"]},
-  {"id":"food_115","name":"Apple","type":"raw_ingredient","serving_unit":"g","default_serving_size":150,"macros_per_100g":{"calories":52,"protein":0.3,"carbs":13.8,"fat":0.2,"fiber":2.4},"tags":["vegan","fruit","fiber"]},
-  {"id":"food_116","name":"Potato (Raw)","type":"raw_ingredient","serving_unit":"g","default_serving_size":150,"macros_per_100g":{"calories":77,"protein":2,"carbs":17.5,"fat":0.1,"fiber":2.2},"tags":["vegan","vegetable","carbs"]},
-  {"id":"food_117","name":"Tofu (Firm)","type":"raw_ingredient","serving_unit":"g","default_serving_size":100,"macros_per_100g":{"calories":144,"protein":17.3,"carbs":2.8,"fat":8.7,"fiber":2.3},"tags":["vegan","high-protein"]},
-  {"id":"food_118","name":"Peas (Raw)","type":"raw_ingredient","serving_unit":"g","default_serving_size":100,"macros_per_100g":{"calories":81,"protein":5.4,"carbs":14.5,"fat":0.4,"fiber":5.7},"tags":["vegan","vegetable"]},
-  {"id":"food_119","name":"Olive Oil","type":"raw_ingredient","serving_unit":"g","default_serving_size":5,"macros_per_100g":{"calories":884,"protein":0,"carbs":0,"fat":100,"fiber":0},"tags":["vegan","cooking","fat"]},
-  {"id":"food_120","name":"Spinach (Raw)","type":"raw_ingredient","serving_unit":"g","default_serving_size":100,"macros_per_100g":{"calories":23,"protein":2.9,"carbs":3.6,"fat":0.4,"fiber":2.2},"tags":["vegan","vegetable"]},
-  {"id":"food_121","name":"Rice (Cooked)","type":"standard_estimate","serving_unit":"g","default_serving_size":150,"macros_per_serving":{"calories":195,"protein":4,"carbs":42.5,"fat":0.4,"fiber":0.6},"tags":["vegetarian","cooked","estimate"]},
-  {"id":"food_122","name":"Roti / Chapati (Cooked Estimate) *","type":"standard_estimate","serving_unit":"piece","default_serving_size":1,"macros_per_serving":{"calories":110,"protein":3.5,"carbs":19,"fat":2.5,"fiber":3},"tags":["vegetarian","cooked","estimate"]},
-  {"id":"food_123","name":"Dal Tadka (Cooked Estimate) *","type":"standard_estimate","serving_unit":"bowl","default_serving_size":1,"macros_per_serving":{"calories":180,"protein":9,"carbs":25,"fat":5,"fiber":7},"tags":["vegetarian","cooked","estimate"]},
-  {"id":"food_124","name":"Vegetable Pulao (Cooked Estimate) *","type":"standard_estimate","serving_unit":"bowl","default_serving_size":1,"macros_per_serving":{"calories":260,"protein":6,"carbs":43,"fat":7,"fiber":4},"tags":["vegetarian","cooked","estimate"]},
-  {"id":"food_125","name":"Besan Chilla (Cooked Estimate) *","type":"standard_estimate","serving_unit":"piece","default_serving_size":1,"macros_per_serving":{"calories":140,"protein":7,"carbs":18,"fat":4.5,"fiber":3},"tags":["breakfast","cooked","estimate"]},
-  {"id":"food_126","name":"Poha (Cooked Estimate) *","type":"standard_estimate","serving_unit":"bowl","default_serving_size":1,"macros_per_serving":{"calories":250,"protein":5,"carbs":42,"fat":7,"fiber":3},"tags":["breakfast","cooked","estimate"]},
-  {"id":"food_127","name":"Upma (Cooked Estimate) *","type":"standard_estimate","serving_unit":"bowl","default_serving_size":1,"macros_per_serving":{"calories":230,"protein":6,"carbs":38,"fat":6,"fiber":4},"tags":["breakfast","cooked","estimate"]},
-  {"id":"food_128","name":"Paneer Bhurji (Cooked Estimate) *","type":"standard_estimate","serving_unit":"bowl","default_serving_size":1,"macros_per_serving":{"calories":280,"protein":18,"carbs":9,"fat":19,"fiber":2},"tags":["vegetarian","cooked","estimate"]},
-  {"id":"food_129","name":"Mixed Vegetable Sabzi (Cooked Estimate) *","type":"standard_estimate","serving_unit":"bowl","default_serving_size":1,"macros_per_serving":{"calories":150,"protein":4,"carbs":18,"fat":7,"fiber":5},"tags":["vegetarian","cooked","estimate"]},
-  {"id":"food_130","name":"Sprouts Salad (Cooked Estimate) *","type":"standard_estimate","serving_unit":"bowl","default_serving_size":1,"macros_per_serving":{"calories":120,"protein":8,"carbs":20,"fat":1,"fiber":6},"tags":["vegetarian","cooked","estimate"]},
-  {"id":"food_131","name":"Idli (Cooked Estimate) *","type":"standard_estimate","serving_unit":"piece","default_serving_size":2,"macros_per_serving":{"calories":116,"protein":4,"carbs":24,"fat":0.6,"fiber":1.5},"tags":["vegetarian","cooked","estimate"]},
-  {"id":"food_132","name":"Dosa (Plain, Cooked Estimate) *","type":"standard_estimate","serving_unit":"piece","default_serving_size":1,"macros_per_serving":{"calories":168,"protein":4,"carbs":29,"fat":3.5,"fiber":1.5},"tags":["vegetarian","cooked","estimate"]},
-  {"id":"food_133","name":"Peanut Butter","type":"raw_ingredient","serving_unit":"g","default_serving_size":15,"macros_per_100g":{"calories":588,"protein":25,"carbs":20,"fat":50,"fiber":6},"tags":["vegetarian","spread","healthy-fats"]},
-  {"id":"food_134","name":"Orange","type":"raw_ingredient","serving_unit":"g","default_serving_size":130,"macros_per_100g":{"calories":47,"protein":0.9,"carbs":11.8,"fat":0.1,"fiber":2.4},"tags":["vegan","fruit"]},
-  {"id":"food_135","name":"Buttermilk / Chaas (Estimate) *","type":"standard_estimate","serving_unit":"glass","default_serving_size":1,"macros_per_serving":{"calories":65,"protein":3.5,"carbs":6,"fat":2.5,"fiber":0},"tags":["vegetarian","drink","estimate"]}
+  {
+    "id": "food_101",
+    "name": "Soya Chunks (Dry/Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 50,
+    "macros_per_100g": {
+      "calories": 345,
+      "protein": 52,
+      "carbs": 33,
+      "fat": 0.5,
+      "fiber": 13
+    },
+    "tags": [
+      "vegan",
+      "high-protein",
+      "pantry"
+    ]
+  },
+  {
+    "id": "food_102",
+    "name": "Paneer / Cottage Cheese (Low Fat)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "macros_per_100g": {
+      "calories": 265,
+      "protein": 18,
+      "carbs": 2.5,
+      "fat": 20,
+      "fiber": 0
+    },
+    "tags": [
+      "vegetarian",
+      "dairy",
+      "high-protein"
+    ]
+  },
+  {
+    "id": "food_103",
+    "name": "Moong Dal / Yellow Lentils (Dry/Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 50,
+    "macros_per_100g": {
+      "calories": 348,
+      "protein": 24.5,
+      "carbs": 59,
+      "fat": 1.2,
+      "fiber": 16
+    },
+    "tags": [
+      "vegetarian",
+      "pantry",
+      "complex-carbs"
+    ]
+  },
+  {
+    "id": "food_104",
+    "name": "Whey Protein Isolate (Unflavored)",
+    "type": "raw_ingredient",
+    "serving_unit": "scoop",
+    "default_serving_size": 30,
+    "macros_per_100g": {
+      "calories": 370,
+      "protein": 90,
+      "carbs": 1.5,
+      "fat": 1,
+      "fiber": 0
+    },
+    "tags": [
+      "supplement",
+      "dairy",
+      "ultra-high-protein"
+    ]
+  },
+  {
+    "id": "food_105",
+    "name": "Rice (Dry/Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 75,
+    "macros_per_100g": {
+      "calories": 365,
+      "protein": 7.1,
+      "carbs": 80,
+      "fat": 0.7,
+      "fiber": 1.3
+    },
+    "tags": [
+      "vegetarian",
+      "pantry",
+      "carbs"
+    ]
+  },
+  {
+    "id": "food_106",
+    "name": "Oats (Dry)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 50,
+    "macros_per_100g": {
+      "calories": 389,
+      "protein": 16.9,
+      "carbs": 66.3,
+      "fat": 6.9,
+      "fiber": 10.6
+    },
+    "tags": [
+      "vegetarian",
+      "breakfast",
+      "fiber"
+    ]
+  },
+  {
+    "id": "food_107",
+    "name": "Whole Wheat Atta (Dry)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 40,
+    "macros_per_100g": {
+      "calories": 340,
+      "protein": 13.2,
+      "carbs": 72,
+      "fat": 2.5,
+      "fiber": 10.7
+    },
+    "tags": [
+      "vegetarian",
+      "pantry"
+    ]
+  },
+  {
+    "id": "food_108",
+    "name": "Milk ( toned, 3% fat)",
+    "type": "raw_ingredient",
+    "serving_unit": "ml",
+    "default_serving_size": 200,
+    "macros_per_100g": {
+      "calories": 60,
+      "protein": 3.2,
+      "carbs": 4.8,
+      "fat": 3,
+      "fiber": 0
+    },
+    "tags": [
+      "vegetarian",
+      "dairy",
+      "calcium"
+    ]
+  },
+  {
+    "id": "food_109",
+    "name": "Curd / Plain Yogurt",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 150,
+    "macros_per_100g": {
+      "calories": 61,
+      "protein": 3.5,
+      "carbs": 4.7,
+      "fat": 3.3,
+      "fiber": 0
+    },
+    "tags": [
+      "vegetarian",
+      "dairy",
+      "probiotic"
+    ]
+  },
+  {
+    "id": "food_110",
+    "name": "Chickpeas (Dry/Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 50,
+    "macros_per_100g": {
+      "calories": 364,
+      "protein": 19.3,
+      "carbs": 60.7,
+      "fat": 6,
+      "fiber": 17.4
+    },
+    "tags": [
+      "vegan",
+      "pantry",
+      "fiber"
+    ]
+  },
+  {
+    "id": "food_111",
+    "name": "Lentils / Masoor Dal (Dry/Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 50,
+    "macros_per_100g": {
+      "calories": 352,
+      "protein": 24.6,
+      "carbs": 63.1,
+      "fat": 1.1,
+      "fiber": 10.7
+    },
+    "tags": [
+      "vegan",
+      "pantry",
+      "high-protein"
+    ]
+  },
+  {
+    "id": "food_112",
+    "name": "Peanuts",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 20,
+    "macros_per_100g": {
+      "calories": 567,
+      "protein": 25.8,
+      "carbs": 16.1,
+      "fat": 49.2,
+      "fiber": 8.5
+    },
+    "tags": [
+      "vegan",
+      "snack",
+      "healthy-fats"
+    ]
+  },
+  {
+    "id": "food_113",
+    "name": "Almonds",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 15,
+    "macros_per_100g": {
+      "calories": 579,
+      "protein": 21.2,
+      "carbs": 21.6,
+      "fat": 49.9,
+      "fiber": 12.5
+    },
+    "tags": [
+      "vegan",
+      "snack",
+      "healthy-fats"
+    ]
+  },
+  {
+    "id": "food_114",
+    "name": "Banana (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 120,
+    "macros_per_100g": {
+      "calories": 89,
+      "protein": 1.1,
+      "carbs": 22.8,
+      "fat": 0.3,
+      "fiber": 2.6
+    },
+    "tags": [
+      "vegan",
+      "fruit",
+      "pre-workout"
+    ]
+  },
+  {
+    "id": "food_115",
+    "name": "Apple",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 150,
+    "macros_per_100g": {
+      "calories": 52,
+      "protein": 0.3,
+      "carbs": 13.8,
+      "fat": 0.2,
+      "fiber": 2.4
+    },
+    "tags": [
+      "vegan",
+      "fruit",
+      "fiber"
+    ]
+  },
+  {
+    "id": "food_116",
+    "name": "Potato (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 150,
+    "macros_per_100g": {
+      "calories": 77,
+      "protein": 2,
+      "carbs": 17.5,
+      "fat": 0.1,
+      "fiber": 2.2
+    },
+    "tags": [
+      "vegan",
+      "vegetable",
+      "carbs"
+    ]
+  },
+  {
+    "id": "food_117",
+    "name": "Tofu (Firm)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "macros_per_100g": {
+      "calories": 144,
+      "protein": 17.3,
+      "carbs": 2.8,
+      "fat": 8.7,
+      "fiber": 2.3
+    },
+    "tags": [
+      "vegan",
+      "high-protein"
+    ]
+  },
+  {
+    "id": "food_118",
+    "name": "Peas (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "macros_per_100g": {
+      "calories": 81,
+      "protein": 5.4,
+      "carbs": 14.5,
+      "fat": 0.4,
+      "fiber": 5.7
+    },
+    "tags": [
+      "vegan",
+      "vegetable"
+    ]
+  },
+  {
+    "id": "food_119",
+    "name": "Olive Oil",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 5,
+    "macros_per_100g": {
+      "calories": 884,
+      "protein": 0,
+      "carbs": 0,
+      "fat": 100,
+      "fiber": 0
+    },
+    "tags": [
+      "vegan",
+      "cooking",
+      "fat"
+    ]
+  },
+  {
+    "id": "food_120",
+    "name": "Spinach (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "macros_per_100g": {
+      "calories": 23,
+      "protein": 2.9,
+      "carbs": 3.6,
+      "fat": 0.4,
+      "fiber": 2.2
+    },
+    "tags": [
+      "vegan",
+      "vegetable"
+    ]
+  },
+  {
+    "id": "food_121",
+    "name": "Rice (Cooked)",
+    "type": "standard_estimate",
+    "serving_unit": "g",
+    "default_serving_size": 150,
+    "macros_per_serving": {
+      "calories": 195,
+      "protein": 4,
+      "carbs": 42.5,
+      "fat": 0.4,
+      "fiber": 0.6
+    },
+    "tags": [
+      "vegetarian",
+      "cooked",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_122",
+    "name": "Roti / Chapati (Cooked Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "piece",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 110,
+      "protein": 3.5,
+      "carbs": 19,
+      "fat": 2.5,
+      "fiber": 3
+    },
+    "tags": [
+      "vegetarian",
+      "cooked",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_123",
+    "name": "Dal Tadka (Cooked Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 180,
+      "protein": 9,
+      "carbs": 25,
+      "fat": 5,
+      "fiber": 7
+    },
+    "tags": [
+      "vegetarian",
+      "cooked",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_124",
+    "name": "Vegetable Pulao (Cooked Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 260,
+      "protein": 6,
+      "carbs": 43,
+      "fat": 7,
+      "fiber": 4
+    },
+    "tags": [
+      "vegetarian",
+      "cooked",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_125",
+    "name": "Besan Chilla (Cooked Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "piece",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 140,
+      "protein": 7,
+      "carbs": 18,
+      "fat": 4.5,
+      "fiber": 3
+    },
+    "tags": [
+      "breakfast",
+      "cooked",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_126",
+    "name": "Poha (Cooked Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 250,
+      "protein": 5,
+      "carbs": 42,
+      "fat": 7,
+      "fiber": 3
+    },
+    "tags": [
+      "breakfast",
+      "cooked",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_127",
+    "name": "Upma (Cooked Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 230,
+      "protein": 6,
+      "carbs": 38,
+      "fat": 6,
+      "fiber": 4
+    },
+    "tags": [
+      "breakfast",
+      "cooked",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_128",
+    "name": "Paneer Bhurji (Cooked Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 280,
+      "protein": 18,
+      "carbs": 9,
+      "fat": 19,
+      "fiber": 2
+    },
+    "tags": [
+      "vegetarian",
+      "cooked",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_129",
+    "name": "Mixed Vegetable Sabzi (Cooked Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 150,
+      "protein": 4,
+      "carbs": 18,
+      "fat": 7,
+      "fiber": 5
+    },
+    "tags": [
+      "vegetarian",
+      "cooked",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_130",
+    "name": "Sprouts Salad (Cooked Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 120,
+      "protein": 8,
+      "carbs": 20,
+      "fat": 1,
+      "fiber": 6
+    },
+    "tags": [
+      "vegetarian",
+      "cooked",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_131",
+    "name": "Idli (Cooked Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "piece",
+    "default_serving_size": 2,
+    "macros_per_serving": {
+      "calories": 116,
+      "protein": 4,
+      "carbs": 24,
+      "fat": 0.6,
+      "fiber": 1.5
+    },
+    "tags": [
+      "vegetarian",
+      "cooked",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_132",
+    "name": "Dosa (Plain, Cooked Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "piece",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 168,
+      "protein": 4,
+      "carbs": 29,
+      "fat": 3.5,
+      "fiber": 1.5
+    },
+    "tags": [
+      "vegetarian",
+      "cooked",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_133",
+    "name": "Peanut Butter",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 15,
+    "macros_per_100g": {
+      "calories": 588,
+      "protein": 25,
+      "carbs": 20,
+      "fat": 50,
+      "fiber": 6
+    },
+    "tags": [
+      "vegetarian",
+      "spread",
+      "healthy-fats"
+    ]
+  },
+  {
+    "id": "food_134",
+    "name": "Orange",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 130,
+    "macros_per_100g": {
+      "calories": 47,
+      "protein": 0.9,
+      "carbs": 11.8,
+      "fat": 0.1,
+      "fiber": 2.4
+    },
+    "tags": [
+      "vegan",
+      "fruit"
+    ]
+  },
+  {
+    "id": "food_135",
+    "name": "Buttermilk / Chaas (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "glass",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 65,
+      "protein": 3.5,
+      "carbs": 6,
+      "fat": 2.5,
+      "fiber": 0
+    },
+    "tags": [
+      "vegetarian",
+      "drink",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_201",
+    "name": "Eggplant / Brinjal (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "vegetable"
+    ],
+    "macros_per_100g": {
+      "calories": 25,
+      "protein": 1,
+      "carbs": 6,
+      "fat": 0.2,
+      "fiber": 3
+    }
+  },
+  {
+    "id": "food_202",
+    "name": "Tomato (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "vegetable"
+    ],
+    "macros_per_100g": {
+      "calories": 18,
+      "protein": 0.9,
+      "carbs": 3.9,
+      "fat": 0.2,
+      "fiber": 1.2
+    }
+  },
+  {
+    "id": "food_203",
+    "name": "Onion (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "vegetable"
+    ],
+    "macros_per_100g": {
+      "calories": 40,
+      "protein": 1.1,
+      "carbs": 9.3,
+      "fat": 0.1,
+      "fiber": 1.7
+    }
+  },
+  {
+    "id": "food_204",
+    "name": "Cucumber (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "vegetable"
+    ],
+    "macros_per_100g": {
+      "calories": 15,
+      "protein": 0.7,
+      "carbs": 3.6,
+      "fat": 0.1,
+      "fiber": 0.5
+    }
+  },
+  {
+    "id": "food_205",
+    "name": "Carrot (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "vegetable"
+    ],
+    "macros_per_100g": {
+      "calories": 41,
+      "protein": 0.9,
+      "carbs": 9.6,
+      "fat": 0.2,
+      "fiber": 2.8
+    }
+  },
+  {
+    "id": "food_206",
+    "name": "Cauliflower (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "vegetable"
+    ],
+    "macros_per_100g": {
+      "calories": 25,
+      "protein": 1.9,
+      "carbs": 5,
+      "fat": 0.3,
+      "fiber": 2
+    }
+  },
+  {
+    "id": "food_207",
+    "name": "Cabbage (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "vegetable"
+    ],
+    "macros_per_100g": {
+      "calories": 25,
+      "protein": 1.3,
+      "carbs": 5.8,
+      "fat": 0.1,
+      "fiber": 2.5
+    }
+  },
+  {
+    "id": "food_208",
+    "name": "Broccoli (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "vegetable"
+    ],
+    "macros_per_100g": {
+      "calories": 34,
+      "protein": 2.8,
+      "carbs": 6.6,
+      "fat": 0.4,
+      "fiber": 2.6
+    }
+  },
+  {
+    "id": "food_209",
+    "name": "Capsicum / Bell Pepper (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "vegetable"
+    ],
+    "macros_per_100g": {
+      "calories": 31,
+      "protein": 1,
+      "carbs": 6,
+      "fat": 0.3,
+      "fiber": 2.1
+    }
+  },
+  {
+    "id": "food_210",
+    "name": "Bottle Gourd / Lauki (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "vegetable"
+    ],
+    "macros_per_100g": {
+      "calories": 14,
+      "protein": 0.6,
+      "carbs": 3.4,
+      "fat": 0.02,
+      "fiber": 0.5
+    }
+  },
+  {
+    "id": "food_211",
+    "name": "Bitter Gourd / Karela (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "vegetable"
+    ],
+    "macros_per_100g": {
+      "calories": 17,
+      "protein": 1,
+      "carbs": 3.7,
+      "fat": 0.2,
+      "fiber": 2.8
+    }
+  },
+  {
+    "id": "food_212",
+    "name": "Lady Finger / Okra (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "vegetable"
+    ],
+    "macros_per_100g": {
+      "calories": 33,
+      "protein": 1.9,
+      "carbs": 7.5,
+      "fat": 0.2,
+      "fiber": 3.2
+    }
+  },
+  {
+    "id": "food_213",
+    "name": "Mushroom (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "vegetable"
+    ],
+    "macros_per_100g": {
+      "calories": 22,
+      "protein": 3.1,
+      "carbs": 3.3,
+      "fat": 0.3,
+      "fiber": 1
+    }
+  },
+  {
+    "id": "food_214",
+    "name": "Sweet Potato (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "vegetable"
+    ],
+    "macros_per_100g": {
+      "calories": 86,
+      "protein": 1.6,
+      "carbs": 20.1,
+      "fat": 0.1,
+      "fiber": 3
+    }
+  },
+  {
+    "id": "food_215",
+    "name": "Pumpkin (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "vegetable"
+    ],
+    "macros_per_100g": {
+      "calories": 26,
+      "protein": 1,
+      "carbs": 6.5,
+      "fat": 0.1,
+      "fiber": 0.5
+    }
+  },
+  {
+    "id": "food_216",
+    "name": "Beetroot (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "vegetable"
+    ],
+    "macros_per_100g": {
+      "calories": 43,
+      "protein": 1.6,
+      "carbs": 9.6,
+      "fat": 0.2,
+      "fiber": 2.8
+    }
+  },
+  {
+    "id": "food_217",
+    "name": "Radish / Mooli (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "vegetable"
+    ],
+    "macros_per_100g": {
+      "calories": 16,
+      "protein": 0.7,
+      "carbs": 3.4,
+      "fat": 0.1,
+      "fiber": 1.6
+    }
+  },
+  {
+    "id": "food_218",
+    "name": "Green Beans (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "vegetable"
+    ],
+    "macros_per_100g": {
+      "calories": 31,
+      "protein": 1.8,
+      "carbs": 7,
+      "fat": 0.2,
+      "fiber": 3.4
+    }
+  },
+  {
+    "id": "food_219",
+    "name": "Corn / Sweet Corn (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "vegetable"
+    ],
+    "macros_per_100g": {
+      "calories": 86,
+      "protein": 3.3,
+      "carbs": 19,
+      "fat": 1.4,
+      "fiber": 2.7
+    }
+  },
+  {
+    "id": "food_220",
+    "name": "Methi Leaves (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "vegetable"
+    ],
+    "macros_per_100g": {
+      "calories": 49,
+      "protein": 4.4,
+      "carbs": 6,
+      "fat": 0.9,
+      "fiber": 1.1
+    }
+  },
+  {
+    "id": "food_221",
+    "name": "Fenugreek Seeds (Dry)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "spice"
+    ],
+    "macros_per_100g": {
+      "calories": 323,
+      "protein": 23,
+      "carbs": 58,
+      "fat": 6.4,
+      "fiber": 25
+    }
+  },
+  {
+    "id": "food_222",
+    "name": "Garlic (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "vegetable"
+    ],
+    "macros_per_100g": {
+      "calories": 149,
+      "protein": 6.4,
+      "carbs": 33.1,
+      "fat": 0.5,
+      "fiber": 2.1
+    }
+  },
+  {
+    "id": "food_223",
+    "name": "Ginger (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "vegetable"
+    ],
+    "macros_per_100g": {
+      "calories": 80,
+      "protein": 1.8,
+      "carbs": 17.8,
+      "fat": 0.8,
+      "fiber": 2
+    }
+  },
+  {
+    "id": "food_224",
+    "name": "Lemon (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "fruit"
+    ],
+    "macros_per_100g": {
+      "calories": 29,
+      "protein": 1.1,
+      "carbs": 9.3,
+      "fat": 0.3,
+      "fiber": 2.8
+    }
+  },
+  {
+    "id": "food_225",
+    "name": "Mango (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "fruit"
+    ],
+    "macros_per_100g": {
+      "calories": 60,
+      "protein": 0.8,
+      "carbs": 15,
+      "fat": 0.4,
+      "fiber": 1.6
+    }
+  },
+  {
+    "id": "food_226",
+    "name": "Papaya (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "fruit"
+    ],
+    "macros_per_100g": {
+      "calories": 43,
+      "protein": 0.5,
+      "carbs": 10.8,
+      "fat": 0.3,
+      "fiber": 1.7
+    }
+  },
+  {
+    "id": "food_227",
+    "name": "Watermelon (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "fruit"
+    ],
+    "macros_per_100g": {
+      "calories": 30,
+      "protein": 0.6,
+      "carbs": 7.6,
+      "fat": 0.2,
+      "fiber": 0.4
+    }
+  },
+  {
+    "id": "food_228",
+    "name": "Guava (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "fruit"
+    ],
+    "macros_per_100g": {
+      "calories": 68,
+      "protein": 2.6,
+      "carbs": 14.3,
+      "fat": 1,
+      "fiber": 5.4
+    }
+  },
+  {
+    "id": "food_229",
+    "name": "Grapes (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "fruit"
+    ],
+    "macros_per_100g": {
+      "calories": 69,
+      "protein": 0.7,
+      "carbs": 18.1,
+      "fat": 0.2,
+      "fiber": 0.9
+    }
+  },
+  {
+    "id": "food_230",
+    "name": "Pomegranate Arils",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "fruit"
+    ],
+    "macros_per_100g": {
+      "calories": 83,
+      "protein": 1.7,
+      "carbs": 18.7,
+      "fat": 1.2,
+      "fiber": 4
+    }
+  },
+  {
+    "id": "food_231",
+    "name": "Pineapple (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "fruit"
+    ],
+    "macros_per_100g": {
+      "calories": 50,
+      "protein": 0.5,
+      "carbs": 13.1,
+      "fat": 0.1,
+      "fiber": 1.4
+    }
+  },
+  {
+    "id": "food_232",
+    "name": "Pear (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "fruit"
+    ],
+    "macros_per_100g": {
+      "calories": 57,
+      "protein": 0.4,
+      "carbs": 15.2,
+      "fat": 0.1,
+      "fiber": 3.1
+    }
+  },
+  {
+    "id": "food_233",
+    "name": "Strawberries (Raw)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "fruit"
+    ],
+    "macros_per_100g": {
+      "calories": 32,
+      "protein": 0.7,
+      "carbs": 7.7,
+      "fat": 0.3,
+      "fiber": 2
+    }
+  },
+  {
+    "id": "food_234",
+    "name": "Dates (Dried)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "fruit"
+    ],
+    "macros_per_100g": {
+      "calories": 282,
+      "protein": 2.5,
+      "carbs": 75,
+      "fat": 0.4,
+      "fiber": 8
+    }
+  },
+  {
+    "id": "food_235",
+    "name": "Raisins (Dried)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "fruit"
+    ],
+    "macros_per_100g": {
+      "calories": 299,
+      "protein": 3.1,
+      "carbs": 79.2,
+      "fat": 0.5,
+      "fiber": 3.7
+    }
+  },
+  {
+    "id": "food_236",
+    "name": "Watermelon Seeds (Dried)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "nuts-seeds"
+    ],
+    "macros_per_100g": {
+      "calories": 557,
+      "protein": 28.3,
+      "carbs": 15.3,
+      "fat": 47.4,
+      "fiber": 4.3
+    }
+  },
+  {
+    "id": "food_237",
+    "name": "Cashews",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "nuts-seeds"
+    ],
+    "macros_per_100g": {
+      "calories": 553,
+      "protein": 18.2,
+      "carbs": 30.2,
+      "fat": 43.9,
+      "fiber": 3.3
+    }
+  },
+  {
+    "id": "food_238",
+    "name": "Walnuts",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "nuts-seeds"
+    ],
+    "macros_per_100g": {
+      "calories": 654,
+      "protein": 15.2,
+      "carbs": 13.7,
+      "fat": 65.2,
+      "fiber": 6.7
+    }
+  },
+  {
+    "id": "food_239",
+    "name": "Pistachios",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "nuts-seeds"
+    ],
+    "macros_per_100g": {
+      "calories": 562,
+      "protein": 20.2,
+      "carbs": 27.2,
+      "fat": 45.3,
+      "fiber": 10.3
+    }
+  },
+  {
+    "id": "food_240",
+    "name": "Chia Seeds",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "nuts-seeds"
+    ],
+    "macros_per_100g": {
+      "calories": 486,
+      "protein": 16.5,
+      "carbs": 42.1,
+      "fat": 30.7,
+      "fiber": 34.4
+    }
+  },
+  {
+    "id": "food_241",
+    "name": "Flax Seeds",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "nuts-seeds"
+    ],
+    "macros_per_100g": {
+      "calories": 534,
+      "protein": 18.3,
+      "carbs": 28.9,
+      "fat": 42.2,
+      "fiber": 27.3
+    }
+  },
+  {
+    "id": "food_242",
+    "name": "Pumpkin Seeds",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "nuts-seeds"
+    ],
+    "macros_per_100g": {
+      "calories": 559,
+      "protein": 30.2,
+      "carbs": 10.7,
+      "fat": 49.1,
+      "fiber": 6
+    }
+  },
+  {
+    "id": "food_243",
+    "name": "Sunflower Seeds",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "nuts-seeds"
+    ],
+    "macros_per_100g": {
+      "calories": 584,
+      "protein": 20.8,
+      "carbs": 20,
+      "fat": 51.5,
+      "fiber": 8.6
+    }
+  },
+  {
+    "id": "food_244",
+    "name": "Sesame Seeds / Til",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "nuts-seeds"
+    ],
+    "macros_per_100g": {
+      "calories": 573,
+      "protein": 17.7,
+      "carbs": 23.4,
+      "fat": 49.7,
+      "fiber": 11.8
+    }
+  },
+  {
+    "id": "food_245",
+    "name": "Coconut (Fresh)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "nuts-seeds"
+    ],
+    "macros_per_100g": {
+      "calories": 354,
+      "protein": 3.3,
+      "carbs": 15.2,
+      "fat": 33.5,
+      "fiber": 9
+    }
+  },
+  {
+    "id": "food_246",
+    "name": "Cashew Butter",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "nuts-seeds"
+    ],
+    "macros_per_100g": {
+      "calories": 587,
+      "protein": 17.6,
+      "carbs": 27.6,
+      "fat": 49.4,
+      "fiber": 3.3
+    }
+  },
+  {
+    "id": "food_247",
+    "name": "Tahini / Sesame Paste",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "nuts-seeds"
+    ],
+    "macros_per_100g": {
+      "calories": 595,
+      "protein": 17,
+      "carbs": 21.2,
+      "fat": 53.8,
+      "fiber": 9.3
+    }
+  },
+  {
+    "id": "food_248",
+    "name": "Rajma / Kidney Beans (Dry)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "legume"
+    ],
+    "macros_per_100g": {
+      "calories": 333,
+      "protein": 23.6,
+      "carbs": 60,
+      "fat": 0.8,
+      "fiber": 24.9
+    }
+  },
+  {
+    "id": "food_249",
+    "name": "Black Chana (Dry)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "legume"
+    ],
+    "macros_per_100g": {
+      "calories": 360,
+      "protein": 20,
+      "carbs": 60,
+      "fat": 5,
+      "fiber": 12
+    }
+  },
+  {
+    "id": "food_250",
+    "name": "Urad Dal (Dry)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "legume"
+    ],
+    "macros_per_100g": {
+      "calories": 341,
+      "protein": 25.2,
+      "carbs": 58.9,
+      "fat": 1.6,
+      "fiber": 18.3
+    }
+  },
+  {
+    "id": "food_251",
+    "name": "Toor / Arhar Dal (Dry)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "legume"
+    ],
+    "macros_per_100g": {
+      "calories": 343,
+      "protein": 22.3,
+      "carbs": 62.8,
+      "fat": 1.7,
+      "fiber": 15
+    }
+  },
+  {
+    "id": "food_252",
+    "name": "Chana Dal (Dry)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "legume"
+    ],
+    "macros_per_100g": {
+      "calories": 360,
+      "protein": 20.5,
+      "carbs": 60.7,
+      "fat": 5.6,
+      "fiber": 12.2
+    }
+  },
+  {
+    "id": "food_253",
+    "name": "Masoor Whole (Dry)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "legume"
+    ],
+    "macros_per_100g": {
+      "calories": 352,
+      "protein": 24.6,
+      "carbs": 63.1,
+      "fat": 1.1,
+      "fiber": 10.7
+    }
+  },
+  {
+    "id": "food_254",
+    "name": "Soybeans (Dry)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "legume"
+    ],
+    "macros_per_100g": {
+      "calories": 446,
+      "protein": 36.5,
+      "carbs": 30.2,
+      "fat": 19.9,
+      "fiber": 9.3
+    }
+  },
+  {
+    "id": "food_255",
+    "name": "Peas (Frozen)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "legume"
+    ],
+    "macros_per_100g": {
+      "calories": 81,
+      "protein": 5.4,
+      "carbs": 14.5,
+      "fat": 0.4,
+      "fiber": 5.7
+    }
+  },
+  {
+    "id": "food_256",
+    "name": "Quinoa (Dry)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "grain"
+    ],
+    "macros_per_100g": {
+      "calories": 368,
+      "protein": 14.1,
+      "carbs": 64.2,
+      "fat": 6.1,
+      "fiber": 7
+    }
+  },
+  {
+    "id": "food_257",
+    "name": "Millet / Bajra Flour (Dry)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "grain"
+    ],
+    "macros_per_100g": {
+      "calories": 361,
+      "protein": 11.6,
+      "carbs": 67.5,
+      "fat": 5,
+      "fiber": 11.3
+    }
+  },
+  {
+    "id": "food_258",
+    "name": "Jowar Flour (Dry)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "grain"
+    ],
+    "macros_per_100g": {
+      "calories": 329,
+      "protein": 10.6,
+      "carbs": 72.1,
+      "fat": 3.5,
+      "fiber": 6.7
+    }
+  },
+  {
+    "id": "food_259",
+    "name": "Ragi / Finger Millet Flour (Dry)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "grain"
+    ],
+    "macros_per_100g": {
+      "calories": 336,
+      "protein": 7.3,
+      "carbs": 72,
+      "fat": 1.3,
+      "fiber": 11.5
+    }
+  },
+  {
+    "id": "food_260",
+    "name": "Besan / Chickpea Flour (Dry)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "grain"
+    ],
+    "macros_per_100g": {
+      "calories": 387,
+      "protein": 22.4,
+      "carbs": 57.8,
+      "fat": 6.7,
+      "fiber": 10.8
+    }
+  },
+  {
+    "id": "food_261",
+    "name": "Rice Flour (Dry)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "grain"
+    ],
+    "macros_per_100g": {
+      "calories": 366,
+      "protein": 6,
+      "carbs": 80,
+      "fat": 1.4,
+      "fiber": 2.4
+    }
+  },
+  {
+    "id": "food_262",
+    "name": "Cornflour / Cornstarch",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "grain"
+    ],
+    "macros_per_100g": {
+      "calories": 381,
+      "protein": 0.3,
+      "carbs": 91.3,
+      "fat": 0.1,
+      "fiber": 0.9
+    }
+  },
+  {
+    "id": "food_263",
+    "name": "Semolina / Sooji (Dry)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "grain"
+    ],
+    "macros_per_100g": {
+      "calories": 360,
+      "protein": 12.7,
+      "carbs": 72.8,
+      "fat": 1.1,
+      "fiber": 3.9
+    }
+  },
+  {
+    "id": "food_264",
+    "name": "Flattened Rice / Poha (Dry)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "grain"
+    ],
+    "macros_per_100g": {
+      "calories": 350,
+      "protein": 6.7,
+      "carbs": 77,
+      "fat": 1.2,
+      "fiber": 2.5
+    }
+  },
+  {
+    "id": "food_265",
+    "name": "Puffed Rice / Murmura",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "grain"
+    ],
+    "macros_per_100g": {
+      "calories": 402,
+      "protein": 7.5,
+      "carbs": 90,
+      "fat": 0.5,
+      "fiber": 1
+    }
+  },
+  {
+    "id": "food_266",
+    "name": "Barley (Dry)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "grain"
+    ],
+    "macros_per_100g": {
+      "calories": 354,
+      "protein": 12.5,
+      "carbs": 73.5,
+      "fat": 2.3,
+      "fiber": 17.3
+    }
+  },
+  {
+    "id": "food_267",
+    "name": "Whole Wheat Pasta (Dry)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "grain"
+    ],
+    "macros_per_100g": {
+      "calories": 352,
+      "protein": 13.9,
+      "carbs": 70.2,
+      "fat": 2.5,
+      "fiber": 9
+    }
+  },
+  {
+    "id": "food_268",
+    "name": "Whole Wheat Bread",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "grain"
+    ],
+    "macros_per_100g": {
+      "calories": 247,
+      "protein": 13,
+      "carbs": 41,
+      "fat": 4.2,
+      "fiber": 7
+    }
+  },
+  {
+    "id": "food_269",
+    "name": "Corn Tortilla",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "grain"
+    ],
+    "macros_per_100g": {
+      "calories": 218,
+      "protein": 5.7,
+      "carbs": 44.6,
+      "fat": 2.9,
+      "fiber": 6.3
+    }
+  },
+  {
+    "id": "food_270",
+    "name": "Cornflakes (Plain)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "grain"
+    ],
+    "macros_per_100g": {
+      "calories": 357,
+      "protein": 7.5,
+      "carbs": 84,
+      "fat": 0.4,
+      "fiber": 3.3
+    }
+  },
+  {
+    "id": "food_271",
+    "name": "Muesli (Plain)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "grain"
+    ],
+    "macros_per_100g": {
+      "calories": 370,
+      "protein": 10,
+      "carbs": 67,
+      "fat": 6,
+      "fiber": 8
+    }
+  },
+  {
+    "id": "food_272",
+    "name": "Dark Chocolate 70%",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "snack"
+    ],
+    "macros_per_100g": {
+      "calories": 598,
+      "protein": 7.8,
+      "carbs": 45.9,
+      "fat": 42.6,
+      "fiber": 10.9
+    }
+  },
+  {
+    "id": "food_273",
+    "name": "Jaggery / Gur",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "sweetener"
+    ],
+    "macros_per_100g": {
+      "calories": 383,
+      "protein": 0.4,
+      "carbs": 98,
+      "fat": 0.1,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "food_274",
+    "name": "Honey",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "sweetener"
+    ],
+    "macros_per_100g": {
+      "calories": 304,
+      "protein": 0.3,
+      "carbs": 82.4,
+      "fat": 0,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "food_275",
+    "name": "Sugar",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "sweetener"
+    ],
+    "macros_per_100g": {
+      "calories": 387,
+      "protein": 0,
+      "carbs": 100,
+      "fat": 0,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "food_276",
+    "name": "Ghee",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "fat"
+    ],
+    "macros_per_100g": {
+      "calories": 900,
+      "protein": 0,
+      "carbs": 0,
+      "fat": 100,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "food_277",
+    "name": "Mustard Oil",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "fat"
+    ],
+    "macros_per_100g": {
+      "calories": 884,
+      "protein": 0,
+      "carbs": 0,
+      "fat": 100,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "food_278",
+    "name": "Sunflower Oil",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "fat"
+    ],
+    "macros_per_100g": {
+      "calories": 884,
+      "protein": 0,
+      "carbs": 0,
+      "fat": 100,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "food_279",
+    "name": "Coconut Oil",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "fat"
+    ],
+    "macros_per_100g": {
+      "calories": 892,
+      "protein": 0,
+      "carbs": 0,
+      "fat": 99.1,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "food_280",
+    "name": "Butter",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "fat"
+    ],
+    "macros_per_100g": {
+      "calories": 717,
+      "protein": 0.9,
+      "carbs": 0.1,
+      "fat": 81.1,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "food_281",
+    "name": "Mayonnaise",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "fat"
+    ],
+    "macros_per_100g": {
+      "calories": 680,
+      "protein": 1,
+      "carbs": 0.6,
+      "fat": 75,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "food_282",
+    "name": "Paneer (Full Fat)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "dairy"
+    ],
+    "macros_per_100g": {
+      "calories": 321,
+      "protein": 18.3,
+      "carbs": 1.2,
+      "fat": 25,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "food_283",
+    "name": "Paneer (Low Fat)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "dairy"
+    ],
+    "macros_per_100g": {
+      "calories": 265,
+      "protein": 18,
+      "carbs": 2.5,
+      "fat": 20,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "food_284",
+    "name": "Milk (Skimmed)",
+    "type": "raw_ingredient",
+    "serving_unit": "ml",
+    "default_serving_size": 250,
+    "tags": [
+      "vegetarian",
+      "dairy-liquid"
+    ],
+    "macros_per_100ml": {
+      "calories": 34,
+      "protein": 3.4,
+      "carbs": 5,
+      "fat": 0.1,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "food_285",
+    "name": "Milk (Full Cream)",
+    "type": "raw_ingredient",
+    "serving_unit": "ml",
+    "default_serving_size": 250,
+    "tags": [
+      "vegetarian",
+      "dairy-liquid"
+    ],
+    "macros_per_100ml": {
+      "calories": 61,
+      "protein": 3.2,
+      "carbs": 4.8,
+      "fat": 3.3,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "food_286",
+    "name": "Soy Milk (Unsweetened)",
+    "type": "raw_ingredient",
+    "serving_unit": "ml",
+    "default_serving_size": 250,
+    "tags": [
+      "vegetarian",
+      "plant-liquid"
+    ],
+    "macros_per_100ml": {
+      "calories": 33,
+      "protein": 3.3,
+      "carbs": 0.7,
+      "fat": 1.8,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "food_287",
+    "name": "Almond Milk (Unsweetened)",
+    "type": "raw_ingredient",
+    "serving_unit": "ml",
+    "default_serving_size": 250,
+    "tags": [
+      "vegetarian",
+      "plant-liquid"
+    ],
+    "macros_per_100ml": {
+      "calories": 17,
+      "protein": 0.6,
+      "carbs": 0.6,
+      "fat": 1.2,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "food_288",
+    "name": "Oat Milk (Unsweetened)",
+    "type": "raw_ingredient",
+    "serving_unit": "ml",
+    "default_serving_size": 250,
+    "tags": [
+      "vegetarian",
+      "plant-liquid"
+    ],
+    "macros_per_100ml": {
+      "calories": 43,
+      "protein": 1,
+      "carbs": 6.7,
+      "fat": 1.5,
+      "fiber": 0.8
+    }
+  },
+  {
+    "id": "food_289",
+    "name": "Coconut Water",
+    "type": "raw_ingredient",
+    "serving_unit": "ml",
+    "default_serving_size": 250,
+    "tags": [
+      "vegetarian",
+      "plant-liquid"
+    ],
+    "macros_per_100ml": {
+      "calories": 19,
+      "protein": 0.7,
+      "carbs": 3.7,
+      "fat": 0.2,
+      "fiber": 1.1
+    }
+  },
+  {
+    "id": "food_290",
+    "name": "Orange Juice (Unsweetened)",
+    "type": "raw_ingredient",
+    "serving_unit": "ml",
+    "default_serving_size": 250,
+    "tags": [
+      "vegetarian",
+      "fruit-liquid"
+    ],
+    "macros_per_100ml": {
+      "calories": 45,
+      "protein": 0.7,
+      "carbs": 10.4,
+      "fat": 0.2,
+      "fiber": 0.2
+    }
+  },
+  {
+    "id": "food_291",
+    "name": "Lemon Juice",
+    "type": "raw_ingredient",
+    "serving_unit": "ml",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "fruit-liquid"
+    ],
+    "macros_per_100ml": {
+      "calories": 22,
+      "protein": 0.4,
+      "carbs": 6.9,
+      "fat": 0.2,
+      "fiber": 0.3
+    }
+  },
+  {
+    "id": "food_292",
+    "name": "Black Coffee (Brewed)",
+    "type": "raw_ingredient",
+    "serving_unit": "ml",
+    "default_serving_size": 250,
+    "tags": [
+      "vegetarian",
+      "drink-liquid"
+    ],
+    "macros_per_100ml": {
+      "calories": 2,
+      "protein": 0.3,
+      "carbs": 0,
+      "fat": 0,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "food_293",
+    "name": "Black Tea (Brewed)",
+    "type": "raw_ingredient",
+    "serving_unit": "ml",
+    "default_serving_size": 250,
+    "tags": [
+      "vegetarian",
+      "drink-liquid"
+    ],
+    "macros_per_100ml": {
+      "calories": 1,
+      "protein": 0,
+      "carbs": 0.3,
+      "fat": 0,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "food_294",
+    "name": "Green Tea (Brewed)",
+    "type": "raw_ingredient",
+    "serving_unit": "ml",
+    "default_serving_size": 250,
+    "tags": [
+      "vegetarian",
+      "drink-liquid"
+    ],
+    "macros_per_100ml": {
+      "calories": 1,
+      "protein": 0,
+      "carbs": 0.2,
+      "fat": 0,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "food_295",
+    "name": "Lassi (Plain, Unsweetened)",
+    "type": "raw_ingredient",
+    "serving_unit": "ml",
+    "default_serving_size": 250,
+    "tags": [
+      "vegetarian",
+      "dairy-liquid"
+    ],
+    "macros_per_100ml": {
+      "calories": 60,
+      "protein": 3.2,
+      "carbs": 4.8,
+      "fat": 3,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "food_296",
+    "name": "Natural Yogurt Drink / Chaas",
+    "type": "raw_ingredient",
+    "serving_unit": "ml",
+    "default_serving_size": 250,
+    "tags": [
+      "vegetarian",
+      "dairy-liquid"
+    ],
+    "macros_per_100ml": {
+      "calories": 26,
+      "protein": 1.5,
+      "carbs": 2.5,
+      "fat": 1,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "food_297",
+    "name": "Fresh Tomato Juice",
+    "type": "raw_ingredient",
+    "serving_unit": "ml",
+    "default_serving_size": 250,
+    "tags": [
+      "vegetarian",
+      "vegetable-liquid"
+    ],
+    "macros_per_100ml": {
+      "calories": 17,
+      "protein": 0.8,
+      "carbs": 3.5,
+      "fat": 0.1,
+      "fiber": 0.4
+    }
+  },
+  {
+    "id": "food_298",
+    "name": "Pea Protein Powder",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 30,
+    "tags": [
+      "vegetarian",
+      "supplement"
+    ],
+    "macros_per_100g": {
+      "calories": 390,
+      "protein": 80,
+      "carbs": 7,
+      "fat": 5,
+      "fiber": 2
+    }
+  },
+  {
+    "id": "food_299",
+    "name": "Whey Protein Concentrate",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 30,
+    "tags": [
+      "vegetarian",
+      "supplement"
+    ],
+    "macros_per_100g": {
+      "calories": 400,
+      "protein": 80,
+      "carbs": 8,
+      "fat": 6,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "food_300",
+    "name": "Casein Protein Powder",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 30,
+    "tags": [
+      "vegetarian",
+      "supplement"
+    ],
+    "macros_per_100g": {
+      "calories": 360,
+      "protein": 80,
+      "carbs": 5,
+      "fat": 2,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "food_301",
+    "name": "Creatine Monohydrate",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 5,
+    "tags": [
+      "vegetarian",
+      "supplement"
+    ],
+    "macros_per_100g": {
+      "calories": 0,
+      "protein": 0,
+      "carbs": 0,
+      "fat": 0,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "food_302",
+    "name": "Tofu (Silken)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "plant-protein"
+    ],
+    "macros_per_100g": {
+      "calories": 55,
+      "protein": 4.8,
+      "carbs": 1.8,
+      "fat": 2.7,
+      "fiber": 0.3
+    }
+  },
+  {
+    "id": "food_303",
+    "name": "Tempeh",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "plant-protein"
+    ],
+    "macros_per_100g": {
+      "calories": 193,
+      "protein": 20.3,
+      "carbs": 7.6,
+      "fat": 10.8,
+      "fiber": 3.8
+    }
+  },
+  {
+    "id": "food_304",
+    "name": "Seitan / Wheat Gluten",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "plant-protein"
+    ],
+    "macros_per_100g": {
+      "calories": 141,
+      "protein": 25,
+      "carbs": 12,
+      "fat": 2,
+      "fiber": 1.2
+    }
+  },
+  {
+    "id": "food_305",
+    "name": "Edamame (Cooked)",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "plant-protein"
+    ],
+    "macros_per_100g": {
+      "calories": 121,
+      "protein": 12,
+      "carbs": 8.9,
+      "fat": 5.2,
+      "fiber": 5.2
+    }
+  },
+  {
+    "id": "food_306",
+    "name": "Hummus",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "spread"
+    ],
+    "macros_per_100g": {
+      "calories": 166,
+      "protein": 7.9,
+      "carbs": 14.3,
+      "fat": 9.6,
+      "fiber": 6
+    }
+  },
+  {
+    "id": "food_307",
+    "name": "Pickle / Achar",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "condiment"
+    ],
+    "macros_per_100g": {
+      "calories": 100,
+      "protein": 2,
+      "carbs": 12,
+      "fat": 5,
+      "fiber": 3
+    }
+  },
+  {
+    "id": "food_308",
+    "name": "Tomato Ketchup",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "condiment"
+    ],
+    "macros_per_100g": {
+      "calories": 112,
+      "protein": 1.3,
+      "carbs": 26,
+      "fat": 0.2,
+      "fiber": 0.3
+    }
+  },
+  {
+    "id": "food_309",
+    "name": "Soy Sauce",
+    "type": "raw_ingredient",
+    "serving_unit": "ml",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "condiment"
+    ],
+    "macros_per_100ml": {
+      "calories": 53,
+      "protein": 8.1,
+      "carbs": 4.9,
+      "fat": 0.6,
+      "fiber": 0.8
+    }
+  },
+  {
+    "id": "food_310",
+    "name": "Vinegar",
+    "type": "raw_ingredient",
+    "serving_unit": "ml",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "condiment-liquid"
+    ],
+    "macros_per_100ml": {
+      "calories": 18,
+      "protein": 0,
+      "carbs": 0.6,
+      "fat": 0,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "food_311",
+    "name": "Coriander Leaves",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "herb"
+    ],
+    "macros_per_100g": {
+      "calories": 23,
+      "protein": 2.1,
+      "carbs": 3.7,
+      "fat": 0.5,
+      "fiber": 2.8
+    }
+  },
+  {
+    "id": "food_312",
+    "name": "Mint Leaves",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "herb"
+    ],
+    "macros_per_100g": {
+      "calories": 44,
+      "protein": 3.3,
+      "carbs": 8.4,
+      "fat": 0.7,
+      "fiber": 6.8
+    }
+  },
+  {
+    "id": "food_313",
+    "name": "Cumin Seeds / Jeera",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "spice"
+    ],
+    "macros_per_100g": {
+      "calories": 375,
+      "protein": 17.8,
+      "carbs": 44.2,
+      "fat": 22.3,
+      "fiber": 10.5
+    }
+  },
+  {
+    "id": "food_314",
+    "name": "Turmeric Powder",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "spice"
+    ],
+    "macros_per_100g": {
+      "calories": 312,
+      "protein": 9.7,
+      "carbs": 67.1,
+      "fat": 3.3,
+      "fiber": 22.7
+    }
+  },
+  {
+    "id": "food_315",
+    "name": "Red Chilli Powder",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "spice"
+    ],
+    "macros_per_100g": {
+      "calories": 282,
+      "protein": 13.5,
+      "carbs": 49.7,
+      "fat": 14.3,
+      "fiber": 34.8
+    }
+  },
+  {
+    "id": "food_316",
+    "name": "Coriander Powder",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "spice"
+    ],
+    "macros_per_100g": {
+      "calories": 298,
+      "protein": 12.4,
+      "carbs": 54.99,
+      "fat": 17.8,
+      "fiber": 41.9
+    }
+  },
+  {
+    "id": "food_317",
+    "name": "Garam Masala",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "spice"
+    ],
+    "macros_per_100g": {
+      "calories": 379,
+      "protein": 13,
+      "carbs": 55,
+      "fat": 15,
+      "fiber": 25
+    }
+  },
+  {
+    "id": "food_318",
+    "name": "Salt",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "condiment"
+    ],
+    "macros_per_100g": {
+      "calories": 0,
+      "protein": 0,
+      "carbs": 0,
+      "fat": 0,
+      "fiber": 0
+    }
+  },
+  {
+    "id": "food_319",
+    "name": "Black Pepper",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 100,
+    "tags": [
+      "vegetarian",
+      "spice"
+    ],
+    "macros_per_100g": {
+      "calories": 251,
+      "protein": 10.4,
+      "carbs": 63.9,
+      "fat": 3.3,
+      "fiber": 25.3
+    }
+  },
+  {
+    "id": "food_801",
+    "name": "Oatmeal / Porridge (Cooked Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 180,
+      "protein": 6,
+      "carbs": 30,
+      "fat": 4,
+      "fiber": 4
+    },
+    "tags": [
+      "breakfast",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_802",
+    "name": "Overnight Oats (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 320,
+      "protein": 15,
+      "carbs": 44,
+      "fat": 9,
+      "fiber": 7
+    },
+    "tags": [
+      "breakfast",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_803",
+    "name": "Vegetable Sandwich (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "sandwich",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 280,
+      "protein": 9,
+      "carbs": 38,
+      "fat": 9,
+      "fiber": 5
+    },
+    "tags": [
+      "breakfast",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_804",
+    "name": "Peanut Butter Toast (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "slice",
+    "default_serving_size": 2,
+    "macros_per_serving": {
+      "calories": 300,
+      "protein": 11,
+      "carbs": 32,
+      "fat": 14,
+      "fiber": 5
+    },
+    "tags": [
+      "breakfast",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_805",
+    "name": "Aloo Paratha (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "piece",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 260,
+      "protein": 6,
+      "carbs": 38,
+      "fat": 9,
+      "fiber": 5
+    },
+    "tags": [
+      "breakfast",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_806",
+    "name": "Paneer Paratha (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "piece",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 310,
+      "protein": 11,
+      "carbs": 39,
+      "fat": 12,
+      "fiber": 4
+    },
+    "tags": [
+      "breakfast",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_807",
+    "name": "Plain Paratha (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "piece",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 220,
+      "protein": 5,
+      "carbs": 30,
+      "fat": 9,
+      "fiber": 3
+    },
+    "tags": [
+      "breakfast",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_808",
+    "name": "Vegetable Omelette Alternative — Besan Chilla (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "piece",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 140,
+      "protein": 7,
+      "carbs": 18,
+      "fat": 4.5,
+      "fiber": 3
+    },
+    "tags": [
+      "breakfast",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_809",
+    "name": "Dhokla (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "piece",
+    "default_serving_size": 2,
+    "macros_per_serving": {
+      "calories": 160,
+      "protein": 6,
+      "carbs": 25,
+      "fat": 4,
+      "fiber": 2
+    },
+    "tags": [
+      "breakfast",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_810",
+    "name": "Upma with Vegetables (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 230,
+      "protein": 6,
+      "carbs": 38,
+      "fat": 6,
+      "fiber": 4
+    },
+    "tags": [
+      "breakfast",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_811",
+    "name": "Sprouts Chaat (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 160,
+      "protein": 10,
+      "carbs": 25,
+      "fat": 2,
+      "fiber": 7
+    },
+    "tags": [
+      "snack",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_812",
+    "name": "Fruit Salad (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 120,
+      "protein": 2,
+      "carbs": 29,
+      "fat": 1,
+      "fiber": 5
+    },
+    "tags": [
+      "snack",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_813",
+    "name": "Roasted Chana (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "serving",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 120,
+      "protein": 6,
+      "carbs": 18,
+      "fat": 2,
+      "fiber": 5
+    },
+    "tags": [
+      "snack",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_814",
+    "name": "Makhana Roasted (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 110,
+      "protein": 3,
+      "carbs": 20,
+      "fat": 2,
+      "fiber": 3
+    },
+    "tags": [
+      "snack",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_815",
+    "name": "Trail Mix (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "handful",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 170,
+      "protein": 5,
+      "carbs": 12,
+      "fat": 12,
+      "fiber": 3
+    },
+    "tags": [
+      "snack",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_816",
+    "name": "Protein Shake with Water (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "scoop",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 110,
+      "protein": 25,
+      "carbs": 2,
+      "fat": 1,
+      "fiber": 0
+    },
+    "tags": [
+      "supplement",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_817",
+    "name": "Protein Shake with Milk (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "glass",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 230,
+      "protein": 33,
+      "carbs": 13,
+      "fat": 5,
+      "fiber": 0
+    },
+    "tags": [
+      "supplement",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_818",
+    "name": "Greek Yogurt Bowl (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 220,
+      "protein": 18,
+      "carbs": 26,
+      "fat": 5,
+      "fiber": 4
+    },
+    "tags": [
+      "breakfast",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_819",
+    "name": "Curd Rice (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 280,
+      "protein": 8,
+      "carbs": 46,
+      "fat": 7,
+      "fiber": 1
+    },
+    "tags": [
+      "lunch",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_820",
+    "name": "Lemon Rice (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 320,
+      "protein": 6,
+      "carbs": 50,
+      "fat": 10,
+      "fiber": 2
+    },
+    "tags": [
+      "lunch",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_821",
+    "name": "Vegetable Khichdi (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 250,
+      "protein": 9,
+      "carbs": 42,
+      "fat": 5,
+      "fiber": 6
+    },
+    "tags": [
+      "lunch",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_822",
+    "name": "Dal Khichdi (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 280,
+      "protein": 11,
+      "carbs": 48,
+      "fat": 5,
+      "fiber": 7
+    },
+    "tags": [
+      "lunch",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_823",
+    "name": "Rajma Chawal (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "plate",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 420,
+      "protein": 15,
+      "carbs": 70,
+      "fat": 9,
+      "fiber": 11
+    },
+    "tags": [
+      "lunch",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_824",
+    "name": "Chole Chawal (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "plate",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 450,
+      "protein": 15,
+      "carbs": 72,
+      "fat": 11,
+      "fiber": 12
+    },
+    "tags": [
+      "lunch",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_825",
+    "name": "Chole Bhature (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "plate",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 650,
+      "protein": 17,
+      "carbs": 85,
+      "fat": 27,
+      "fiber": 10
+    },
+    "tags": [
+      "lunch",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_826",
+    "name": "Dal Makhani (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 300,
+      "protein": 12,
+      "carbs": 28,
+      "fat": 16,
+      "fiber": 8
+    },
+    "tags": [
+      "lunch",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_827",
+    "name": "Palak Paneer (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 290,
+      "protein": 17,
+      "carbs": 14,
+      "fat": 19,
+      "fiber": 5
+    },
+    "tags": [
+      "lunch",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_828",
+    "name": "Shahi Paneer (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 360,
+      "protein": 16,
+      "carbs": 18,
+      "fat": 25,
+      "fiber": 3
+    },
+    "tags": [
+      "lunch",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_829",
+    "name": "Kadai Paneer (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 330,
+      "protein": 17,
+      "carbs": 18,
+      "fat": 21,
+      "fiber": 4
+    },
+    "tags": [
+      "lunch",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_830",
+    "name": "Paneer Tikka (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "serving",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 260,
+      "protein": 22,
+      "carbs": 10,
+      "fat": 14,
+      "fiber": 2
+    },
+    "tags": [
+      "dinner",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_831",
+    "name": "Matar Paneer (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 310,
+      "protein": 16,
+      "carbs": 20,
+      "fat": 18,
+      "fiber": 5
+    },
+    "tags": [
+      "lunch",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_832",
+    "name": "Aloo Gobi (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 180,
+      "protein": 4,
+      "carbs": 25,
+      "fat": 7,
+      "fiber": 5
+    },
+    "tags": [
+      "lunch",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_833",
+    "name": "Bhindi Masala (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 170,
+      "protein": 4,
+      "carbs": 18,
+      "fat": 8,
+      "fiber": 5
+    },
+    "tags": [
+      "lunch",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_834",
+    "name": "Baingan Bharta (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 150,
+      "protein": 4,
+      "carbs": 18,
+      "fat": 7,
+      "fiber": 6
+    },
+    "tags": [
+      "lunch",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_835",
+    "name": "Mixed Dal (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 210,
+      "protein": 12,
+      "carbs": 32,
+      "fat": 4,
+      "fiber": 9
+    },
+    "tags": [
+      "lunch",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_836",
+    "name": "Sambar (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 130,
+      "protein": 6,
+      "carbs": 20,
+      "fat": 3,
+      "fiber": 5
+    },
+    "tags": [
+      "lunch",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_837",
+    "name": "Rasam (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 60,
+      "protein": 2,
+      "carbs": 10,
+      "fat": 1,
+      "fiber": 2
+    },
+    "tags": [
+      "lunch",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_838",
+    "name": "Vegetable Biryani (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "plate",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 380,
+      "protein": 8,
+      "carbs": 61,
+      "fat": 11,
+      "fiber": 6
+    },
+    "tags": [
+      "lunch",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_839",
+    "name": "Paneer Biryani (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "plate",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 480,
+      "protein": 18,
+      "carbs": 62,
+      "fat": 17,
+      "fiber": 5
+    },
+    "tags": [
+      "lunch",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_840",
+    "name": "Vegetable Fried Rice (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "plate",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 360,
+      "protein": 7,
+      "carbs": 55,
+      "fat": 11,
+      "fiber": 4
+    },
+    "tags": [
+      "lunch",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_841",
+    "name": "Veg Hakka Noodles (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "plate",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 400,
+      "protein": 9,
+      "carbs": 59,
+      "fat": 13,
+      "fiber": 5
+    },
+    "tags": [
+      "lunch",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_842",
+    "name": "Veg Momos Steamed (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "piece",
+    "default_serving_size": 6,
+    "macros_per_serving": {
+      "calories": 300,
+      "protein": 9,
+      "carbs": 45,
+      "fat": 9,
+      "fiber": 3
+    },
+    "tags": [
+      "snack",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_843",
+    "name": "Veg Momos Fried (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "piece",
+    "default_serving_size": 6,
+    "macros_per_serving": {
+      "calories": 420,
+      "protein": 9,
+      "carbs": 51,
+      "fat": 20,
+      "fiber": 3
+    },
+    "tags": [
+      "snack",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_844",
+    "name": "Samosa (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "piece",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 260,
+      "protein": 4,
+      "carbs": 32,
+      "fat": 13,
+      "fiber": 4
+    },
+    "tags": [
+      "snack",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_845",
+    "name": "Kachori (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "piece",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 280,
+      "protein": 6,
+      "carbs": 34,
+      "fat": 14,
+      "fiber": 4
+    },
+    "tags": [
+      "snack",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_846",
+    "name": "Pani Puri / Golgappa (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "plate",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 180,
+      "protein": 4,
+      "carbs": 32,
+      "fat": 5,
+      "fiber": 3
+    },
+    "tags": [
+      "snack",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_847",
+    "name": "Dahi Puri (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "plate",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 300,
+      "protein": 8,
+      "carbs": 40,
+      "fat": 12,
+      "fiber": 4
+    },
+    "tags": [
+      "snack",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_848",
+    "name": "Bhel Puri (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 220,
+      "protein": 5,
+      "carbs": 38,
+      "fat": 6,
+      "fiber": 4
+    },
+    "tags": [
+      "snack",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_849",
+    "name": "Aloo Tikki (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "piece",
+    "default_serving_size": 2,
+    "macros_per_serving": {
+      "calories": 260,
+      "protein": 5,
+      "carbs": 38,
+      "fat": 10,
+      "fiber": 5
+    },
+    "tags": [
+      "snack",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_850",
+    "name": "Pav Bhaji (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "plate",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 450,
+      "protein": 10,
+      "carbs": 58,
+      "fat": 19,
+      "fiber": 8
+    },
+    "tags": [
+      "dinner",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_851",
+    "name": "Veg Burger (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "burger",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 420,
+      "protein": 12,
+      "carbs": 55,
+      "fat": 17,
+      "fiber": 6
+    },
+    "tags": [
+      "lunch",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_852",
+    "name": "Veg Pizza (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "slice",
+    "default_serving_size": 2,
+    "macros_per_serving": {
+      "calories": 500,
+      "protein": 20,
+      "carbs": 60,
+      "fat": 20,
+      "fiber": 4
+    },
+    "tags": [
+      "dinner",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_853",
+    "name": "Vegetable Pasta (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 360,
+      "protein": 12,
+      "carbs": 55,
+      "fat": 9,
+      "fiber": 6
+    },
+    "tags": [
+      "dinner",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_854",
+    "name": "Paneer Wrap / Roll (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "roll",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 420,
+      "protein": 19,
+      "carbs": 48,
+      "fat": 17,
+      "fiber": 5
+    },
+    "tags": [
+      "lunch",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_855",
+    "name": "Veg Frankie (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "roll",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 350,
+      "protein": 8,
+      "carbs": 48,
+      "fat": 12,
+      "fiber": 4
+    },
+    "tags": [
+      "lunch",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_856",
+    "name": "Veg Pulao with Raita (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "plate",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 390,
+      "protein": 11,
+      "carbs": 55,
+      "fat": 12,
+      "fiber": 5
+    },
+    "tags": [
+      "lunch",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_857",
+    "name": "Raita (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 90,
+      "protein": 4,
+      "carbs": 8,
+      "fat": 4,
+      "fiber": 1
+    },
+    "tags": [
+      "side",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_858",
+    "name": "Green Salad (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 60,
+      "protein": 2,
+      "carbs": 12,
+      "fat": 1,
+      "fiber": 4
+    },
+    "tags": [
+      "side",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_859",
+    "name": "Kheer / Rice Pudding (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 260,
+      "protein": 7,
+      "carbs": 42,
+      "fat": 7,
+      "fiber": 1
+    },
+    "tags": [
+      "dessert",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_860",
+    "name": "Gulab Jamun (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "piece",
+    "default_serving_size": 2,
+    "macros_per_serving": {
+      "calories": 300,
+      "protein": 5,
+      "carbs": 45,
+      "fat": 12,
+      "fiber": 0
+    },
+    "tags": [
+      "dessert",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_861",
+    "name": "Jalebi (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "piece",
+    "default_serving_size": 2,
+    "macros_per_serving": {
+      "calories": 300,
+      "protein": 3,
+      "carbs": 48,
+      "fat": 11,
+      "fiber": 0
+    },
+    "tags": [
+      "dessert",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_862",
+    "name": "Ice Cream (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "scoop",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 140,
+      "protein": 3,
+      "carbs": 17,
+      "fat": 7,
+      "fiber": 0
+    },
+    "tags": [
+      "dessert",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_863",
+    "name": "Masala Chai with Milk (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "ml",
+    "default_serving_size": 150,
+    "macros_per_serving": {
+      "calories": 90,
+      "protein": 3,
+      "carbs": 12,
+      "fat": 3,
+      "fiber": 0
+    },
+    "tags": [
+      "drink",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_864",
+    "name": "Coffee with Milk (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "ml",
+    "default_serving_size": 200,
+    "macros_per_serving": {
+      "calories": 100,
+      "protein": 4,
+      "carbs": 12,
+      "fat": 3,
+      "fiber": 0
+    },
+    "tags": [
+      "drink",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_865",
+    "name": "Sweet Lassi (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "ml",
+    "default_serving_size": 250,
+    "macros_per_serving": {
+      "calories": 190,
+      "protein": 6,
+      "carbs": 30,
+      "fat": 5,
+      "fiber": 0
+    },
+    "tags": [
+      "drink",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_866",
+    "name": "Nimbu Pani Sweetened (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "ml",
+    "default_serving_size": 250,
+    "macros_per_serving": {
+      "calories": 80,
+      "protein": 0,
+      "carbs": 20,
+      "fat": 0,
+      "fiber": 0
+    },
+    "tags": [
+      "drink",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_867",
+    "name": "Mango Lassi (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "ml",
+    "default_serving_size": 250,
+    "macros_per_serving": {
+      "calories": 220,
+      "protein": 6,
+      "carbs": 36,
+      "fat": 6,
+      "fiber": 1
+    },
+    "tags": [
+      "drink",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_868",
+    "name": "Fresh Fruit Smoothie (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "ml",
+    "default_serving_size": 300,
+    "macros_per_serving": {
+      "calories": 210,
+      "protein": 7,
+      "carbs": 38,
+      "fat": 5,
+      "fiber": 4
+    },
+    "tags": [
+      "drink",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_869",
+    "name": "Vegetable Soup (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 90,
+      "protein": 3,
+      "carbs": 14,
+      "fat": 2,
+      "fiber": 3
+    },
+    "tags": [
+      "dinner",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_870",
+    "name": "Tomato Soup (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 100,
+      "protein": 3,
+      "carbs": 17,
+      "fat": 2,
+      "fiber": 3
+    },
+    "tags": [
+      "dinner",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_871",
+    "name": "Paneer Salad (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 280,
+      "protein": 21,
+      "carbs": 18,
+      "fat": 14,
+      "fiber": 5
+    },
+    "tags": [
+      "lunch",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_872",
+    "name": "Tofu Stir Fry (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "bowl",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 260,
+      "protein": 17,
+      "carbs": 23,
+      "fat": 12,
+      "fiber": 7
+    },
+    "tags": [
+      "dinner",
+      "estimate"
+    ]
+  },
+  {
+    "id": "food_873",
+    "name": "Vegetarian Thali (Estimate) *",
+    "type": "standard_estimate",
+    "serving_unit": "plate",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 700,
+      "protein": 22,
+      "carbs": 100,
+      "fat": 24,
+      "fiber": 15
+    },
+    "tags": [
+      "lunch",
+      "estimate"
+    ]
+  }
 ]

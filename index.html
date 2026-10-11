@@ -39,7 +39,7 @@
     <main id="mainContent" class="main-content" aria-live="polite"></main>
 
     <nav class="bottom-nav" aria-label="Main navigation">
-      <button class="bottom-tab" data-action="tab" data-tab="analyze"><span class="bottom-icon">▥</span><span>Analyze</span></button>
+      <button class="bottom-tab" data-action="tab" data-tab="dashboard"><span class="bottom-icon">▥</span><span>Dashboard</span></button>
       <button class="center-add" id="globalAdd" aria-label="Add entry"><span>＋</span></button>
       <button class="bottom-tab active" data-action="tab" data-tab="timeline"><span class="bottom-icon">◷</span><span>Timeline</span></button>
     </nav>
@@ -47,6 +47,8 @@
   </div>
   <div id="modalRoot"></div>
   <div id="toastRegion" class="toast-region" aria-live="polite"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

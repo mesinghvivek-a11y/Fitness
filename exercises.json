@@ -1,27 +1,2270 @@
 [
-  {"id":"ex_101","name":"Barbell Bench Press","category":"Compound","primary_muscle":"Chest","secondary_muscles":["Triceps","Anterior Deltoids"],"equipment":"Barbell","default_rest_sec":120,"met_value":6.0,"tracking_metrics":["weight","reps"]},
-  {"id":"ex_102","name":"Barbell Back Squat","category":"Compound","primary_muscle":"Legs/Quadriceps","secondary_muscles":["Glutes","Lower Back","Hamstrings"],"equipment":"Barbell","default_rest_sec":150,"met_value":6.0,"tracking_metrics":["weight","reps"]},
-  {"id":"ex_103","name":"Romanian Deadlift","category":"Compound","primary_muscle":"Hamstrings","secondary_muscles":["Glutes","Lower Back"],"equipment":"Barbell","default_rest_sec":150,"met_value":6.0,"tracking_metrics":["weight","reps"]},
-  {"id":"ex_104","name":"Lat Pulldown","category":"Compound","primary_muscle":"Back","secondary_muscles":["Biceps"],"equipment":"Cable Machine","default_rest_sec":90,"met_value":5.0,"tracking_metrics":["weight","reps"]},
-  {"id":"ex_105","name":"Seated Cable Row","category":"Compound","primary_muscle":"Back","secondary_muscles":["Biceps","Rear Deltoids"],"equipment":"Cable Machine","default_rest_sec":90,"met_value":5.0,"tracking_metrics":["weight","reps"]},
-  {"id":"ex_106","name":"Overhead Press","category":"Compound","primary_muscle":"Shoulders","secondary_muscles":["Triceps"],"equipment":"Barbell","default_rest_sec":120,"met_value":5.5,"tracking_metrics":["weight","reps"]},
-  {"id":"ex_107","name":"Dumbbell Incline Press","category":"Compound","primary_muscle":"Chest","secondary_muscles":["Triceps","Anterior Deltoids"],"equipment":"Dumbbells","default_rest_sec":90,"met_value":5.0,"tracking_metrics":["weight","reps"]},
-  {"id":"ex_108","name":"Leg Press","category":"Compound","primary_muscle":"Legs/Quadriceps","secondary_muscles":["Glutes"],"equipment":"Machine","default_rest_sec":120,"met_value":5.5,"tracking_metrics":["weight","reps"]},
-  {"id":"ex_109","name":"Dumbbell Romanian Deadlift","category":"Compound","primary_muscle":"Hamstrings","secondary_muscles":["Glutes"],"equipment":"Dumbbells","default_rest_sec":90,"met_value":5.0,"tracking_metrics":["weight","reps"]},
-  {"id":"ex_201","name":"Dumbbell Bicep Curl","category":"Isolation","primary_muscle":"Arms/Biceps","secondary_muscles":["Forearms"],"equipment":"Dumbbells","default_rest_sec":60,"met_value":3.5,"tracking_metrics":["weight","reps"]},
-  {"id":"ex_202","name":"Triceps Rope Pushdown","category":"Isolation","primary_muscle":"Arms/Triceps","secondary_muscles":[],"equipment":"Cable Machine","default_rest_sec":60,"met_value":3.5,"tracking_metrics":["weight","reps"]},
-  {"id":"ex_203","name":"Lateral Raise","category":"Isolation","primary_muscle":"Shoulders","secondary_muscles":[],"equipment":"Dumbbells","default_rest_sec":60,"met_value":3.5,"tracking_metrics":["weight","reps"]},
-  {"id":"ex_204","name":"Leg Curl","category":"Isolation","primary_muscle":"Hamstrings","secondary_muscles":[],"equipment":"Machine","default_rest_sec":60,"met_value":3.5,"tracking_metrics":["weight","reps"]},
-  {"id":"ex_205","name":"Dumbbell Fly","category":"Isolation","primary_muscle":"Chest","secondary_muscles":["Anterior Deltoids"],"equipment":"Dumbbells","default_rest_sec":60,"met_value":3.5,"tracking_metrics":["weight","reps"]},
-  {"id":"ex_301","name":"Forearm Plank","category":"Core/Isometric","primary_muscle":"Core","secondary_muscles":["Shoulders"],"equipment":"Bodyweight","default_rest_sec":45,"met_value":3.0,"tracking_metrics":["duration"]},
-  {"id":"ex_302","name":"Hanging Knee Raise","category":"Core","primary_muscle":"Core","secondary_muscles":[],"equipment":"Pull-up Bar","default_rest_sec":45,"met_value":3.5,"tracking_metrics":["reps"]},
-  {"id":"ex_303","name":"Russian Twist","category":"Core","primary_muscle":"Core","secondary_muscles":[],"equipment":"Bodyweight","default_rest_sec":45,"met_value":3.0,"tracking_metrics":["reps"]},
-  {"id":"ex_401","name":"Treadmill Walk (Incline)","category":"Cardio","primary_muscle":"Full Body","secondary_muscles":[],"equipment":"Treadmill","default_rest_sec":0,"met_value":5.0,"tracking_metrics":["duration","distance","incline"]},
-  {"id":"ex_402","name":"Stationary Cycling","category":"Cardio","primary_muscle":"Full Body","secondary_muscles":[],"equipment":"Exercise Bike","default_rest_sec":0,"met_value":6.0,"tracking_metrics":["duration","distance"]},
-  {"id":"ex_403","name":"Jogging","category":"Cardio","primary_muscle":"Full Body","secondary_muscles":[],"equipment":"Outdoor","default_rest_sec":0,"met_value":7.0,"tracking_metrics":["duration","distance"]},
-  {"id":"ex_404","name":"Rowing Machine","category":"Cardio","primary_muscle":"Full Body","secondary_muscles":[],"equipment":"Rowing Machine","default_rest_sec":0,"met_value":7.0,"tracking_metrics":["duration","distance"]},
-  {"id":"ex_405","name":"Jump Rope","category":"Cardio","primary_muscle":"Full Body","secondary_muscles":[],"equipment":"Rope","default_rest_sec":0,"met_value":8.0,"tracking_metrics":["duration"]},
-  {"id":"ex_501","name":"Push-up","category":"Bodyweight","primary_muscle":"Chest","secondary_muscles":["Triceps","Core"],"equipment":"Bodyweight","default_rest_sec":60,"met_value":4.0,"tracking_metrics":["reps"]},
-  {"id":"ex_502","name":"Pull-up","category":"Bodyweight","primary_muscle":"Back","secondary_muscles":["Biceps"],"equipment":"Pull-up Bar","default_rest_sec":90,"met_value":5.0,"tracking_metrics":["reps"]},
-  {"id":"ex_503","name":"Walking Lunge","category":"Bodyweight","primary_muscle":"Legs/Quadriceps","secondary_muscles":["Glutes","Core"],"equipment":"Bodyweight","default_rest_sec":60,"met_value":4.0,"tracking_metrics":["reps"]}
+  {
+    "id": "ex_101",
+    "name": "Barbell Bench Press",
+    "category": "Compound",
+    "primary_muscle": "Chest",
+    "secondary_muscles": [
+      "Triceps",
+      "Anterior Deltoids"
+    ],
+    "equipment": "Barbell",
+    "default_rest_sec": 120,
+    "met_value": 6.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_102",
+    "name": "Barbell Back Squat",
+    "category": "Compound",
+    "primary_muscle": "Legs/Quadriceps",
+    "secondary_muscles": [
+      "Glutes",
+      "Lower Back",
+      "Hamstrings"
+    ],
+    "equipment": "Barbell",
+    "default_rest_sec": 150,
+    "met_value": 6.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_103",
+    "name": "Romanian Deadlift",
+    "category": "Compound",
+    "primary_muscle": "Hamstrings",
+    "secondary_muscles": [
+      "Glutes",
+      "Lower Back"
+    ],
+    "equipment": "Barbell",
+    "default_rest_sec": 150,
+    "met_value": 6.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_104",
+    "name": "Lat Pulldown",
+    "category": "Compound",
+    "primary_muscle": "Back",
+    "secondary_muscles": [
+      "Biceps"
+    ],
+    "equipment": "Cable Machine",
+    "default_rest_sec": 90,
+    "met_value": 5.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_105",
+    "name": "Seated Cable Row",
+    "category": "Compound",
+    "primary_muscle": "Back",
+    "secondary_muscles": [
+      "Biceps",
+      "Rear Deltoids"
+    ],
+    "equipment": "Cable Machine",
+    "default_rest_sec": 90,
+    "met_value": 5.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_106",
+    "name": "Overhead Press",
+    "category": "Compound",
+    "primary_muscle": "Shoulders",
+    "secondary_muscles": [
+      "Triceps"
+    ],
+    "equipment": "Barbell",
+    "default_rest_sec": 120,
+    "met_value": 5.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_107",
+    "name": "Dumbbell Incline Press",
+    "category": "Compound",
+    "primary_muscle": "Chest",
+    "secondary_muscles": [
+      "Triceps",
+      "Anterior Deltoids"
+    ],
+    "equipment": "Dumbbells",
+    "default_rest_sec": 90,
+    "met_value": 5.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_108",
+    "name": "Leg Press",
+    "category": "Compound",
+    "primary_muscle": "Legs/Quadriceps",
+    "secondary_muscles": [
+      "Glutes"
+    ],
+    "equipment": "Machine",
+    "default_rest_sec": 120,
+    "met_value": 5.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_109",
+    "name": "Dumbbell Romanian Deadlift",
+    "category": "Compound",
+    "primary_muscle": "Hamstrings",
+    "secondary_muscles": [
+      "Glutes"
+    ],
+    "equipment": "Dumbbells",
+    "default_rest_sec": 90,
+    "met_value": 5.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_201",
+    "name": "Dumbbell Bicep Curl",
+    "category": "Isolation",
+    "primary_muscle": "Arms/Biceps",
+    "secondary_muscles": [
+      "Forearms"
+    ],
+    "equipment": "Dumbbells",
+    "default_rest_sec": 60,
+    "met_value": 3.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_202",
+    "name": "Triceps Rope Pushdown",
+    "category": "Isolation",
+    "primary_muscle": "Arms/Triceps",
+    "secondary_muscles": [],
+    "equipment": "Cable Machine",
+    "default_rest_sec": 60,
+    "met_value": 3.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_203",
+    "name": "Lateral Raise",
+    "category": "Isolation",
+    "primary_muscle": "Shoulders",
+    "secondary_muscles": [],
+    "equipment": "Dumbbells",
+    "default_rest_sec": 60,
+    "met_value": 3.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_204",
+    "name": "Leg Curl",
+    "category": "Isolation",
+    "primary_muscle": "Hamstrings",
+    "secondary_muscles": [],
+    "equipment": "Machine",
+    "default_rest_sec": 60,
+    "met_value": 3.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_205",
+    "name": "Dumbbell Fly",
+    "category": "Isolation",
+    "primary_muscle": "Chest",
+    "secondary_muscles": [
+      "Anterior Deltoids"
+    ],
+    "equipment": "Dumbbells",
+    "default_rest_sec": 60,
+    "met_value": 3.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_301",
+    "name": "Forearm Plank",
+    "category": "Core/Isometric",
+    "primary_muscle": "Core",
+    "secondary_muscles": [
+      "Shoulders"
+    ],
+    "equipment": "Bodyweight",
+    "default_rest_sec": 45,
+    "met_value": 3.0,
+    "tracking_metrics": [
+      "duration"
+    ]
+  },
+  {
+    "id": "ex_302",
+    "name": "Hanging Knee Raise",
+    "category": "Core",
+    "primary_muscle": "Core",
+    "secondary_muscles": [],
+    "equipment": "Pull-up Bar",
+    "default_rest_sec": 45,
+    "met_value": 3.5,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_303",
+    "name": "Russian Twist",
+    "category": "Core",
+    "primary_muscle": "Core",
+    "secondary_muscles": [],
+    "equipment": "Bodyweight",
+    "default_rest_sec": 45,
+    "met_value": 3.0,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_401",
+    "name": "Treadmill Walk (Incline)",
+    "category": "Cardio",
+    "primary_muscle": "Full Body",
+    "secondary_muscles": [],
+    "equipment": "Treadmill",
+    "default_rest_sec": 0,
+    "met_value": 5.0,
+    "tracking_metrics": [
+      "duration",
+      "distance",
+      "incline"
+    ]
+  },
+  {
+    "id": "ex_402",
+    "name": "Stationary Cycling",
+    "category": "Cardio",
+    "primary_muscle": "Full Body",
+    "secondary_muscles": [],
+    "equipment": "Exercise Bike",
+    "default_rest_sec": 0,
+    "met_value": 6.0,
+    "tracking_metrics": [
+      "duration",
+      "distance"
+    ]
+  },
+  {
+    "id": "ex_403",
+    "name": "Jogging",
+    "category": "Cardio",
+    "primary_muscle": "Full Body",
+    "secondary_muscles": [],
+    "equipment": "Outdoor",
+    "default_rest_sec": 0,
+    "met_value": 7.0,
+    "tracking_metrics": [
+      "duration",
+      "distance"
+    ]
+  },
+  {
+    "id": "ex_404",
+    "name": "Rowing Machine",
+    "category": "Cardio",
+    "primary_muscle": "Full Body",
+    "secondary_muscles": [],
+    "equipment": "Rowing Machine",
+    "default_rest_sec": 0,
+    "met_value": 7.0,
+    "tracking_metrics": [
+      "duration",
+      "distance"
+    ]
+  },
+  {
+    "id": "ex_405",
+    "name": "Jump Rope",
+    "category": "Cardio",
+    "primary_muscle": "Full Body",
+    "secondary_muscles": [],
+    "equipment": "Rope",
+    "default_rest_sec": 0,
+    "met_value": 8.0,
+    "tracking_metrics": [
+      "duration"
+    ]
+  },
+  {
+    "id": "ex_501",
+    "name": "Push-up",
+    "category": "Bodyweight",
+    "primary_muscle": "Chest",
+    "secondary_muscles": [
+      "Triceps",
+      "Core"
+    ],
+    "equipment": "Bodyweight",
+    "default_rest_sec": 60,
+    "met_value": 4.0,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_502",
+    "name": "Pull-up",
+    "category": "Bodyweight",
+    "primary_muscle": "Back",
+    "secondary_muscles": [
+      "Biceps"
+    ],
+    "equipment": "Pull-up Bar",
+    "default_rest_sec": 90,
+    "met_value": 5.0,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_503",
+    "name": "Walking Lunge",
+    "category": "Bodyweight",
+    "primary_muscle": "Legs/Quadriceps",
+    "secondary_muscles": [
+      "Glutes",
+      "Core"
+    ],
+    "equipment": "Bodyweight",
+    "default_rest_sec": 60,
+    "met_value": 4.0,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_600",
+    "name": "Flat Dumbbell Bench Press",
+    "category": "Compound",
+    "primary_muscle": "Chest",
+    "secondary_muscles": [
+      "Triceps",
+      "Anterior Deltoids"
+    ],
+    "equipment": "Dumbbells",
+    "default_rest_sec": 90,
+    "met_value": 5.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_601",
+    "name": "Smith Machine Bench Press",
+    "category": "Compound",
+    "primary_muscle": "Chest",
+    "secondary_muscles": [
+      "Triceps",
+      "Anterior Deltoids"
+    ],
+    "equipment": "Smith Machine",
+    "default_rest_sec": 90,
+    "met_value": 5.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_602",
+    "name": "Close-Grip Bench Press",
+    "category": "Compound",
+    "primary_muscle": "Triceps",
+    "secondary_muscles": [
+      "Chest",
+      "Anterior Deltoids"
+    ],
+    "equipment": "Barbell",
+    "default_rest_sec": 90,
+    "met_value": 5.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_603",
+    "name": "Decline Barbell Bench Press",
+    "category": "Compound",
+    "primary_muscle": "Chest",
+    "secondary_muscles": [
+      "Triceps"
+    ],
+    "equipment": "Barbell",
+    "default_rest_sec": 90,
+    "met_value": 5.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_604",
+    "name": "Chest Press Machine",
+    "category": "Compound",
+    "primary_muscle": "Chest",
+    "secondary_muscles": [
+      "Triceps",
+      "Anterior Deltoids"
+    ],
+    "equipment": "Machine",
+    "default_rest_sec": 90,
+    "met_value": 5.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_605",
+    "name": "Cable Chest Fly",
+    "category": "Isolation",
+    "primary_muscle": "Chest",
+    "secondary_muscles": [
+      "Anterior Deltoids"
+    ],
+    "equipment": "Cable Machine",
+    "default_rest_sec": 60,
+    "met_value": 3.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_606",
+    "name": "Pec Deck Fly",
+    "category": "Isolation",
+    "primary_muscle": "Chest",
+    "secondary_muscles": [
+      "Anterior Deltoids"
+    ],
+    "equipment": "Machine",
+    "default_rest_sec": 60,
+    "met_value": 3.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_607",
+    "name": "Incline Cable Fly",
+    "category": "Isolation",
+    "primary_muscle": "Chest",
+    "secondary_muscles": [
+      "Anterior Deltoids"
+    ],
+    "equipment": "Cable Machine",
+    "default_rest_sec": 60,
+    "met_value": 3.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_608",
+    "name": "Pull-up (Assisted)",
+    "category": "Compound",
+    "primary_muscle": "Back",
+    "secondary_muscles": [
+      "Biceps"
+    ],
+    "equipment": "Assisted Machine",
+    "default_rest_sec": 90,
+    "met_value": 5.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_609",
+    "name": "Chin-up",
+    "category": "Compound",
+    "primary_muscle": "Back",
+    "secondary_muscles": [
+      "Biceps"
+    ],
+    "equipment": "Pull-up Bar",
+    "default_rest_sec": 90,
+    "met_value": 5.0,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_610",
+    "name": "Barbell Bent-Over Row",
+    "category": "Compound",
+    "primary_muscle": "Back",
+    "secondary_muscles": [
+      "Biceps",
+      "Rear Deltoids"
+    ],
+    "equipment": "Barbell",
+    "default_rest_sec": 90,
+    "met_value": 5.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_611",
+    "name": "Pendlay Row",
+    "category": "Compound",
+    "primary_muscle": "Back",
+    "secondary_muscles": [
+      "Biceps",
+      "Rear Deltoids"
+    ],
+    "equipment": "Barbell",
+    "default_rest_sec": 120,
+    "met_value": 5.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_612",
+    "name": "T-Bar Row",
+    "category": "Compound",
+    "primary_muscle": "Back",
+    "secondary_muscles": [
+      "Biceps"
+    ],
+    "equipment": "T-Bar Machine",
+    "default_rest_sec": 90,
+    "met_value": 5.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_613",
+    "name": "Chest-Supported Row",
+    "category": "Compound",
+    "primary_muscle": "Back",
+    "secondary_muscles": [
+      "Biceps"
+    ],
+    "equipment": "Machine",
+    "default_rest_sec": 90,
+    "met_value": 5.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_614",
+    "name": "Single-Arm Dumbbell Row",
+    "category": "Compound",
+    "primary_muscle": "Back",
+    "secondary_muscles": [
+      "Biceps"
+    ],
+    "equipment": "Dumbbells",
+    "default_rest_sec": 75,
+    "met_value": 4.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_615",
+    "name": "Straight-Arm Pulldown",
+    "category": "Isolation",
+    "primary_muscle": "Back",
+    "secondary_muscles": [
+      "Lats"
+    ],
+    "equipment": "Cable Machine",
+    "default_rest_sec": 60,
+    "met_value": 3.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_616",
+    "name": "Face Pull",
+    "category": "Isolation",
+    "primary_muscle": "Rear Deltoids",
+    "secondary_muscles": [
+      "Traps",
+      "Rotator Cuff"
+    ],
+    "equipment": "Cable Machine",
+    "default_rest_sec": 60,
+    "met_value": 3.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_617",
+    "name": "Reverse Pec Deck",
+    "category": "Isolation",
+    "primary_muscle": "Rear Deltoids",
+    "secondary_muscles": [
+      "Upper Back"
+    ],
+    "equipment": "Machine",
+    "default_rest_sec": 60,
+    "met_value": 3.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_618",
+    "name": "Dumbbell Shoulder Press",
+    "category": "Compound",
+    "primary_muscle": "Shoulders",
+    "secondary_muscles": [
+      "Triceps"
+    ],
+    "equipment": "Dumbbells",
+    "default_rest_sec": 90,
+    "met_value": 5.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_619",
+    "name": "Arnold Press",
+    "category": "Compound",
+    "primary_muscle": "Shoulders",
+    "secondary_muscles": [
+      "Triceps"
+    ],
+    "equipment": "Dumbbells",
+    "default_rest_sec": 90,
+    "met_value": 4.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_620",
+    "name": "Machine Shoulder Press",
+    "category": "Compound",
+    "primary_muscle": "Shoulders",
+    "secondary_muscles": [
+      "Triceps"
+    ],
+    "equipment": "Machine",
+    "default_rest_sec": 90,
+    "met_value": 4.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_621",
+    "name": "Front Raise",
+    "category": "Isolation",
+    "primary_muscle": "Shoulders",
+    "secondary_muscles": [
+      "Anterior Deltoids"
+    ],
+    "equipment": "Dumbbells",
+    "default_rest_sec": 45,
+    "met_value": 3.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_622",
+    "name": "Rear Delt Dumbbell Fly",
+    "category": "Isolation",
+    "primary_muscle": "Rear Deltoids",
+    "secondary_muscles": [
+      "Upper Back"
+    ],
+    "equipment": "Dumbbells",
+    "default_rest_sec": 45,
+    "met_value": 3.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_623",
+    "name": "Upright Row",
+    "category": "Compound",
+    "primary_muscle": "Shoulders",
+    "secondary_muscles": [
+      "Traps"
+    ],
+    "equipment": "Barbell",
+    "default_rest_sec": 60,
+    "met_value": 4.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_624",
+    "name": "Barbell Deadlift",
+    "category": "Compound",
+    "primary_muscle": "Posterior Chain",
+    "secondary_muscles": [
+      "Glutes",
+      "Hamstrings",
+      "Back"
+    ],
+    "equipment": "Barbell",
+    "default_rest_sec": 150,
+    "met_value": 6.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_625",
+    "name": "Sumo Deadlift",
+    "category": "Compound",
+    "primary_muscle": "Posterior Chain",
+    "secondary_muscles": [
+      "Glutes",
+      "Adductors"
+    ],
+    "equipment": "Barbell",
+    "default_rest_sec": 150,
+    "met_value": 6.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_626",
+    "name": "Trap Bar Deadlift",
+    "category": "Compound",
+    "primary_muscle": "Posterior Chain",
+    "secondary_muscles": [
+      "Glutes",
+      "Quadriceps"
+    ],
+    "equipment": "Trap Bar",
+    "default_rest_sec": 150,
+    "met_value": 6.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_627",
+    "name": "Front Squat",
+    "category": "Compound",
+    "primary_muscle": "Quadriceps",
+    "secondary_muscles": [
+      "Core",
+      "Glutes"
+    ],
+    "equipment": "Barbell",
+    "default_rest_sec": 150,
+    "met_value": 5.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_628",
+    "name": "Goblet Squat",
+    "category": "Compound",
+    "primary_muscle": "Quadriceps",
+    "secondary_muscles": [
+      "Glutes",
+      "Core"
+    ],
+    "equipment": "Dumbbell",
+    "default_rest_sec": 90,
+    "met_value": 4.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_629",
+    "name": "Bulgarian Split Squat",
+    "category": "Compound",
+    "primary_muscle": "Legs",
+    "secondary_muscles": [
+      "Glutes",
+      "Quadriceps"
+    ],
+    "equipment": "Dumbbells",
+    "default_rest_sec": 90,
+    "met_value": 5.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_630",
+    "name": "Hack Squat",
+    "category": "Compound",
+    "primary_muscle": "Quadriceps",
+    "secondary_muscles": [
+      "Glutes"
+    ],
+    "equipment": "Machine",
+    "default_rest_sec": 120,
+    "met_value": 5.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_631",
+    "name": "Smith Machine Squat",
+    "category": "Compound",
+    "primary_muscle": "Quadriceps",
+    "secondary_muscles": [
+      "Glutes"
+    ],
+    "equipment": "Smith Machine",
+    "default_rest_sec": 120,
+    "met_value": 5.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_632",
+    "name": "Walking Dumbbell Lunge",
+    "category": "Compound",
+    "primary_muscle": "Legs",
+    "secondary_muscles": [
+      "Glutes",
+      "Core"
+    ],
+    "equipment": "Dumbbells",
+    "default_rest_sec": 75,
+    "met_value": 4.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_633",
+    "name": "Leg Extension",
+    "category": "Isolation",
+    "primary_muscle": "Quadriceps",
+    "secondary_muscles": [],
+    "equipment": "Machine",
+    "default_rest_sec": 60,
+    "met_value": 3.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_634",
+    "name": "Seated Leg Curl",
+    "category": "Isolation",
+    "primary_muscle": "Hamstrings",
+    "secondary_muscles": [],
+    "equipment": "Machine",
+    "default_rest_sec": 60,
+    "met_value": 3.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_635",
+    "name": "Lying Leg Curl",
+    "category": "Isolation",
+    "primary_muscle": "Hamstrings",
+    "secondary_muscles": [],
+    "equipment": "Machine",
+    "default_rest_sec": 60,
+    "met_value": 3.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_636",
+    "name": "Standing Calf Raise",
+    "category": "Isolation",
+    "primary_muscle": "Calves",
+    "secondary_muscles": [],
+    "equipment": "Machine",
+    "default_rest_sec": 45,
+    "met_value": 3.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_637",
+    "name": "Seated Calf Raise",
+    "category": "Isolation",
+    "primary_muscle": "Calves",
+    "secondary_muscles": [],
+    "equipment": "Machine",
+    "default_rest_sec": 45,
+    "met_value": 3.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_638",
+    "name": "Hip Thrust",
+    "category": "Compound",
+    "primary_muscle": "Glutes",
+    "secondary_muscles": [
+      "Hamstrings"
+    ],
+    "equipment": "Barbell",
+    "default_rest_sec": 90,
+    "met_value": 4.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_639",
+    "name": "Glute Bridge",
+    "category": "Compound",
+    "primary_muscle": "Glutes",
+    "secondary_muscles": [
+      "Core"
+    ],
+    "equipment": "Bodyweight",
+    "default_rest_sec": 60,
+    "met_value": 3.0,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_640",
+    "name": "Cable Kickback",
+    "category": "Isolation",
+    "primary_muscle": "Glutes",
+    "secondary_muscles": [],
+    "equipment": "Cable Machine",
+    "default_rest_sec": 45,
+    "met_value": 3.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_641",
+    "name": "Hip Abduction Machine",
+    "category": "Isolation",
+    "primary_muscle": "Glutes",
+    "secondary_muscles": [
+      "Hip Abductors"
+    ],
+    "equipment": "Machine",
+    "default_rest_sec": 45,
+    "met_value": 3.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_642",
+    "name": "Hip Adduction Machine",
+    "category": "Isolation",
+    "primary_muscle": "Adductors",
+    "secondary_muscles": [],
+    "equipment": "Machine",
+    "default_rest_sec": 45,
+    "met_value": 3.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_643",
+    "name": "Good Morning",
+    "category": "Compound",
+    "primary_muscle": "Hamstrings",
+    "secondary_muscles": [
+      "Glutes",
+      "Lower Back"
+    ],
+    "equipment": "Barbell",
+    "default_rest_sec": 90,
+    "met_value": 4.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_644",
+    "name": "Back Extension",
+    "category": "Isolation",
+    "primary_muscle": "Lower Back",
+    "secondary_muscles": [
+      "Glutes",
+      "Hamstrings"
+    ],
+    "equipment": "Bench",
+    "default_rest_sec": 60,
+    "met_value": 3.0,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_645",
+    "name": "Reverse Hyperextension",
+    "category": "Isolation",
+    "primary_muscle": "Lower Back",
+    "secondary_muscles": [
+      "Glutes"
+    ],
+    "equipment": "Machine",
+    "default_rest_sec": 60,
+    "met_value": 3.0,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_646",
+    "name": "EZ-Bar Curl",
+    "category": "Isolation",
+    "primary_muscle": "Biceps",
+    "secondary_muscles": [
+      "Forearms"
+    ],
+    "equipment": "EZ Bar",
+    "default_rest_sec": 60,
+    "met_value": 3.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_647",
+    "name": "Barbell Curl",
+    "category": "Isolation",
+    "primary_muscle": "Biceps",
+    "secondary_muscles": [
+      "Forearms"
+    ],
+    "equipment": "Barbell",
+    "default_rest_sec": 60,
+    "met_value": 3.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_648",
+    "name": "Hammer Curl",
+    "category": "Isolation",
+    "primary_muscle": "Biceps",
+    "secondary_muscles": [
+      "Brachialis",
+      "Forearms"
+    ],
+    "equipment": "Dumbbells",
+    "default_rest_sec": 60,
+    "met_value": 3.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_649",
+    "name": "Preacher Curl",
+    "category": "Isolation",
+    "primary_muscle": "Biceps",
+    "secondary_muscles": [],
+    "equipment": "EZ Bar",
+    "default_rest_sec": 60,
+    "met_value": 3.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_650",
+    "name": "Cable Bicep Curl",
+    "category": "Isolation",
+    "primary_muscle": "Biceps",
+    "secondary_muscles": [],
+    "equipment": "Cable Machine",
+    "default_rest_sec": 60,
+    "met_value": 3.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_651",
+    "name": "Concentration Curl",
+    "category": "Isolation",
+    "primary_muscle": "Biceps",
+    "secondary_muscles": [],
+    "equipment": "Dumbbells",
+    "default_rest_sec": 45,
+    "met_value": 3.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_652",
+    "name": "Overhead Triceps Extension",
+    "category": "Isolation",
+    "primary_muscle": "Triceps",
+    "secondary_muscles": [],
+    "equipment": "Dumbbells",
+    "default_rest_sec": 60,
+    "met_value": 3.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_653",
+    "name": "Skull Crusher",
+    "category": "Isolation",
+    "primary_muscle": "Triceps",
+    "secondary_muscles": [],
+    "equipment": "EZ Bar",
+    "default_rest_sec": 60,
+    "met_value": 3.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_654",
+    "name": "Dumbbell Kickback",
+    "category": "Isolation",
+    "primary_muscle": "Triceps",
+    "secondary_muscles": [],
+    "equipment": "Dumbbells",
+    "default_rest_sec": 45,
+    "met_value": 3.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_655",
+    "name": "Dip (Assisted)",
+    "category": "Compound",
+    "primary_muscle": "Triceps",
+    "secondary_muscles": [
+      "Chest"
+    ],
+    "equipment": "Assisted Machine",
+    "default_rest_sec": 75,
+    "met_value": 4.0,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_656",
+    "name": "Parallel Bar Dip",
+    "category": "Compound",
+    "primary_muscle": "Triceps",
+    "secondary_muscles": [
+      "Chest",
+      "Shoulders"
+    ],
+    "equipment": "Dip Bars",
+    "default_rest_sec": 90,
+    "met_value": 4.5,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_657",
+    "name": "Wrist Curl",
+    "category": "Isolation",
+    "primary_muscle": "Forearms",
+    "secondary_muscles": [],
+    "equipment": "Barbell",
+    "default_rest_sec": 45,
+    "met_value": 2.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_658",
+    "name": "Reverse Wrist Curl",
+    "category": "Isolation",
+    "primary_muscle": "Forearms",
+    "secondary_muscles": [],
+    "equipment": "Barbell",
+    "default_rest_sec": 45,
+    "met_value": 2.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_659",
+    "name": "Farmer Carry",
+    "category": "Functional",
+    "primary_muscle": "Grip/Full Body",
+    "secondary_muscles": [
+      "Traps",
+      "Core"
+    ],
+    "equipment": "Dumbbells",
+    "default_rest_sec": 90,
+    "met_value": 5.0,
+    "tracking_metrics": [
+      "duration",
+      "distance",
+      "weight"
+    ]
+  },
+  {
+    "id": "ex_660",
+    "name": "Cable Crunch",
+    "category": "Isolation",
+    "primary_muscle": "Core",
+    "secondary_muscles": [],
+    "equipment": "Cable Machine",
+    "default_rest_sec": 45,
+    "met_value": 3.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_661",
+    "name": "Ab Wheel Rollout",
+    "category": "Core",
+    "primary_muscle": "Core",
+    "secondary_muscles": [
+      "Shoulders"
+    ],
+    "equipment": "Ab Wheel",
+    "default_rest_sec": 60,
+    "met_value": 3.5,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_662",
+    "name": "Bicycle Crunch",
+    "category": "Core",
+    "primary_muscle": "Core",
+    "secondary_muscles": [],
+    "equipment": "Bodyweight",
+    "default_rest_sec": 30,
+    "met_value": 3.0,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_663",
+    "name": "Dead Bug",
+    "category": "Core",
+    "primary_muscle": "Core",
+    "secondary_muscles": [],
+    "equipment": "Bodyweight",
+    "default_rest_sec": 30,
+    "met_value": 2.5,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_664",
+    "name": "Side Plank",
+    "category": "Core/Isometric",
+    "primary_muscle": "Core",
+    "secondary_muscles": [
+      "Obliques"
+    ],
+    "equipment": "Bodyweight",
+    "default_rest_sec": 45,
+    "met_value": 3.0,
+    "tracking_metrics": [
+      "duration"
+    ]
+  },
+  {
+    "id": "ex_665",
+    "name": "Hollow Body Hold",
+    "category": "Core/Isometric",
+    "primary_muscle": "Core",
+    "secondary_muscles": [],
+    "equipment": "Bodyweight",
+    "default_rest_sec": 45,
+    "met_value": 3.0,
+    "tracking_metrics": [
+      "duration"
+    ]
+  },
+  {
+    "id": "ex_666",
+    "name": "Mountain Climbers",
+    "category": "Conditioning",
+    "primary_muscle": "Full Body",
+    "secondary_muscles": [
+      "Core",
+      "Shoulders"
+    ],
+    "equipment": "Bodyweight",
+    "default_rest_sec": 30,
+    "met_value": 5.0,
+    "tracking_metrics": [
+      "duration"
+    ]
+  },
+  {
+    "id": "ex_667",
+    "name": "Burpee",
+    "category": "Conditioning",
+    "primary_muscle": "Full Body",
+    "secondary_muscles": [
+      "Chest",
+      "Legs",
+      "Core"
+    ],
+    "equipment": "Bodyweight",
+    "default_rest_sec": 60,
+    "met_value": 8.0,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_668",
+    "name": "Box Jump",
+    "category": "Plyometric",
+    "primary_muscle": "Legs",
+    "secondary_muscles": [
+      "Glutes",
+      "Calves"
+    ],
+    "equipment": "Plyo Box",
+    "default_rest_sec": 60,
+    "met_value": 7.0,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_669",
+    "name": "Jump Squat",
+    "category": "Plyometric",
+    "primary_muscle": "Legs",
+    "secondary_muscles": [
+      "Glutes",
+      "Core"
+    ],
+    "equipment": "Bodyweight",
+    "default_rest_sec": 45,
+    "met_value": 6.0,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_670",
+    "name": "Battle Ropes",
+    "category": "Conditioning",
+    "primary_muscle": "Full Body",
+    "secondary_muscles": [
+      "Shoulders",
+      "Core"
+    ],
+    "equipment": "Battle Ropes",
+    "default_rest_sec": 60,
+    "met_value": 8.0,
+    "tracking_metrics": [
+      "duration"
+    ]
+  },
+  {
+    "id": "ex_671",
+    "name": "Sled Push",
+    "category": "Conditioning",
+    "primary_muscle": "Full Body",
+    "secondary_muscles": [
+      "Legs",
+      "Core"
+    ],
+    "equipment": "Sled",
+    "default_rest_sec": 90,
+    "met_value": 8.0,
+    "tracking_metrics": [
+      "duration",
+      "distance"
+    ]
+  },
+  {
+    "id": "ex_672",
+    "name": "Elliptical Trainer",
+    "category": "Cardio",
+    "primary_muscle": "Full Body",
+    "secondary_muscles": [],
+    "equipment": "Elliptical",
+    "default_rest_sec": 0,
+    "met_value": 5.0,
+    "tracking_metrics": [
+      "duration",
+      "distance"
+    ]
+  },
+  {
+    "id": "ex_673",
+    "name": "Stair Climber",
+    "category": "Cardio",
+    "primary_muscle": "Legs",
+    "secondary_muscles": [
+      "Glutes"
+    ],
+    "equipment": "Stair Machine",
+    "default_rest_sec": 0,
+    "met_value": 6.5,
+    "tracking_metrics": [
+      "duration",
+      "floors"
+    ]
+  },
+  {
+    "id": "ex_674",
+    "name": "Outdoor Cycling",
+    "category": "Cardio",
+    "primary_muscle": "Legs",
+    "secondary_muscles": [
+      "Glutes"
+    ],
+    "equipment": "Outdoor",
+    "default_rest_sec": 0,
+    "met_value": 7.0,
+    "tracking_metrics": [
+      "duration",
+      "distance"
+    ]
+  },
+  {
+    "id": "ex_675",
+    "name": "Swimming (Freestyle)",
+    "category": "Cardio",
+    "primary_muscle": "Full Body",
+    "secondary_muscles": [],
+    "equipment": "Pool",
+    "default_rest_sec": 0,
+    "met_value": 7.0,
+    "tracking_metrics": [
+      "duration",
+      "distance"
+    ]
+  },
+  {
+    "id": "ex_676",
+    "name": "Swimming (Breaststroke)",
+    "category": "Cardio",
+    "primary_muscle": "Full Body",
+    "secondary_muscles": [],
+    "equipment": "Pool",
+    "default_rest_sec": 0,
+    "met_value": 6.0,
+    "tracking_metrics": [
+      "duration",
+      "distance"
+    ]
+  },
+  {
+    "id": "ex_677",
+    "name": "Hiking",
+    "category": "Cardio",
+    "primary_muscle": "Full Body",
+    "secondary_muscles": [
+      "Legs"
+    ],
+    "equipment": "Outdoor",
+    "default_rest_sec": 0,
+    "met_value": 6.0,
+    "tracking_metrics": [
+      "duration",
+      "distance"
+    ]
+  },
+  {
+    "id": "ex_678",
+    "name": "Brisk Walking",
+    "category": "Cardio",
+    "primary_muscle": "Full Body",
+    "secondary_muscles": [
+      "Legs"
+    ],
+    "equipment": "Outdoor",
+    "default_rest_sec": 0,
+    "met_value": 4.3,
+    "tracking_metrics": [
+      "duration",
+      "distance"
+    ]
+  },
+  {
+    "id": "ex_679",
+    "name": "Stair Running",
+    "category": "Cardio",
+    "primary_muscle": "Legs",
+    "secondary_muscles": [
+      "Glutes"
+    ],
+    "equipment": "Stairs",
+    "default_rest_sec": 0,
+    "met_value": 8.0,
+    "tracking_metrics": [
+      "duration"
+    ]
+  },
+  {
+    "id": "ex_680",
+    "name": "Dance Cardio",
+    "category": "Cardio",
+    "primary_muscle": "Full Body",
+    "secondary_muscles": [],
+    "equipment": "Studio",
+    "default_rest_sec": 0,
+    "met_value": 6.0,
+    "tracking_metrics": [
+      "duration"
+    ]
+  },
+  {
+    "id": "ex_681",
+    "name": "Shadow Boxing",
+    "category": "Conditioning",
+    "primary_muscle": "Full Body",
+    "secondary_muscles": [
+      "Shoulders",
+      "Core"
+    ],
+    "equipment": "Bodyweight",
+    "default_rest_sec": 45,
+    "met_value": 5.5,
+    "tracking_metrics": [
+      "duration"
+    ]
+  },
+  {
+    "id": "ex_682",
+    "name": "Yoga Flow",
+    "category": "Mobility",
+    "primary_muscle": "Full Body",
+    "secondary_muscles": [],
+    "equipment": "Mat",
+    "default_rest_sec": 0,
+    "met_value": 2.5,
+    "tracking_metrics": [
+      "duration"
+    ]
+  },
+  {
+    "id": "ex_683",
+    "name": "Sun Salutation",
+    "category": "Mobility",
+    "primary_muscle": "Full Body",
+    "secondary_muscles": [],
+    "equipment": "Mat",
+    "default_rest_sec": 0,
+    "met_value": 3.0,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_684",
+    "name": "Cat-Cow Stretch",
+    "category": "Mobility",
+    "primary_muscle": "Spine",
+    "secondary_muscles": [],
+    "equipment": "Mat",
+    "default_rest_sec": 0,
+    "met_value": 2.0,
+    "tracking_metrics": [
+      "duration"
+    ]
+  },
+  {
+    "id": "ex_685",
+    "name": "Child’s Pose",
+    "category": "Mobility",
+    "primary_muscle": "Back",
+    "secondary_muscles": [
+      "Hips"
+    ],
+    "equipment": "Mat",
+    "default_rest_sec": 0,
+    "met_value": 1.5,
+    "tracking_metrics": [
+      "duration"
+    ]
+  },
+  {
+    "id": "ex_686",
+    "name": "Hip Flexor Stretch",
+    "category": "Mobility",
+    "primary_muscle": "Hips",
+    "secondary_muscles": [],
+    "equipment": "Mat",
+    "default_rest_sec": 0,
+    "met_value": 1.5,
+    "tracking_metrics": [
+      "duration"
+    ]
+  },
+  {
+    "id": "ex_687",
+    "name": "Hamstring Stretch",
+    "category": "Mobility",
+    "primary_muscle": "Hamstrings",
+    "secondary_muscles": [],
+    "equipment": "Mat",
+    "default_rest_sec": 0,
+    "met_value": 1.5,
+    "tracking_metrics": [
+      "duration"
+    ]
+  },
+  {
+    "id": "ex_688",
+    "name": "Thoracic Rotation",
+    "category": "Mobility",
+    "primary_muscle": "Upper Back",
+    "secondary_muscles": [],
+    "equipment": "Mat",
+    "default_rest_sec": 0,
+    "met_value": 1.5,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_689",
+    "name": "Ankle Mobility Drill",
+    "category": "Mobility",
+    "primary_muscle": "Ankles",
+    "secondary_muscles": [],
+    "equipment": "Mat",
+    "default_rest_sec": 0,
+    "met_value": 1.5,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_690",
+    "name": "Band Pull-Apart",
+    "category": "Warm-up",
+    "primary_muscle": "Upper Back",
+    "secondary_muscles": [
+      "Rear Deltoids"
+    ],
+    "equipment": "Resistance Band",
+    "default_rest_sec": 30,
+    "met_value": 2.5,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_691",
+    "name": "Banded Lateral Walk",
+    "category": "Warm-up",
+    "primary_muscle": "Glutes",
+    "secondary_muscles": [
+      "Hip Abductors"
+    ],
+    "equipment": "Resistance Band",
+    "default_rest_sec": 30,
+    "met_value": 2.5,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_692",
+    "name": "Bodyweight Squat",
+    "category": "Bodyweight",
+    "primary_muscle": "Legs",
+    "secondary_muscles": [
+      "Glutes",
+      "Core"
+    ],
+    "equipment": "Bodyweight",
+    "default_rest_sec": 45,
+    "met_value": 3.5,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_693",
+    "name": "Incline Push-up",
+    "category": "Bodyweight",
+    "primary_muscle": "Chest",
+    "secondary_muscles": [
+      "Triceps",
+      "Core"
+    ],
+    "equipment": "Bench",
+    "default_rest_sec": 45,
+    "met_value": 3.0,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_694",
+    "name": "Decline Push-up",
+    "category": "Bodyweight",
+    "primary_muscle": "Chest",
+    "secondary_muscles": [
+      "Triceps",
+      "Shoulders"
+    ],
+    "equipment": "Bench",
+    "default_rest_sec": 60,
+    "met_value": 4.0,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_695",
+    "name": "Diamond Push-up",
+    "category": "Bodyweight",
+    "primary_muscle": "Triceps",
+    "secondary_muscles": [
+      "Chest",
+      "Core"
+    ],
+    "equipment": "Bodyweight",
+    "default_rest_sec": 60,
+    "met_value": 4.0,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_696",
+    "name": "Inverted Row",
+    "category": "Bodyweight",
+    "primary_muscle": "Back",
+    "secondary_muscles": [
+      "Biceps"
+    ],
+    "equipment": "Smith Machine",
+    "default_rest_sec": 60,
+    "met_value": 4.0,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_697",
+    "name": "Bench Dip",
+    "category": "Bodyweight",
+    "primary_muscle": "Triceps",
+    "secondary_muscles": [
+      "Chest"
+    ],
+    "equipment": "Bench",
+    "default_rest_sec": 45,
+    "met_value": 3.5,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_698",
+    "name": "Step-up",
+    "category": "Bodyweight",
+    "primary_muscle": "Legs",
+    "secondary_muscles": [
+      "Glutes"
+    ],
+    "equipment": "Bench",
+    "default_rest_sec": 60,
+    "met_value": 4.0,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_699",
+    "name": "Single-Leg Romanian Deadlift",
+    "category": "Compound",
+    "primary_muscle": "Hamstrings",
+    "secondary_muscles": [
+      "Glutes",
+      "Core"
+    ],
+    "equipment": "Dumbbells",
+    "default_rest_sec": 75,
+    "met_value": 4.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_700",
+    "name": "Kettlebell Swing",
+    "category": "Power",
+    "primary_muscle": "Posterior Chain",
+    "secondary_muscles": [
+      "Glutes",
+      "Core"
+    ],
+    "equipment": "Kettlebell",
+    "default_rest_sec": 60,
+    "met_value": 6.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_701",
+    "name": "Kettlebell Goblet Squat",
+    "category": "Compound",
+    "primary_muscle": "Legs",
+    "secondary_muscles": [
+      "Glutes",
+      "Core"
+    ],
+    "equipment": "Kettlebell",
+    "default_rest_sec": 90,
+    "met_value": 4.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_702",
+    "name": "Turkish Get-Up",
+    "category": "Functional",
+    "primary_muscle": "Full Body",
+    "secondary_muscles": [
+      "Shoulders",
+      "Core"
+    ],
+    "equipment": "Kettlebell",
+    "default_rest_sec": 90,
+    "met_value": 4.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_703",
+    "name": "Landmine Press",
+    "category": "Compound",
+    "primary_muscle": "Shoulders",
+    "secondary_muscles": [
+      "Chest",
+      "Triceps"
+    ],
+    "equipment": "Landmine",
+    "default_rest_sec": 75,
+    "met_value": 4.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_704",
+    "name": "Cable Lateral Raise",
+    "category": "Isolation",
+    "primary_muscle": "Shoulders",
+    "secondary_muscles": [],
+    "equipment": "Cable Machine",
+    "default_rest_sec": 45,
+    "met_value": 3.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_705",
+    "name": "Machine Chest Fly",
+    "category": "Isolation",
+    "primary_muscle": "Chest",
+    "secondary_muscles": [],
+    "equipment": "Machine",
+    "default_rest_sec": 60,
+    "met_value": 3.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_706",
+    "name": "Wide-Grip Lat Pulldown",
+    "category": "Compound",
+    "primary_muscle": "Back",
+    "secondary_muscles": [
+      "Biceps"
+    ],
+    "equipment": "Cable Machine",
+    "default_rest_sec": 90,
+    "met_value": 5.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_707",
+    "name": "Neutral-Grip Lat Pulldown",
+    "category": "Compound",
+    "primary_muscle": "Back",
+    "secondary_muscles": [
+      "Biceps"
+    ],
+    "equipment": "Cable Machine",
+    "default_rest_sec": 90,
+    "met_value": 5.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_708",
+    "name": "Seated Row (Close Grip)",
+    "category": "Compound",
+    "primary_muscle": "Back",
+    "secondary_muscles": [
+      "Biceps"
+    ],
+    "equipment": "Cable Machine",
+    "default_rest_sec": 90,
+    "met_value": 4.5,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_709",
+    "name": "Chest-Supported T-Bar Row",
+    "category": "Compound",
+    "primary_muscle": "Back",
+    "secondary_muscles": [
+      "Biceps"
+    ],
+    "equipment": "Machine",
+    "default_rest_sec": 90,
+    "met_value": 5.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_710",
+    "name": "Sissy Squat",
+    "category": "Isolation",
+    "primary_muscle": "Quadriceps",
+    "secondary_muscles": [],
+    "equipment": "Bodyweight",
+    "default_rest_sec": 60,
+    "met_value": 3.5,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_711",
+    "name": "Reverse Lunge",
+    "category": "Compound",
+    "primary_muscle": "Legs",
+    "secondary_muscles": [
+      "Glutes",
+      "Core"
+    ],
+    "equipment": "Bodyweight",
+    "default_rest_sec": 60,
+    "met_value": 4.0,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_712",
+    "name": "Curtsy Lunge",
+    "category": "Compound",
+    "primary_muscle": "Glutes",
+    "secondary_muscles": [
+      "Quadriceps",
+      "Core"
+    ],
+    "equipment": "Bodyweight",
+    "default_rest_sec": 60,
+    "met_value": 4.0,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_713",
+    "name": "Wall Sit",
+    "category": "Isometric",
+    "primary_muscle": "Quadriceps",
+    "secondary_muscles": [
+      "Glutes"
+    ],
+    "equipment": "Wall",
+    "default_rest_sec": 45,
+    "met_value": 3.0,
+    "tracking_metrics": [
+      "duration"
+    ]
+  },
+  {
+    "id": "ex_714",
+    "name": "Calf Raise (Bodyweight)",
+    "category": "Bodyweight",
+    "primary_muscle": "Calves",
+    "secondary_muscles": [],
+    "equipment": "Bodyweight",
+    "default_rest_sec": 30,
+    "met_value": 2.5,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_715",
+    "name": "Bird Dog",
+    "category": "Core",
+    "primary_muscle": "Core",
+    "secondary_muscles": [
+      "Back"
+    ],
+    "equipment": "Bodyweight",
+    "default_rest_sec": 30,
+    "met_value": 2.0,
+    "tracking_metrics": [
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_716",
+    "name": "Pallof Press",
+    "category": "Core",
+    "primary_muscle": "Core",
+    "secondary_muscles": [
+      "Obliques"
+    ],
+    "equipment": "Cable Machine",
+    "default_rest_sec": 45,
+    "met_value": 3.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_717",
+    "name": "Russian Kettlebell Swing",
+    "category": "Power",
+    "primary_muscle": "Posterior Chain",
+    "secondary_muscles": [
+      "Glutes",
+      "Core"
+    ],
+    "equipment": "Kettlebell",
+    "default_rest_sec": 60,
+    "met_value": 6.0,
+    "tracking_metrics": [
+      "weight",
+      "reps"
+    ]
+  },
+  {
+    "id": "ex_718",
+    "name": "Treadmill Run",
+    "category": "Cardio",
+    "primary_muscle": "Full Body",
+    "secondary_muscles": [
+      "Legs"
+    ],
+    "equipment": "Treadmill",
+    "default_rest_sec": 0,
+    "met_value": 8.0,
+    "tracking_metrics": [
+      "duration",
+      "distance"
+    ]
+  },
+  {
+    "id": "ex_719",
+    "name": "Air Bike",
+    "category": "Cardio",
+    "primary_muscle": "Full Body",
+    "secondary_muscles": [
+      "Arms",
+      "Legs"
+    ],
+    "equipment": "Air Bike",
+    "default_rest_sec": 0,
+    "met_value": 7.5,
+    "tracking_metrics": [
+      "duration",
+      "distance"
+    ]
+  },
+  {
+    "id": "ex_720",
+    "name": "SkiErg",
+    "category": "Cardio",
+    "primary_muscle": "Full Body",
+    "secondary_muscles": [
+      "Back",
+      "Arms"
+    ],
+    "equipment": "SkiErg",
+    "default_rest_sec": 0,
+    "met_value": 7.0,
+    "tracking_metrics": [
+      "duration",
+      "distance"
+    ]
+  },
+  {
+    "id": "ex_721",
+    "name": "Rowing Intervals",
+    "category": "Cardio",
+    "primary_muscle": "Full Body",
+    "secondary_muscles": [
+      "Back",
+      "Legs"
+    ],
+    "equipment": "Rowing Machine",
+    "default_rest_sec": 0,
+    "met_value": 8.0,
+    "tracking_metrics": [
+      "duration",
+      "distance"
+    ]
+  }
 ]
