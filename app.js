@@ -43,7 +43,7 @@ function freshState() {
     customFoods: [],
     recentFoodIds: [],
     recentExerciseIds: [],
-    syncMeta: { dirtyDates: [], dirtyFoodIds: [], pendingProfile: false, hasCompletedSync: false, userId: null, lastSyncedAt: null },
+    syncMeta: { dirtyDates: [], dirtyFoodIds: [], pendingProfile: false, hasCompletedSync: false, hasCompletedPull: false, userId: null, lastSyncedAt: null, lastCloudPullAt: null },
     profileUpdatedAt: null,
     preferences: { lastMasterSeed: 1 }
   };
@@ -82,6 +82,12 @@ function workoutSessions(log) {
   const sessions=[...(log.workout_history||[])];
   if (log.workout_log) sessions.push(log.workout_log);
   return sessions;
+}
+function logHasData(log) {
+  if(!log)return false;
+  if((log.water_log||[]).length)return true;
+  if(workoutSessions(log).some(session=>(session.exercises||[]).length>0))return true;
+  return MEALS.some(meal=>(log.diet_log?.[meal.key]||[]).length>0);
 }
 function logTotals(log) {
   const macros={calories:0,protein:0,carbs:0,fat:0,fiber:0};
@@ -252,6 +258,8 @@ function offlineFoodsFallback() { return [{id:'food_101',name:'Soya Chunks (Dry/
 function offlineExercisesFallback() { return [{id:'ex_101',name:'Barbell Bench Press',category:'Compound',primary_muscle:'Chest',secondary_muscles:['Triceps'],equipment:'Barbell',default_rest_sec:120,met_value:6,tracking_metrics:['weight','reps']},{id:'ex_102',name:'Barbell Back Squat',category:'Compound',primary_muscle:'Legs/Quadriceps',secondary_muscles:['Glutes'],equipment:'Barbell',default_rest_sec:150,met_value:6,tracking_metrics:['weight','reps']}]; }
 
 function render() {
+  if(!authUser) { updateAuthGate(); return; }
+  updateAuthGate();
   document.querySelectorAll('.domain-tab').forEach(btn=>btn.classList.toggle('active',btn.dataset.domain===state.selectedDomain));
   document.querySelectorAll('.bottom-tab').forEach(btn=>btn.classList.toggle('active',btn.dataset.tab===state.selectedTab));
   const datePicker=$('datePicker');if(datePicker)datePicker.value=state.activeDate;
@@ -733,22 +741,32 @@ function saveSettings() {
   state.profile=next;state.profileUpdatedAt=new Date().toISOString();state.syncMeta.pendingProfile=true;scheduleSave(false);closeModal();render();toast('Your targets have been updated.');
 }
 function supabaseConfigured() { const c=window.FORMA_SUPABASE_CONFIG||{};return !!(c.url&&c.publishableKey); }
+let supabaseInitPromise=null;
 async function initialiseSupabase() {
+  if(supabaseClient)return;
+  if(supabaseInitPromise)return supabaseInitPromise;
   if(!supabaseConfigured()){refreshSyncStatus();return;}
-  if(!window.supabase?.createClient){setSyncStatus('Supabase library unavailable',true);return;}
-  const config=window.FORMA_SUPABASE_CONFIG;
-  try {
-    supabaseClient=window.supabase.createClient(config.url,config.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-    const {data,error}=await supabaseClient.auth.getSession();if(error)throw error;
-    authUser=data.session?.user||null;
+  if(!window.supabase?.createClient){setSyncStatus('Supabase library unavailable',true);updateAuthGate();return;}
+  supabaseInitPromise=(async()=>{
+    const config=window.FORMA_SUPABASE_CONFIG;
+    const client=window.supabase.createClient(config.url,config.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+    const {data,error}=await client.auth.getSession();if(error)throw error;
+    supabaseClient=client;authUser=data.session?.user||null;
     supabaseClient.auth.onAuthStateChange((event,session)=>{
       authUser=session?.user||null;refreshSyncStatus();
-      if(event==='SIGNED_IN')setTimeout(()=>loadCloudData().catch(err=>{console.error(err);toast('Signed in, but cloud download failed.',true);}),0);
+      if(event==='SIGNED_IN')setTimeout(()=>loadCloudData().catch(err=>{console.error(err);render();toast('Signed in, but cloud download failed. Local tracking remains available.',true);}),0);
+      if(event==='PASSWORD_RECOVERY')setTimeout(()=>{render();openPasswordUpdateModal();},0);
       if(event==='SIGNED_OUT')render();
     });
-    if(authUser)await loadCloudData();
+    if(authUser){
+      try{await loadCloudData();}
+      catch(error){console.error('Initial cloud pull failed:',error);toast('Signed in, but cloud refresh failed. Local tracking remains available.',true);}
+    }
     refreshSyncStatus();
-  } catch(error) { console.error('Supabase initialization failed',error);setSyncStatus('Cloud connection failed',true); }
+  })();
+  try{await supabaseInitPromise;}
+  catch(error){console.error('Supabase initialization failed',error);supabaseClient=null;setSyncStatus('Cloud connection failed',true);}
+  finally{supabaseInitPromise=null;}
 }
 function normalizeRemoteLog(log,date) {
   const base={date,diet_log:{breakfast:[],lunch:[],dinner:[],snacks:[]},workout_log:null,workout_history:[],water_log:[],...log};
@@ -756,11 +774,22 @@ function normalizeRemoteLog(log,date) {
   for(const meal of ['breakfast','lunch','dinner','snacks'])if(!Array.isArray(base.diet_log[meal]))base.diet_log[meal]=[];
   if(!Array.isArray(base.workout_history))base.workout_history=[];if(!Array.isArray(base.water_log))base.water_log=[];return base;
 }
+async function fetchCloudLogs(sinceTimestamp=null) {
+  const collected=[];const pageSize=500;let offset=0;
+  while(true) {
+    let query=supabaseClient.from('daily_logs').select('date,content,updated_at').order('updated_at',{ascending:true}).range(offset,offset+pageSize-1);
+    if(sinceTimestamp)query=query.gt('updated_at',sinceTimestamp);
+    const {data,error}=await query;if(error)throw error;
+    collected.push(...(data||[]));
+    if(!data||data.length<pageSize)break;
+    offset+=pageSize;
+  }
+  return collected;
+}
 async function loadCloudData() {
   if(!supabaseClient||!authUser)return;
   const userId=authUser.id;state.syncMeta=state.syncMeta||freshState().syncMeta;
   // Keep browser data separated when accounts change on a shared device.
-  // The unowned guest workspace is intentionally left intact for the first explicit import/sync.
   const previousOwner=state.syncMeta.userId;
   if(previousOwner&&previousOwner!==userId){
     const snapshot=JSON.parse(JSON.stringify(state));
@@ -772,36 +801,53 @@ async function loadCloudData() {
     const date=state.activeDate;
     state=restored?{...freshState(),...restored,profile:{...DEFAULT_PROFILE,...restored.profile}}:{...freshState(),activeDate:date};
   }
-  if(state.syncMeta.userId!==userId){state.syncMeta={...freshState().syncMeta,userId,hasCompletedSync:false};}
+  if(state.syncMeta.userId!==userId){state.syncMeta={...freshState().syncMeta,userId,hasCompletedSync:false,hasCompletedPull:false,lastCloudPullAt:null};}
   const meta=state.syncMeta;
-  const [logsResult,profileResult,foodsResult]=await Promise.all([
-    supabaseClient.from('daily_logs').select('date,content,updated_at'),
+  // Only fetch the full timeline the first time this browser loads an account.
+  // Later logins transfer only date rows updated since the last successful pull.
+  const needsFullPull=!meta.hasCompletedPull||!meta.lastCloudPullAt;
+  const [remoteLogs,profileResult,foodsResult]=await Promise.all([
+    fetchCloudLogs(needsFullPull?null:meta.lastCloudPullAt),
     supabaseClient.from('user_profiles').select('profile,updated_at').eq('id',userId).maybeSingle(),
     supabaseClient.from('user_custom_foods').select('id,data,updated_at')
   ]);
-  for(const result of [logsResult,profileResult,foodsResult])if(result.error)throw result.error;
+  if(profileResult.error)throw profileResult.error;if(foodsResult.error)throw foodsResult.error;
   suppressDirtyTracking=true;
   try {
-    const remoteDates=new Set((logsResult.data||[]).map(r=>r.date));
-    for(const row of logsResult.data||[]){
+    const remoteDates=new Set(remoteLogs.map(r=>r.date));
+    for(const row of remoteLogs){
       const remoteLog=normalizeRemoteLog(row.content||{},row.date);remoteLog.updated_at=row.updated_at||remoteLog.updated_at||new Date(0).toISOString();
       const local=state.logs[row.date];const dirty=(meta.dirtyDates||[]).includes(row.date);
       const localTs=new Date(local?.updated_at||0).getTime();const remoteTs=new Date(remoteLog.updated_at||0).getTime();
       if(!local||(!dirty&&remoteTs>localTs))state.logs[row.date]=remoteLog;
       else if(localTs>remoteTs&&!dirty)meta.dirtyDates=Array.from(new Set([...(meta.dirtyDates||[]),row.date]));
     }
-    for(const [date,local] of Object.entries(state.logs)){if(!remoteDates.has(date))meta.dirtyDates=Array.from(new Set([...(meta.dirtyDates||[]),date]));}
+    // Only a full pull can prove which local dates are absent in the cloud.
+    if(needsFullPull){
+      for(const date of Object.keys(state.logs)){
+        const local=state.logs[date];
+        // Do not create cloud rows for auto-created but still-empty days.
+        if(!remoteDates.has(date)&&(local.updated_at||logHasData(local)))meta.dirtyDates=Array.from(new Set([...(meta.dirtyDates||[]),date]));
+      }
+    }
+    const newestCloudLog=remoteLogs.reduce((latest,row)=>!row.updated_at||row.updated_at<=latest?latest:row.updated_at,'');
+    if(newestCloudLog&&(!meta.lastCloudPullAt||newestCloudLog>meta.lastCloudPullAt))meta.lastCloudPullAt=newestCloudLog;
     const remoteProfile=profileResult.data;
-    if(remoteProfile?.profile){if(!meta.pendingProfile&&new Date(remoteProfile.updated_at||0).getTime()>new Date(state.profileUpdatedAt||0).getTime()){state.profile={...DEFAULT_PROFILE,...remoteProfile.profile};state.profileUpdatedAt=remoteProfile.updated_at;}}
-    else meta.pendingProfile=true;
+    if(remoteProfile?.profile){
+      if(!meta.pendingProfile&&new Date(remoteProfile.updated_at||0).getTime()>new Date(state.profileUpdatedAt||0).getTime()){
+        state.profile={...DEFAULT_PROFILE,...remoteProfile.profile};state.profileUpdatedAt=remoteProfile.updated_at;
+      }
+    } else meta.pendingProfile=true;
     const remoteFoods=foodsResult.data||[];const remoteIds=new Set(remoteFoods.map(r=>r.id));
-    for(const row of remoteFoods){const idx=state.customFoods.findIndex(f=>f.id===row.id);const local=idx>=0?state.customFoods[idx]:null;const localTs=new Date(local?.updated_at||local?.created_at||0).getTime();const remoteTs=new Date(row.updated_at||0).getTime();
+    for(const row of remoteFoods){
+      const idx=state.customFoods.findIndex(f=>f.id===row.id);const local=idx>=0?state.customFoods[idx]:null;
+      const localTs=new Date(local?.updated_at||local?.created_at||0).getTime();const remoteTs=new Date(row.updated_at||0).getTime();
       if(!local)state.customFoods.push({...row.data,id:row.id,updated_at:row.updated_at});
       else if(!(meta.dirtyFoodIds||[]).includes(row.id)&&remoteTs>localTs)state.customFoods[idx]={...row.data,id:row.id,updated_at:row.updated_at};
       else if(localTs>remoteTs&&!(meta.dirtyFoodIds||[]).includes(row.id))meta.dirtyFoodIds=Array.from(new Set([...(meta.dirtyFoodIds||[]),row.id]));
     }
     for(const food of state.customFoods){if(!remoteIds.has(food.id))meta.dirtyFoodIds=Array.from(new Set([...(meta.dirtyFoodIds||[]),food.id]));}
-    meta.userId=userId;
+    meta.userId=userId;meta.hasCompletedPull=true;
   } finally { suppressDirtyTracking=false; }
   await persistState();render();refreshSyncStatus();
 }
@@ -811,38 +857,98 @@ async function syncNow() {
   syncing=true;setSyncStatus('Syncing…');
   try {
     clearTimeout(saveTimer);await (saveQueue=saveQueue.then(persistState));
-    const meta=state.syncMeta;const firstSync=!meta.hasCompletedSync;
-    const selectedLogs=firstSync?Object.values(state.logs):((meta.dirtyDates||[]).map(date=>state.logs[date]).filter(Boolean));
+    const meta=state.syncMeta;
+    // Send only date logs explicitly marked dirty. The initial cloud pull identifies local-only dates,
+    // so first sync does not need to rewrite every date already stored in Supabase.
+    const selectedLogs=(meta.dirtyDates||[]).map(date=>state.logs[date]).filter(Boolean);
     const now=new Date().toISOString();
-    const logRows=selectedLogs.map(log=>({user_id:authUser.id,date:log.date,content:log,updated_at:log.updated_at||now}));
-    for(let i=0;i<logRows.length;i+=50){const {error}=await supabaseClient.from('daily_logs').upsert(logRows.slice(i,i+50),{onConflict:'user_id,date'});if(error)throw error;}
-    const shouldSyncProfile=firstSync||meta.pendingProfile;
-    if(shouldSyncProfile){const {error}=await supabaseClient.from('user_profiles').upsert({id:authUser.id,profile:state.profile,updated_at:now},{onConflict:'id'});if(error)throw error;state.profileUpdatedAt=now;}
-    const foodIds=firstSync?state.customFoods.map(f=>f.id):(meta.dirtyFoodIds||[]);
-    const selectedFoods=state.customFoods.filter(f=>foodIds.includes(f.id));const foodRows=selectedFoods.map(food=>({user_id:authUser.id,id:food.id,data:food,updated_at:food.updated_at||food.created_at||now}));
-    for(let i=0;i<foodRows.length;i+=50){const {error}=await supabaseClient.from('user_custom_foods').upsert(foodRows.slice(i,i+50),{onConflict:'user_id,id'});if(error)throw error;}
+    const logRows=selectedLogs.map(log=>{
+      // date and updated_at already live in typed SQL columns; omit duplicate copies from JSONB.
+      const content={...log};delete content.date;delete content.updated_at;
+      return {user_id:authUser.id,date:log.date,content,updated_at:log.updated_at||now};
+    });
+    for(let i=0;i<logRows.length;i+=50){
+      const {data,error}=await supabaseClient.from('daily_logs').upsert(logRows.slice(i,i+50),{onConflict:'user_id,date'}).select('date,updated_at');
+      if(error)throw error;
+      for(const row of data||[])if(state.logs[row.date])state.logs[row.date].updated_at=row.updated_at;
+    }
+    const shouldSyncProfile=!!meta.pendingProfile;
+    if(shouldSyncProfile){
+      const {data,error}=await supabaseClient.from('user_profiles').upsert({id:authUser.id,profile:state.profile,updated_at:now},{onConflict:'id'}).select('updated_at').single();
+      if(error)throw error;state.profileUpdatedAt=data?.updated_at||now;
+    }
+    const foodIds=(meta.dirtyFoodIds||[]);
+    const selectedFoods=state.customFoods.filter(f=>foodIds.includes(f.id));const foodRows=selectedFoods.map(food=>{
+      const data={...food};delete data.id;delete data.updated_at;delete data.created_at;
+      return {user_id:authUser.id,id:food.id,data,updated_at:food.updated_at||food.created_at||now};
+    });
+    for(let i=0;i<foodRows.length;i+=50){
+      const {data,error}=await supabaseClient.from('user_custom_foods').upsert(foodRows.slice(i,i+50),{onConflict:'user_id,id'}).select('id,updated_at');
+      if(error)throw error;
+      for(const row of data||[]){const food=state.customFoods.find(item=>item.id===row.id);if(food)food.updated_at=row.updated_at;}
+    }
     const sentDates=new Set(selectedLogs.map(log=>log.date));meta.dirtyDates=(meta.dirtyDates||[]).filter(date=>!sentDates.has(date));meta.dirtyFoodIds=(meta.dirtyFoodIds||[]).filter(id=>!foodIds.includes(id));if(shouldSyncProfile)meta.pendingProfile=false;
-    meta.hasCompletedSync=true;meta.userId=authUser.id;meta.lastSyncedAt=now;
+    meta.hasCompletedSync=true;meta.userId=authUser.id;meta.lastSyncedAt=now;meta.hasCompletedPull=true;
     await persistState();render();refreshSyncStatus();toast(`Sync complete · ${logRows.length} date logs, ${foodRows.length} recipes.`);
   } catch(error) { console.error('Supabase sync failed:',error);setSyncStatus('Sync failed · changes kept locally',true);toast(error.message||'Sync failed. Your local data is safe.',true); }
   finally { syncing=false;refreshSyncStatus(); }
 }
+function updateAuthGate() {
+  const gate=$('authGate'),shell=$('appShell');if(!gate||!shell)return;
+  if(authUser){gate.classList.add('hidden');shell.classList.remove('hidden');return;}
+  gate.classList.remove('hidden');shell.classList.add('hidden');
+  const configured=supabaseConfigured()&&!!window.supabase?.createClient;
+  const notice=$('authSetupNotice');
+  if(notice){
+    notice.classList.toggle('hidden',configured);
+    const span=notice.querySelector('span');
+    if(span&&!supabaseConfigured())span.textContent='Add your Supabase Project URL and publishable key to supabase-config.js. Do not put a secret or service-role key in this browser app.';
+    else if(span&&!window.supabase?.createClient)span.textContent='The Supabase client library did not load. Check your internet connection or serve a local copy of the Supabase JS v2 library.';
+  }
+  gate.querySelectorAll('input').forEach(input=>input.disabled=!configured);
+  gate.querySelectorAll('[data-action="auth-signin"],[data-action="auth-signup"],[data-action="auth-google"],[data-action="auth-reset"]').forEach(button=>button.disabled=!configured);
+}
 async function handleAuth(mode) {
-  if(!supabaseClient){toast('Set the project URL and publishable key in supabase-config.js first.',true);return;}
+  if(!supabaseClient){toast('Supabase is not configured yet. Add the Project URL and publishable key first.',true);updateAuthGate();return;}
   const email=$('authEmail')?.value.trim();const password=$('authPassword')?.value||'';
   if(!email||!password){toast('Enter both email and password.',true);return;}
   if(password.length<8){toast('Use a password with at least 8 characters.',true);return;}
   try {
     const result=mode==='signup'?await supabaseClient.auth.signUp({email,password}):await supabaseClient.auth.signInWithPassword({email,password});
     if(result.error)throw result.error;
-    if(mode==='signup'&&!result.data.session){toast('Account created. Check your email to confirm, then sign in.');openSettings();return;}
-    authUser=result.data.user||null;
-    if(authUser)await loadCloudData();
-    openSettings();toast(mode==='signup'?'Account created.':'Signed in to Supabase.');
+    if(mode==='signup'&&!result.data.session){toast('Account created. Check your email to confirm, then return here to sign in.');return;}
+    // The single auth-state listener performs the cloud pull, avoiding duplicate reads.
+    toast(mode==='signup'?'Account created. Loading your Forma workspace…':'Signed in. Loading your Forma workspace…');
   } catch(error) { toast(error.message||'Authentication failed.',true); }
 }
+async function handleGoogleAuth() {
+  if(!supabaseClient){toast('Supabase is not configured yet. Add the Project URL and publishable key first.',true);updateAuthGate();return;}
+  try {
+    const redirectTo=`${window.location.origin}${window.location.pathname}${window.location.search}`;
+    const {error}=await supabaseClient.auth.signInWithOAuth({provider:'google',options:{redirectTo}});
+    if(error)throw error;
+  } catch(error) { toast(error.message||'Google sign-in could not start.',true); }
+}
+async function handlePasswordReset() {
+  if(!supabaseClient){toast('Configure Supabase before requesting a password reset.',true);return;}
+  const email=$('authEmail')?.value.trim();if(!email){toast('Enter your email first, then tap Forgot password.',true);return;}
+  try {
+    const redirectTo=`${window.location.origin}${window.location.pathname}`;
+    const {error}=await supabaseClient.auth.resetPasswordForEmail(email,{redirectTo});if(error)throw error;
+    toast('Password reset email requested. Check your inbox.');
+  } catch(error) { toast(error.message||'Could not send reset email.',true); }
+}
 async function signOut() {
-  if(!supabaseClient)return;const {error}=await supabaseClient.auth.signOut();if(error){toast(error.message,true);return;}authUser=null;refreshSyncStatus();openSettings();toast('Signed out. Your local data remains on this device.');
+  if(!supabaseClient)return;const {error}=await supabaseClient.auth.signOut();if(error){toast(error.message,true);return;}
+  authUser=null;refreshSyncStatus();render();toast('Signed out. The main app is locked until you sign in again.');
+}
+function openPasswordUpdateModal() {
+  showModal(`${modalHead('ACCOUNT SECURITY','Choose a new password','Use at least 8 characters. This updates the password for your Forma account.')}<div class="field"><label for="newAccountPassword">NEW PASSWORD</label><input id="newAccountPassword" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters" /></div><div class="modal-actions"><button class="save lime" data-action="save-new-password">Update password</button></div>`);
+}
+async function saveNewPassword() {
+  const password=$('newAccountPassword')?.value||'';if(password.length<8){toast('Use a password with at least 8 characters.',true);return;}
+  try{const {error}=await supabaseClient.auth.updateUser({password});if(error)throw error;closeModal();render();toast('Password updated successfully.');}
+  catch(error){toast(error.message||'Could not update password.',true);}
 }
 function exportData() {
   const output={exported_at:new Date().toISOString(),schema_version:1,user_profile:state.profile,daily_logs:Object.values(state.logs).map(log=>{const totals=logTotals(log);return {user_id:'local_user',date:log.date,daily_totals:{net_calories:round(totals.net),protein_g:round(totals.protein,2),carbs_g:round(totals.carbs,2),fat_g:round(totals.fat,2),water_ml:Math.round(totals.water),calories_burned:Math.round(totals.burned)},diet_log:log.diet_log,workout_log:log.workout_log,workout_history:log.workout_history,water_log:log.water_log};}),user_custom_foods:state.customFoods};
@@ -897,6 +1003,9 @@ document.addEventListener('click', async (event)=>{
     case 'next-period': shiftAnalyticsPeriod(1);break;
     case 'auth-signin': await handleAuth('signin');break;
     case 'auth-signup': await handleAuth('signup');break;
+    case 'auth-google': await handleGoogleAuth();break;
+    case 'auth-reset': await handlePasswordReset();break;
+    case 'save-new-password': await saveNewPassword();break;
     case 'auth-signout': await signOut();break;
     case 'sync-now': await syncNow();break;
     case 'export-data': exportData();break;
@@ -947,11 +1056,16 @@ setInterval(()=>{
   const clock=$('rest-clock');if(!clock)return;const seconds=Math.max(0,Math.ceil((n(clock.dataset.until)-Date.now())/1000));clock.textContent=`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;if(seconds===0)clock.style.color='#bb6541';
 },500);
 
-// Batch background sync every two minutes after the user has completed the first explicit sync.
+// Batch background sync every five minutes after the user has completed the first explicit sync.
 setInterval(()=>{
   const meta=state.syncMeta||{};
   const pending=(meta.dirtyDates||[]).length||(meta.dirtyFoodIds||[]).length||meta.pendingProfile;
   if(authUser&&!syncing&&meta.hasCompletedSync&&pending)syncNow();
-},120000);
+},300000);
 
+const supabaseSdkScript=$('supabaseSdk');
+if(supabaseSdkScript&&!window.supabase?.createClient){
+  supabaseSdkScript.addEventListener('load',async()=>{await initialiseSupabase();render();},{once:true});
+  supabaseSdkScript.addEventListener('error',()=>{updateAuthGate();}, {once:true});
+}
 initialise();

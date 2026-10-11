@@ -23,6 +23,36 @@ create table if not exists public.user_custom_foods (
   primary key (user_id, id)
 );
 
+-- Keep update cursors consistent across devices using the database clock.
+create or replace function public.forma_set_updated_at()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+drop trigger if exists forma_user_profiles_updated_at on public.user_profiles;
+create trigger forma_user_profiles_updated_at
+before insert or update on public.user_profiles
+for each row execute function public.forma_set_updated_at();
+
+drop trigger if exists forma_daily_logs_updated_at on public.daily_logs;
+create trigger forma_daily_logs_updated_at
+before insert or update on public.daily_logs
+for each row execute function public.forma_set_updated_at();
+
+drop trigger if exists forma_custom_foods_updated_at on public.user_custom_foods;
+create trigger forma_custom_foods_updated_at
+before insert or update on public.user_custom_foods
+for each row execute function public.forma_set_updated_at();
+
+-- Supports efficient per-user incremental timeline pulls after the first sync.
+create index if not exists daily_logs_user_updated_idx
+  on public.daily_logs (user_id, updated_at);
+
 alter table public.user_profiles enable row level security;
 alter table public.daily_logs enable row level security;
 alter table public.user_custom_foods enable row level security;
