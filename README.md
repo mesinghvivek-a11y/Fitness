@@ -1,6 +1,6 @@
-# Timely Fit — offline-first fitness, nutrition and hydration PWA
+# Forma — offline-first fitness, nutrition and hydration PWA
 
-Timely Fit is a lightweight mobile-first Progressive Web App for meal logging, recipe macro calculation, progressive-overload workouts, hydration events, and date-range dashboard analytics. The current version uses plain HTML/CSS/JavaScript instead of a React/Next.js build, so it can be hosted as static files while the core experience is validated.
+Forma is a lightweight mobile-first Progressive Web App for meal logging, recipe macro calculation, progressive-overload workouts, hydration events, and date-range dashboard analytics. The current version uses plain HTML/CSS/JavaScript instead of a React/Next.js build, so it can be hosted as static files while the core experience is validated.
 
 ## Run locally
 
@@ -15,13 +15,13 @@ Open `http://localhost:8000`. For phone tests on your LAN, use your computer's l
 ## What's included
 
 - `index.html`, `styles.css`, `app.js` — app shell, responsive UI, app logic and analytics.
-- `foods.json` — 227 seeded food, liquid ingredient and cooked-meal entries.
-- `exercises.json` — 1,443 searchable movements: the 1,324-record upstream metadata dataset merged with Timely Fit-only entries. Exercise metadata is kept lightweight with a short description, body part, target muscles, equipment, rest defaults and tracking metrics.
+- `foods.json` — 1,174 food, ingredient and meal records, including 947 unique imports from the supplied nutrition CSV.
+- `exercises.json` — 1,443 searchable movements: the 1,324-record upstream metadata dataset merged with Forma-only entries. Exercise metadata is kept lightweight with a short description, body part, target muscles, equipment, rest defaults and tracking metrics.
 - `supabase-config.js` — public project URL and publishable-key placeholders.
 - `supabase-schema.sql` — Supabase user profile, daily log and custom-food tables plus owner-only RLS policies.
 - `manifest.json`, `icon.svg`, `sw.js` — PWA install metadata, icon and offline shell cache.
 
-The seeded catalogues are intentionally useful starter libraries, not a complete or medically authoritative nutrition database. Cooked meal entries and several macros are estimates. Check serving size and nutrition values for your own food brands and recipes before relying on precision.
+The catalogues are practical starting libraries, not complete or medically authoritative nutrition databases. The food CSV is source-reported and does not include fibre or recipe instructions. Existing cooked-meal entries and several macros are estimates. Check serving sizes and nutrition values for your own food brands and recipes before relying on precision.
 
 ## User experience
 
@@ -35,10 +35,10 @@ The seeded catalogues are intentionally useful starter libraries, not a complete
 
 ## Authentication-first entry
 
-- The main app is hidden by default. A visitor must have a Supabase Auth session to view the timeline or dashboard.
+- The main app is hidden by default. With Supabase configured, a visitor must have an Auth session; without configuration, the welcome screen offers local-only access.
 - The sign-in screen supports email/password, account creation, password-reset email, and Google OAuth.
 - Because the prototype is hosted as static files, HTML/JS assets themselves remain publicly downloadable. The sign-in gate protects the UI flow, while Supabase Row Level Security protects user rows; do not rely on hiding browser code as a security boundary.
-- Returning users can still use their locally cached timeline while offline if their browser has a persisted session; cloud refresh naturally waits until connectivity returns.
+- Local-only mode keeps entries on this browser/device and never syncs them. Signed-in users can also use locally cached entries offline; cloud refresh waits until connectivity returns.
 
 ## Supabase setup and Google authentication
 
@@ -62,12 +62,12 @@ The seeded catalogues are intentionally useful starter libraries, not a complete
 
 ### 2. Enable Google sign-in
 
-1. Open [Google Cloud Console](https://console.cloud.google.com/), choose or create a project, and open **Google Auth Platform**. Complete the app name, support email, audience, and consent-screen branding. For basic sign-in Timely Fit requests the standard identity/email/profile scopes; do not add extra scopes it does not need.
+1. Open [Google Cloud Console](https://console.cloud.google.com/), choose or create a project, and open **Google Auth Platform**. Complete the app name, support email, audience, and consent-screen branding. For basic sign-in Forma requests the standard identity/email/profile scopes; do not add extra scopes it does not need.
 2. Open **Clients → Create client → OAuth client ID → Web application**.
 3. Add your hosted app's origin under **Authorized JavaScript origins**, such as `https://YOUR_ACCOUNT.github.io`. For local testing, add `http://localhost:8000` (and remove or keep it restricted when finished).
 4. Under **Authorized redirect URIs**, add the callback URL shown on Supabase's **Authentication → Sign In / Providers → Google** page. It typically resembles `https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback`; use the exact URL supplied by Supabase.
 5. Create the OAuth client and copy the Google **Client ID** and **Client Secret** into the Supabase Google provider settings. Enable Google and save.
-6. Return to Timely Fit and test **Continue with Google**. Also test the OAuth redirect on your deployed HTTPS URL, not only localhost.
+6. Return to Forma and test **Continue with Google**. Also test the OAuth redirect on your deployed HTTPS URL, not only localhost.
 
 **Security distinction:** there are two different credential types here. The Supabase Project URL + publishable key belong in `supabase-config.js`. The Google OAuth Client Secret belongs in the Supabase dashboard's Google provider configuration only. Do not put that Google Client Secret, a Supabase `sb_secret_...` key, or a legacy `service_role` key in this repository, browser JavaScript, HTML, or GitHub Pages. This static browser app does not need a Supabase secret key.
 
@@ -75,7 +75,7 @@ Email/password accounts can be enabled in **Authentication → Sign In / Provide
 
 ## Low-cost database architecture
 
-Timely Fit is local-first by design:
+Forma is local-first by design:
 
 - **Search requests: zero Supabase database reads.** `foods.json` and `exercises.json` are fetched and cached in IndexedDB. Typing `D`, `DE`, `DEA`, `DEAD` or `PA`, `PAN`, `PANEER` searches local data only; no query is sent for each keypress.
 - **Timeline, dates and charts: local reads.** Switching dates, ticking a set, correcting a water amount, or editing a food entry updates the local state and IndexedDB, not a cloud query.
@@ -99,7 +99,7 @@ No architecture can guarantee that usage will stay inside the Free tier under ev
 ## Audit notes and known limitations
 
 - This is not yet migrated to React/Next.js. That migration is optional for the present static deployment, but should happen if code splitting, server routes, type safety, or a larger component ecosystem becomes important.
-- Food values and cooked estimates need source-based validation before release. The bundled master list contains 227 foods and 1,443 exercise entries (including 1,324 imported source records before exact-name reconciliation). Many imported exercises do not have an authoritative MET value; the app keeps these as null rather than inventing calorie factors.
+- Food values and cooked estimates need source-based validation before release. The bundled catalogue contains 1,174 food records and 1,443 exercise entries (including 1,324 imported exercise records before exact-name reconciliation). Many imported exercises do not have an authoritative MET value; the app keeps these as null rather than inventing calorie factors.
 - Workout MET burn is an estimate. Formula used at session finish: mean MET across relevant logged movements × body weight × elapsed hours. The actual energy expenditure can differ materially.
 - The chart provides a strength snapshot from the highest logged working weight per exercise, not a validated 1RM calculation. Duration-only movements currently share the general set/reps UI and need a dedicated duration/distance editor before calling the app training-complete.
 - Automated end-to-end tests across iOS Safari/Android Chrome, authentication redirect flows, offline startup, IndexedDB eviction/recovery, cross-device conflicts and SQL policy isolation are still required before a production claim.
@@ -115,14 +115,32 @@ No architecture can guarantee that usage will stay inside the Free tier under ev
 
 ## Expanded exercise catalogue and demonstration media
 
-- The exercise metadata was imported from [hasaneyldrm/exercises-dataset](https://github.com/hasaneyldrm/exercises-dataset). Upstream data includes exercise name, body part/category, equipment, target/synergist muscles and multilingual instruction text. Timely Fit keeps one concise English sentence in `description`; it does not expose the long step-by-step text in its exercise card.
-- The import preserves upstream IDs in `source_id`. Exact-name matches keep Timely Fit's earlier IDs to avoid breaking existing workout references. New IDs use the `ed_` prefix. `source_dataset`, `source_id`, source category, media paths and attribution remain available for provenance.
-- `image` and `gif_url` are preconfigured to relative paths under `exercise-media/`. **The GIF and thumbnail files are intentionally not included in this bundle.** The upstream repository's MIT licence covers its metadata/instruction text, but explicitly excludes Gym Visual media. Before using those image/GIF assets publicly, obtain the applicable media permission/licence. Once licensed files have been placed at the matching paths, set the corresponding record's `media_status` to `licensed`; the thumbnail and animated detail modal will load them. Until then, Timely Fit shows a placeholder and concise exercise details.
-- Imported exercises have `met_value: null` unless an exact-name match already had a known Timely Fit value. Session calorie calculations ignore missing MET values rather than fabricating precision. A future data-review phase can populate METs from a trusted activity reference.
+- The exercise metadata was imported from [hasaneyldrm/exercises-dataset](https://github.com/hasaneyldrm/exercises-dataset). Upstream data includes exercise name, body part/category, equipment, target/synergist muscles and multilingual instruction text. Forma keeps one concise English sentence in `description`; it does not expose the long step-by-step text in its exercise card.
+- The import preserves upstream IDs in `source_id`. Exact-name matches keep Forma's earlier IDs to avoid breaking existing workout references. New IDs use the `ed_` prefix. `source_dataset`, `source_id`, source category, media paths and attribution remain available for provenance.
+- `image` and `gif_url` are preconfigured to relative paths under `exercise-media/`. This bundle includes 94 GIFs and 94 thumbnails; files referenced by other exercise records may be missing. The upstream repository's MIT licence covers its metadata/instruction text, but explicitly excludes Gym Visual media. Before using any image/GIF assets publicly, verify the applicable permission/licence for each asset. A record's `media_status: licensed` value controls whether Forma displays the file; the value itself is not evidence of a licence. Missing or unapproved media should remain hidden behind placeholders.
+- Imported exercises have `met_value: null` unless an exact-name match already had a known Forma value. Session calorie calculations ignore missing MET values rather than fabricating precision. A future data-review phase can populate METs from a trusted activity reference.
 - `EXERCISE-DATA-LICENSE.md` records the metadata licence and media caveat. Retain this file when redistributing the exercise catalogue.
 
-## V3 notes
+## Food catalogue and nutrition logging (October 2026 update)
 
-- **Search:** exercise search matches the name first, then exercises that train the searched muscle (for example "chest" also lists pec work without "chest" in its name), then exercises that use it as a secondary muscle. Food search matches every word in any order.
-- **Exercise fields:** each exercise decides which fields it needs. Weighted exercises ask for sets, reps and kg. Body-weight exercises ask for sets and reps. Timed and cardio exercises ask for sets and minutes.
-- **Food images:** add an `"image"` path to any item in `foods.json` (for example `"image": "food-media/images/paneer.jpg"`). It then shows in the food list, the picker and the timeline. Items without an image keep their icon.
+- The bundled food catalogue now contains **1,174 records**: the original 227 Forma entries plus 947 unique rows imported from `data_sources/final_master_foods.csv`. Three exact-name duplicates were not added twice.
+- `DATA_IMPORT_REPORT.md` records the import counts, available source columns, category totals and limitations. The file's `source` values identify records as “USDA Foundation” or “INDB Indian”; those labels are preserved as supplied rather than independently verified.
+- Category browsing and search remain local-first. The master `foods.json` catalogue is cached in IndexedDB and in the PWA service-worker cache for offline use.
+- The original app's portion calculator, meal logging, daily macro summaries, custom recipe creator and recipe ingredient search are retained. External product entries used in recipes are saved locally with your app state.
+- Optional Open Food Facts search and barcode lookup require internet access. Camera-based barcode scanning depends on browser support for `BarcodeDetector` and camera permission; manual barcode entry remains available as a fallback.
+- The uploaded CSV has calories, protein, carbohydrates and fat, but **no fibre field** and no recipe ingredients, quantities, yields or methods. Imported records do not fabricate fibre or recipes. Product database results may also have incomplete nutrition; check package labels for consequential decisions.
+- If Supabase is not configured, the welcome screen offers **Continue on this device** for a local-only experience; logs stay in that browser and are not synced. This keeps the app usable without shipping any credentials. To enable account login/cloud sync, put your own Supabase Project URL and publishable key into `supabase-config.js`, then follow the existing “Configure Supabase” section above. No credentials were supplied with this build.
+
+### Validation scripts
+
+Run `node tests/catalogue-check.js` and `python tests/verify-food-import.py` from the project directory to validate the bundled food JSON and reconcile every input CSV row to its catalogue record.
+
+#### Open Food Facts reuse note
+
+The optional online lookup uses the legacy free-text search endpoint because Open Food Facts' API documentation notes that `/api/v2/search` does not support free-text search. The app uses the product-by-barcode API for barcode lookup. API details can change, so verify behavior before a public release.
+
+- [Open Food Facts API overview](https://openfoodfacts.github.io/documentation/docs/Product-Opener/api/)
+- [Open Food Facts search endpoint documentation](https://openfoodfacts.github.io/documentation/docs/Product-Opener/api/ref-v2/#get-/api/v2/search)
+- [Open Food Facts licence and attribution guidance](https://openfoodfacts.github.io/documentation/docs/Product-Opener/api/tutorials/license-be-on-the-legal-side/)
+
+Open Food Facts describes its database as ODbL, individual database contents under the Database Contents License, and product images under CC BY-SA; product records are community-submitted and may be incomplete. Forma labels the external source and provides the licence guidance in the online-results panel. Review the current attribution/share-alike requirements before redistributing or launching publicly.
