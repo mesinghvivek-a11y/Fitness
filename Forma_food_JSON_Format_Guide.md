@@ -1,6 +1,6 @@
-# Forma food JSON format (current PWA)
+# Timely Fit food JSON format (current PWA)
 
-These files were prepared against the current Forma static HTML/CSS/JavaScript PWA, not a React/Next.js rewrite.
+These files were prepared against the current Timely Fit static HTML/CSS/JavaScript PWA, not a React/Next.js rewrite.
 
 ## 1. Master catalogue: `foods.json`
 

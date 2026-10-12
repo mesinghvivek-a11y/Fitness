@@ -1,6 +1,6 @@
-# Forma — offline-first fitness, nutrition and hydration PWA
+# Timely Fit — offline-first fitness, nutrition and hydration PWA
 
-Forma is a lightweight mobile-first Progressive Web App for meal logging, recipe macro calculation, progressive-overload workouts, hydration events, and date-range dashboard analytics. The current version uses plain HTML/CSS/JavaScript instead of a React/Next.js build, so it can be hosted as static files while the core experience is validated.
+Timely Fit is a lightweight mobile-first Progressive Web App for meal logging, recipe macro calculation, progressive-overload workouts, hydration events, and date-range dashboard analytics. The current version uses plain HTML/CSS/JavaScript instead of a React/Next.js build, so it can be hosted as static files while the core experience is validated.
 
 ## Run locally
 
@@ -16,7 +16,7 @@ Open `http://localhost:8000`. For phone tests on your LAN, use your computer's l
 
 - `index.html`, `styles.css`, `app.js` — app shell, responsive UI, app logic and analytics.
 - `foods.json` — 1,174 food, ingredient and meal records, including 947 unique imports from the supplied nutrition CSV.
-- `exercises.json` — 1,443 searchable movements: the 1,324-record upstream metadata dataset merged with Forma-only entries. Exercise metadata is kept lightweight with a short description, body part, target muscles, equipment, rest defaults and tracking metrics.
+- `exercises.json` — 1,443 searchable movements: the 1,324-record upstream metadata dataset merged with app-specific entries. Exercise metadata is kept lightweight with a short description, body part, target muscles, equipment, rest defaults and tracking metrics.
 - `supabase-config.js` — public project URL and publishable-key placeholders.
 - `supabase-schema.sql` — Supabase user profile, daily log and custom-food tables plus owner-only RLS policies.
 - `manifest.json`, `icon.svg`, `sw.js` — PWA install metadata, icon and offline shell cache.
@@ -30,8 +30,18 @@ The catalogues are practical starting libraries, not complete or medically autho
 - **Food:** Full-width search with Ingredients and Recipes filter pills; matching ingredients are grouped before recipes. The selected item expands to quantity, unit, meal and time. Compact actions let the user add a missing ingredient or create a recipe. Packaged-product results appear below barcode/QR scanning controls. Local search is immediate; Open Food Facts search is debounced and optional online.
 - **Recipes:** Open the global plus button while Diet is selected to access recipe creation. Ingredient rows use search and support grams/kilograms and millilitres/litres when the selected ingredient has those units.
 - **Workout:** Search-first exercise picker with horizontal body-part and equipment pill rows, compact media thumbnails, a demonstration/details modal, progressive-overload set planning, inline weight/reps, a rest timer, and a session-end calorie estimate when MET values are available. Supersets and circuits are not implemented in V1. Exercise detail descriptions are intentionally brief.
-- **Water:** One-tap amounts and custom amounts; every water event in the visible/expanded list can be edited or deleted.
-- **Local-first operation:** Master JSON is refreshed on startup when online and cached in IndexedDB; the app falls back to cache when offline. Daily logs and recipes remain local in IndexedDB with a localStorage fallback.
+- **Hydration:** One-tap amounts and custom amounts; every water event in the visible/expanded list can be edited or deleted.
+- **Local-first operation:** Master JSON is refreshed on startup when online and cached in IndexedDB; the app falls back to cache when offline. Daily logs and recipes remain local in IndexedDB with a localStorage fallback. The global settings menu supports a persistent dark theme. Authenticated edits are debounced into background sync batches; no manual sync button is required.
+
+
+## Timely Fit interface and state updates
+
+- App identity is Timely Fit; the hydration navigation label is used while the existing `water` domain/storage keys remain stable for backwards compatibility.
+- The selected date lives in `state.activeDate`, is persisted with the app state, and is shared by Diet, Workout, Hydration and analytics navigation. Today has its own outlined pill style.
+- Global settings contains the dark-mode toggle. Theme preference is stored in `state.preferences.darkMode` and applied to the whole application, modals and the PWA browser theme colour.
+- `scheduleSave()` saves locally first and debounces background sync when an authenticated Supabase account has completed its initial pull. A periodic retry catches temporary connection failures. Without a configured Supabase URL and publishable key, the app remains local-first.
+- Workout session and rest timers update their displayed clocks once per second without rerendering the form. Finishing a session moves the full workout object into `workout_history`; completed exercise rows render their set detail and image/fallback alongside the active-session UI.
+- The implementation stays plain HTML, CSS and JavaScript to keep this PWA deployable as static files and compatible with existing IndexedDB (`forma_local_v1`) and Supabase payloads.
 
 ## Authentication-first entry
 
@@ -67,7 +77,7 @@ The catalogues are practical starting libraries, not complete or medically autho
 3. Add your hosted app's origin under **Authorized JavaScript origins**, such as `https://YOUR_ACCOUNT.github.io`. For local testing, add `http://localhost:8000` (and remove or keep it restricted when finished).
 4. Under **Authorized redirect URIs**, add the callback URL shown on Supabase's **Authentication → Sign In / Providers → Google** page. It typically resembles `https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback`; use the exact URL supplied by Supabase.
 5. Create the OAuth client and copy the Google **Client ID** and **Client Secret** into the Supabase Google provider settings. Enable Google and save.
-6. Return to Forma and test **Continue with Google**. Also test the OAuth redirect on your deployed HTTPS URL, not only localhost.
+6. Return to Timely Fit and test **Continue with Google**. Also test the OAuth redirect on your deployed HTTPS URL, not only localhost.
 
 **Security distinction:** there are two different credential types here. The Supabase Project URL + publishable key belong in `supabase-config.js`. The Google OAuth Client Secret belongs in the Supabase dashboard's Google provider configuration only. Do not put that Google Client Secret, a Supabase `sb_secret_...` key, or a legacy `service_role` key in this repository, browser JavaScript, HTML, or GitHub Pages. This static browser app does not need a Supabase secret key.
 
@@ -75,13 +85,13 @@ Email/password accounts can be enabled in **Authentication → Sign In / Provide
 
 ## Low-cost database architecture
 
-Forma is local-first by design:
+Timely Fit is local-first by design:
 
 - **Search requests: zero Supabase database reads.** `foods.json` and `exercises.json` are fetched and cached in IndexedDB. Typing filters the local catalogue immediately and never queries Supabase. With at least 3 characters, a debounced optional Open Food Facts search can run after 850 ms; this requires internet access and is independent of Supabase billing.
 - **Timeline, dates and charts: local reads.** Switching dates, ticking a set, correcting a water amount, or editing a food entry updates the local state and IndexedDB, not a cloud query.
 - **One compact cloud record per user/day.** Food entries, workout sessions and water events are stored together in one `daily_logs` JSONB payload per date. Derived daily macro totals are calculated in the app; the master food/exercise catalogues are never copied into Supabase.
 - **Small auxiliary tables.** A row stores targets/profile, and custom recipes are stored only when the user creates them.
-- **Batched writes only.** After the first explicit successful Sync now, dirty dates, changed recipes and changed profile data batch-sync every five minutes while pending. Finishing a workout requests a sync. Individual set completions and water taps never trigger their own writes. Errors leave edits local for retry.
+- **Batched writes only.** After the first successful cloud pull, dirty dates, changed recipes and changed profile data sync automatically in background batches after a short debounce, with a periodic retry while pending. No manual Sync button is required. Individual set completions and water taps are grouped with nearby edits rather than sent one-by-one. Errors leave edits local for retry.
 - **Incremental cloud reads.** The first load for an account fetches the account's saved timeline (paginated in 500-row chunks). Later loads request only daily-log rows whose `updated_at` is newer than the local pull cursor. The profile is one small row and the custom-recipe table is fetched as a small list; no query runs during live search.
 
 Supabase Free does **not** charge a direct fee for each SQL read/write operation in the way a per-document-read database product might. The important limits are storage, egress/network data, monthly active users, and shared database resources. Current published Free allowances include 500 MB database size per project, 5 GB egress, 1 GB file storage and 50,000 monthly active users. Free projects can pause after a period of low activity. Check the live [Supabase billing limits](https://supabase.com/docs/guides/platform/billing-on-supabase) before launch because quotas and plan terms can change.

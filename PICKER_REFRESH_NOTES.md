@@ -1,11 +1,11 @@
-# Forma picker refresh — October 2026
+# Timely Fit picker refresh — October 2026
 
 ## Food selection
 
 - Full-width search with independently toggled Ingredients and Recipes pills. Both are active by default. Local matches are separated into Ingredients first, then Recipes.
 - Selecting a result reveals the item macro/source detail and quantity, unit, meal and time controls directly beneath the local results. Logged timestamps use the active timeline date plus the selected time.
-- Add ingredient opens a form for name, unit/basis, category, known macros, optional fibre, source and tags. Blank fibre is preserved as unknown. User-added entries are saved to the existing local custom-food state.
-- Create recipe opens the existing ingredient-based recipe builder. New recipes return to the meal the user was logging, rather than always returning to breakfast.
+- The single universal Add control opens an Ingredient/Recipe mode toggle. Ingredient mode opens the form for name, unit/basis, category, known macros, optional fibre, source and tags; blank fibre is preserved as unknown.
+- Recipe mode opens the existing ingredient-based recipe builder, which requires at least two ingredients. New recipes return to the meal the user was logging, rather than always returning to breakfast.
 - Packaged-product search is debounced (850 ms after at least three characters) against Open Food Facts. Barcode lookup remains available.
 - Camera scanning supports QR codes and retail barcodes through native `BarcodeDetector` or a ZXing CDN fallback. Use HTTPS or `localhost`, allow camera permission, and be online for product lookup. Manual barcode entry is the fallback.
 

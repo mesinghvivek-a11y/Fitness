@@ -1,4 +1,4 @@
-# Forma V2.1 — Supabase Cost and Data-Flow Audit
+# Timely Fit — Supabase Cost and Data-Flow Audit
 
 Audit date: 12 October 2026
 
@@ -14,15 +14,15 @@ Supabase Free is a reasonable starting tier for a personal tracker or small beta
 |---|---|---:|---:|
 | Type one more character into food search | In-memory `foods.json` catalogue | 0 | 0 |
 | Type one more character into exercise search | In-memory `exercises.json` catalogue | 0 | 0 |
-| Select another date / switch Timeline or Dashboard | Local React-like state and IndexedDB (plain JS implementation) | 0 | 0 |
+| Select another date / switch Timeline or Dashboard | Shared JavaScript state and IndexedDB | 0 | 0 |
 | Add or edit a meal | Local state + IndexedDB; mark that date dirty | 0 | 0 immediately |
 | Complete a workout set / adjust rest timer | Local state + IndexedDB; mark the date dirty | 0 | 0 immediately |
 | Add/edit/delete a water event | Local state + IndexedDB; mark the date dirty | 0 | 0 immediately |
 | Open a new signed-in session on a device for the first time | Supabase Auth + first cloud reconciliation | Timeline rows paginated in batches of 500, one profile lookup, one custom-recipe list query | 0 by the pull itself |
 | Reopen a previously synced account | Incremental daily-log query, one profile lookup, one custom-recipe list query | Daily logs newer than the stored high-water mark (pagination only if needed) plus small auxiliary reads | 0 by the pull itself |
-| Tap **Sync now** | Batch uploader | 0 additional read in the write path | One upsert request per 50 dirty daily logs, one profile upsert only if profile is dirty, one upsert request per 50 changed recipes |
-| Finish workout session | Explicitly triggers the same dirty-data sync | No per-set read | Only dirty date/profile/recipe rows are upserted |
-| Idle automatic sync (after first successful explicit sync) | 5-minute timer checks dirty flags | 0 if no data pull is requested | 0 when nothing is dirty; batched upserts if dirty |
+| Automatic background sync | Debounced background uploader | 0 additional read in the write path | One upsert request per 50 dirty daily logs, one profile upsert only if profile is dirty, one upsert request per 50 changed recipes |
+| Finish workout session | Marks the date dirty; background batch sends it | No per-set read | Only dirty date/profile/recipe rows are upserted |
+| Idle automatic sync (after initial cloud pull) | Debounced sync plus 2-minute safety retry checks dirty flags | 0 when no data pull is requested | 0 when nothing is dirty; batched upserts if dirty |
 
 The SQL API still processes queries, but Supabase's published Free quota table is not a per-row/per-query price list. Key quotas include database size, egress, file storage, and monthly active users.
 
