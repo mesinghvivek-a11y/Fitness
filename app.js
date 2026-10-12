@@ -21,6 +21,7 @@ let expandedWaterLog = false;
 let activeFoodSelection = null;
 let activeFoodMeal = 'breakfast';
 let editFoodEntryId = null;
+let editExerciseIndex = null;
 let activeExerciseSelection = null;
 let exerciseDetailReturnState = null;
 let recipeIngredients = [];
@@ -110,7 +111,7 @@ function renderExerciseThumbnail(ex,size='regular') {
   const glyph=exerciseEmoji(ex?.primary_muscle||ex?.target||'');
   const licensed=exerciseHasLicensedMedia(ex);
   const image=licensed ? `<img src="${safe(ex.image)}" alt="" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="exercise-thumb-placeholder" hidden>${glyph}</span>` : `<span class="exercise-thumb-placeholder">${glyph}</span>`;
-  return `<button type="button" class="exercise-media-trigger ${size}" data-action="open-exercise-detail" data-id="${safe(ex?.id||'')}" aria-label="View ${safe(ex?.name||'exercise')} demonstration">${image}<span class="exercise-thumb-play" aria-hidden="true">▶</span></button>`;
+  return `<button type="button" class="exercise-media-trigger ${size}" data-action="open-exercise-detail" data-id="${safe(ex?.id||'')}" aria-label="View ${safe(ex?.name||'exercise')} demonstration">${image}</button>`;
 }
 function exerciseShortDescription(ex) {
   const description=String(ex?.description||'').trim();
@@ -372,7 +373,7 @@ function renderExerciseCard(ex,index,workout) {
   const sets=ex.sets.map((set,sidx)=>`<div class="set-row"><div class="set-num">SET ${sidx+1}</div><input class="set-input" type="number" min="0" step="0.5" aria-label="Weight for set ${sidx+1}" value="${safe(set.weight??0)}" data-role="set-weight" data-ex-index="${index}" data-set-index="${sidx}" ${done?'disabled':''}/><input class="set-input" type="number" min="0" step="1" aria-label="Reps for set ${sidx+1}" value="${safe(set.reps??10)}" data-role="set-reps" data-ex-index="${index}" data-set-index="${sidx}" ${done?'disabled':''}/><button class="set-complete ${set.completed?'checked':''}" data-action="complete-set" data-ex-index="${index}" data-set-index="${sidx}" ${done?'disabled':''} aria-label="Mark set ${sidx+1} complete">${set.completed?'✓':'○'}</button></div>`).join('');
   const restSec=n(ex.default_rest_sec||60);
   const reference=findExercise(ex.exercise_id)||ex;
-  return `<article class="exercise-card"><div class="exercise-card-header">${renderExerciseThumbnail(reference,'timeline')}<div class="exercise-main"><div class="exercise-name">${safe(ex.name)}</div><div class="exercise-meta">${safe(ex.primary_muscle||'Full body')} · ${safe(ex.equipment||'Bodyweight')} · ${restSec?`${restSec}s rest`:'no rest preset'}</div></div><span class="exercise-state ${done?'done':''}">${done?'DONE':`${completedSets}/${ex.sets.length} SETS`}</span></div>
+  return `<article class="exercise-card"><div class="exercise-card-header">${renderExerciseThumbnail(reference,'timeline')}<div class="exercise-main"><div class="exercise-name">${safe(ex.name)}</div><div class="exercise-meta">${safe(ex.primary_muscle||'Full body')} · ${safe(ex.equipment||'Bodyweight')} · ${restSec?`${restSec}s rest`:'no rest preset'}</div></div><span class="exercise-state ${done?'done':''}">${done?'DONE':`${completedSets}/${ex.sets.length} SETS`}</span><button type="button" class="mini-icon" data-action="edit-exercise" data-ex-index="${index}" aria-label="Edit ${safe(ex.name)}">✎</button></div>
     <div class="exercise-start-row"><div class="exercise-stats">${ex.sets.length} sets · ${totalVolume?fmt(totalVolume)+' kg volume':'Ready to lift'}</div><button class="exercise-start ${started?'running':''}" data-action="${started?'toggle-exercise':'start-exercise'}" data-ex-index="${index}" ${done?'disabled':''}>${done?'✓ COMPLETE':started?'⌄ SETS OPEN':'▶ START'}</button></div>
     ${started?`<div class="sets-panel"><div class="sets-header"><span>SET</span><span>WEIGHT KG</span><span>REPS / MIN</span><span>DONE</span></div>${sets}<div class="set-actions"><button class="outline-button full" data-action="add-set" data-ex-index="${index}">＋ Add set</button><button class="outline-button full" data-action="finish-exercise" data-ex-index="${index}">Finish exercise</button></div>${ex.rest_until&&ex.last_completed_set!=null?`<div class="rest-timer"><div class="rest-timer-text">⏱ <span>REST</span> <span class="rest-clock" id="rest-clock" data-until="${ex.rest_until}">--:--</span></div><div class="timer-adjust"><button data-action="adjust-rest" data-ex-index="${index}" data-seconds="-30">−30s</button><button data-action="adjust-rest" data-ex-index="${index}" data-seconds="30">+30s</button></div></div>`:''}</div>`:''}</article>`;
 }
@@ -693,6 +694,48 @@ function openExerciseDetail(id) {
   const target=ex.primary_muscle||ex.target||'Not specified';
   const muscles=(ex.secondary_muscles||[]).filter(Boolean);
   showModal(`${modalHead('EXERCISE GUIDE',ex.name,'Quick movement reference')}${media}<p class="exercise-guide-description">${safe(exerciseShortDescription(ex))}</p><div class="exercise-guide-facts"><div><span>BODY PART</span><strong>${safe(bodyPart)}</strong></div><div><span>TARGET MUSCLE</span><strong>${safe(target)}</strong></div><div><span>EQUIPMENT</span><strong>${safe(ex.equipment||'Bodyweight')}</strong></div><div><span>REST</span><strong>${n(ex.default_rest_sec)?`${n(ex.default_rest_sec)} sec`:'No preset'}</strong></div>${muscles.length?`<div class="wide"><span>SECONDARY MUSCLES</span><strong>${safe(muscles.join(', '))}</strong></div>`:''}</div><div class="exercise-guide-credit">${ex.media_attribution?safe(ex.media_attribution):'Exercise metadata from the Forma master catalogue.'}</div><div class="modal-actions"><button class="save lime" data-action="close-modal">Done</button></div>`);
+}
+function openEditExercise(index) {
+  const ex=activeLog().workout_log?.exercises?.[index];if(!ex)return;
+  editExerciseIndex=index;
+  const reference=findExercise(ex.exercise_id)||ex;const locked=!!ex.finished;
+  const rows=ex.sets.map((set,i)=>`<div class="set-row edit-set-row"><div class="set-num">SET ${i+1}</div><input class="set-input" type="number" min="0" step="0.5" id="editSetWeight${i}" aria-label="Weight for set ${i+1}" value="${safe(set.weight??0)}" ${locked?'disabled':''}/><input class="set-input" type="number" min="0" step="1" id="editSetReps${i}" aria-label="Reps for set ${i+1}" value="${safe(set.reps??10)}" ${locked?'disabled':''}/><button type="button" class="mini-icon" data-action="edit-remove-set" data-set-index="${i}" aria-label="Remove set ${i+1}" ${locked||ex.sets.length<=1?'disabled':''}>✕</button></div>`).join('');
+  showModal(`${modalHead('EDIT EXERCISE',safe(ex.name),locked?'This exercise is finished, so its sets are locked. You can still remove it.':'Change the planned sets, or remove this exercise from the day.')}
+    <div class="selected-food selected-exercise-card">${renderExerciseThumbnail(reference,'selected')}<div><strong class="selected-exercise-name">${safe(ex.name)}</strong><small class="selected-exercise-sub">${safe(ex.primary_muscle||'Full body')} · ${safe(ex.equipment||'Bodyweight')}</small></div></div>
+    <div class="sets-header edit-sets-header"><span>SET</span><span>WEIGHT KG</span><span>REPS / MIN</span><span></span></div>
+    ${rows}
+    <div class="set-actions"><button type="button" class="outline-button full" data-action="edit-add-set" ${locked?'disabled':''}>＋ Add set</button></div>
+    <div class="field" style="margin-top:14px"><label for="editRest">REST BETWEEN SETS (SECONDS)</label><input id="editRest" type="number" min="0" step="5" value="${safe(n(ex.default_rest_sec))}" ${locked?'disabled':''}/></div>
+    <div class="modal-actions"><button class="cancel" data-action="close-modal">Cancel</button><button class="save" data-action="save-exercise-edit" ${locked?'disabled':''}>Save changes</button></div>
+    <button type="button" class="danger-button" data-action="delete-exercise">🗑 Delete exercise</button>`);
+}
+function readEditedSets(ex) {
+  if(ex.finished)return;
+  ex.sets.forEach((set,i)=>{const w=$('editSetWeight'+i),r=$('editSetReps'+i);if(w)set.weight=Math.max(0,n(w.value));if(r)set.reps=Math.max(0,n(r.value));});
+}
+function editExerciseAddSet() {
+  const ex=activeLog().workout_log?.exercises?.[editExerciseIndex];if(!ex||ex.finished)return;
+  readEditedSets(ex);const last=ex.sets[ex.sets.length-1]||{weight:0,reps:10};
+  ex.sets.push({set_num:ex.sets.length+1,weight:n(last.weight),reps:n(last.reps),completed:false});
+  scheduleSave();render();openEditExercise(editExerciseIndex);
+}
+function editExerciseRemoveSet(setIndex) {
+  const ex=activeLog().workout_log?.exercises?.[editExerciseIndex];if(!ex||ex.finished||ex.sets.length<=1)return;
+  readEditedSets(ex);ex.sets.splice(setIndex,1);ex.sets.forEach((s,i)=>{s.set_num=i+1;});
+  ex.rest_until=null;ex.last_completed_set=null;
+  scheduleSave();render();openEditExercise(editExerciseIndex);
+}
+function saveExerciseEdit() {
+  const ex=activeLog().workout_log?.exercises?.[editExerciseIndex];if(!ex)return;
+  if(!ex.finished){readEditedSets(ex);if($('editRest'))ex.default_rest_sec=Math.max(0,Math.round(n($('editRest').value)));}
+  scheduleSave();closeModal();render();toast('Exercise updated.');
+}
+function deleteExerciseEntry(button) {
+  if(button&&button.dataset.armed!=='1'){button.dataset.armed='1';button.textContent='Tap again to delete this exercise';return;}
+  const log=activeLog();const workout=log.workout_log;const ex=workout?.exercises?.[editExerciseIndex];if(!ex)return;
+  const name=ex.name;workout.exercises.splice(editExerciseIndex,1);
+  if(!workout.exercises.length&&!workout.start_ms)log.workout_log=null;
+  editExerciseIndex=null;scheduleSave();closeModal();render();toast(`${name} deleted.`);
 }
 function updateSetPreview() {
   const host=$('setPreview');if(!host)return;const sets=clamp(Math.round(n($('targetSets')?.value)||3),1,20);const start=Math.max(0,n($('startingWeight')?.value)||0);const inc=$('progressiveToggle')?.checked?Math.max(0,n($('weightIncrement')?.value)||0):0;const reps=Math.max(1,Math.round(n($('targetReps')?.value)||10));
@@ -1030,6 +1073,11 @@ document.addEventListener('click', async (event)=>{
     case 'add-exercise': openWorkoutModal();break;
     case 'select-exercise': activeExerciseSelection=button.dataset.id;renderExerciseResults($('exerciseSearch')?.value||'');updateExerciseDetail();break;
     case 'open-exercise-detail': openExerciseDetail(button.dataset.id);break;
+    case 'edit-exercise': openEditExercise(n(button.dataset.exIndex));break;
+    case 'edit-add-set': editExerciseAddSet();break;
+    case 'edit-remove-set': editExerciseRemoveSet(n(button.dataset.setIndex));break;
+    case 'save-exercise-edit': saveExerciseEdit();break;
+    case 'delete-exercise': deleteExerciseEntry(button);break;
     case 'save-exercise': saveExerciseSetup();break;
     case 'start-session': startSession();break;
     case 'start-exercise': startExercise(n(button.dataset.exIndex));break;
