@@ -1,4 +1,4 @@
-const CACHE_NAME = 'forma-shell-v2-5-food-catalogue';
+const CACHE_NAME = 'forma-shell-v2-6-picker-refresh';
 const SUPABASE_SDK_URL = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
 const SHELL = ['./', './index.html', './styles.css', './app.js', './manifest.json', './icon.svg', './foods.json', './exercises.json', './supabase-config.js', './viewport-lock.js'];
 self.addEventListener('install', event => {

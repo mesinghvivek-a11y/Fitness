@@ -27,9 +27,9 @@ The catalogues are practical starting libraries, not complete or medically autho
 
 - **Dashboard:** Daily / Weekly / Monthly toggle, left/right period navigation, target history for net calories, protein and water, calorie/macro analytics, meal distribution, workout stats and hydration trends. The monthly bar views group days into week-sized buckets to fit a phone screen.
 - **Timeline:** Keeps the horizontal date strip/calendar and meal-grouped timeline. The target-history card is not shown here.
-- **Food:** Search-first picker with three recently used items when the search is empty; per-entry macros are snapshots, so editing does not mutate the master catalogue.
+- **Food:** Full-width search with Ingredients and Recipes filter pills; matching ingredients are grouped before recipes. The selected item expands to quantity, unit, meal and time. Compact actions let the user add a missing ingredient or create a recipe. Packaged-product results appear below barcode/QR scanning controls. Local search is immediate; Open Food Facts search is debounced and optional online.
 - **Recipes:** Open the global plus button while Diet is selected to access recipe creation. Ingredient rows use search and support grams/kilograms and millilitres/litres when the selected ingredient has those units.
-- **Workout:** Search-first exercise picker with up to three recent movements, compact media thumbnails, a demonstration/details modal, progressive-overload set planning, inline weight/reps, a rest timer, and a session-end calorie estimate when MET values are available. Supersets and circuits are not implemented in V1. Exercise detail descriptions are intentionally brief.
+- **Workout:** Search-first exercise picker with horizontal body-part and equipment pill rows, compact media thumbnails, a demonstration/details modal, progressive-overload set planning, inline weight/reps, a rest timer, and a session-end calorie estimate when MET values are available. Supersets and circuits are not implemented in V1. Exercise detail descriptions are intentionally brief.
 - **Water:** One-tap amounts and custom amounts; every water event in the visible/expanded list can be edited or deleted.
 - **Local-first operation:** Master JSON is refreshed on startup when online and cached in IndexedDB; the app falls back to cache when offline. Daily logs and recipes remain local in IndexedDB with a localStorage fallback.
 
@@ -77,7 +77,7 @@ Email/password accounts can be enabled in **Authentication → Sign In / Provide
 
 Forma is local-first by design:
 
-- **Search requests: zero Supabase database reads.** `foods.json` and `exercises.json` are fetched and cached in IndexedDB. Typing `D`, `DE`, `DEA`, `DEAD` or `PA`, `PAN`, `PANEER` searches local data only; no query is sent for each keypress.
+- **Search requests: zero Supabase database reads.** `foods.json` and `exercises.json` are fetched and cached in IndexedDB. Typing filters the local catalogue immediately and never queries Supabase. With at least 3 characters, a debounced optional Open Food Facts search can run after 850 ms; this requires internet access and is independent of Supabase billing.
 - **Timeline, dates and charts: local reads.** Switching dates, ticking a set, correcting a water amount, or editing a food entry updates the local state and IndexedDB, not a cloud query.
 - **One compact cloud record per user/day.** Food entries, workout sessions and water events are stored together in one `daily_logs` JSONB payload per date. Derived daily macro totals are calculated in the app; the master food/exercise catalogues are never copied into Supabase.
 - **Small auxiliary tables.** A row stores targets/profile, and custom recipes are stored only when the user creates them.
@@ -127,13 +127,13 @@ No architecture can guarantee that usage will stay inside the Free tier under ev
 - `DATA_IMPORT_REPORT.md` records the import counts, available source columns, category totals and limitations. The file's `source` values identify records as “USDA Foundation” or “INDB Indian”; those labels are preserved as supplied rather than independently verified.
 - Category browsing and search remain local-first. The master `foods.json` catalogue is cached in IndexedDB and in the PWA service-worker cache for offline use.
 - The original app's portion calculator, meal logging, daily macro summaries, custom recipe creator and recipe ingredient search are retained. External product entries used in recipes are saved locally with your app state.
-- Optional Open Food Facts search and barcode lookup require internet access. Camera-based barcode scanning depends on browser support for `BarcodeDetector` and camera permission; manual barcode entry remains available as a fallback.
+- Optional Open Food Facts search and barcode lookup require internet access. The camera scanner supports barcodes and QR codes: it uses native `BarcodeDetector` where available, with a ZXing browser fallback where needed. Camera permission and HTTPS (or localhost during development) are required. Manual barcode entry remains available as a fallback.
 - The uploaded CSV has calories, protein, carbohydrates and fat, but **no fibre field** and no recipe ingredients, quantities, yields or methods. Imported records do not fabricate fibre or recipes. Product database results may also have incomplete nutrition; check package labels for consequential decisions.
 - If Supabase is not configured, the welcome screen offers **Continue on this device** for a local-only experience; logs stay in that browser and are not synced. This keeps the app usable without shipping any credentials. To enable account login/cloud sync, put your own Supabase Project URL and publishable key into `supabase-config.js`, then follow the existing “Configure Supabase” section above. No credentials were supplied with this build.
 
 ### Validation scripts
 
-Run `node tests/catalogue-check.js` and `python tests/verify-food-import.py` from the project directory to validate the bundled food JSON and reconcile every input CSV row to its catalogue record.
+Run `node tests/catalogue-check.js`, `node tests/picker-refresh-check.mjs` and `python tests/verify-food-import.py` from the project directory to validate the bundled food JSON, exercise-picker filter matching, key UI hooks and reconciliation of every input CSV row to its catalogue record. A device/browser test is still required to confirm real camera permissions and scanning on target iOS/Android versions.
 
 #### Open Food Facts reuse note
 

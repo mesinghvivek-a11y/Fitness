@@ -187,3 +187,56 @@ input[type=checkbox]{-webkit-appearance:checkbox;appearance:auto}
 
 .auth-local-btn{width:100%;display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;padding:14px 16px;margin:12px 0 4px;border:1px solid #cbd9bc;border-radius:14px;background:#f0f5e9;color:#2c4430;font-weight:800;font-size:var(--fs-sm)}
 .auth-local-btn span{font-size:var(--fs-cap);font-weight:500;color:#7d8c78}
+
+
+/* Forma picker refresh: roomy search, quiet pill filters and compact selection flow */
+.modal-sheet{width:min(640px,100%);max-height:min(94dvh,940px);padding:10px 18px calc(22px + env(safe-area-inset-bottom));overscroll-behavior:contain}
+.modal-head{margin-bottom:13px}
+.food-search-hero,.exercise-search-hero{position:relative;display:flex;align-items:center;gap:10px;margin:0 0 11px;padding:0 13px;height:58px;background:#fff;border:1.5px solid #dce6d4;border-radius:17px;box-shadow:0 3px 12px #203c2010;transition:border-color .15s,box-shadow .15s}
+.food-search-hero:focus-within,.exercise-search-hero:focus-within{border-color:#91b567;box-shadow:0 0 0 4px #c7f36c30}
+.food-search-hero .search-icon,.exercise-search-hero .search-icon{position:static;flex:0 0 auto;font-size:25px;line-height:1;color:#82917f}
+.food-search-hero input,.exercise-search-hero input{border:0;outline:0;box-shadow:none!important;background:transparent;min-width:0;width:100%;height:100%;font-size:16px;color:#243b2d;padding:0}
+.food-search-hero input::-webkit-search-cancel-button,.exercise-search-hero input::-webkit-search-cancel-button{cursor:pointer}
+.food-search-shortcut{border:1px solid #e5ebe0;background:#f7f9f4;border-radius:7px;color:#9ba69a;padding:3px 6px;font-size:10px;white-space:nowrap}
+.food-type-pills{display:flex;gap:8px;margin:0 0 11px}
+.food-type-pill{display:flex;align-items:center;gap:7px;min-height:39px;padding:8px 12px;border:1px solid #e0e7dc;border-radius:999px;background:#fff;color:#6f7f70;font-size:12px;font-weight:750;transition:background .16s,border-color .16s,color .16s}
+.food-type-pill.active{background:#edf5e4;border-color:#b7ce9c;color:#29432d}
+.pill-dot{width:7px;height:7px;border-radius:50%;background:#b9c4b5}.food-type-pill.active .ingredient-dot{background:#659b4e}.food-type-pill.active .recipe-dot{background:#9b86cf}
+.food-pill-count{display:inline-grid;place-items:center;min-width:22px;height:20px;padding:0 5px;background:#f0f3ed;border-radius:999px;color:#869285;font-size:10px;font-weight:800}.food-type-pill.active .food-pill-count{background:#fff;color:#5c7952}
+.food-local-results{max-height:clamp(150px,30dvh,300px);margin:0 0 10px;gap:9px;overscroll-behavior:contain}
+.food-result-group{display:grid;gap:6px}.food-result-group .picker-caption{display:flex;align-items:center;justify-content:space-between;margin:4px 2px 1px;font-size:10px}.food-result-group .picker-caption span{font-size:10px;color:#94a18f}
+.food-local-results .search-result{min-height:62px;padding:8px 9px;border-radius:14px;gap:9px}.food-local-results .result-copy strong{font-size:13px}.food-local-results .result-copy span{font-size:10px;margin-top:3px}.food-local-results .result-calories{font-size:11px}
+.food-create-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:7px 0 15px}
+.food-create-card{display:flex;align-items:center;gap:9px;min-width:0;text-align:left;padding:11px 10px;border:1px solid #e1e9db;border-radius:14px;background:#f7faf3;color:#2f4934;transition:transform .12s,background .12s}
+.food-create-card:active{transform:scale(.985)}.food-create-card.recipe{background:#f8f6fb;border-color:#e9e2f1}
+.food-create-icon{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;border-radius:11px;background:#e6f0d9;color:#557f3f;font-size:20px;font-weight:500}.food-create-card.recipe .food-create-icon{background:#eee6f9;color:#7965a6}
+.food-create-card strong{display:block;font-size:12px;line-height:1.25}.food-create-card small{display:block;margin-top:3px;color:#8d9b8a;font-size:10px;line-height:1.25}
+.food-online-section{border-top:1px solid #e7ece2;padding-top:12px;margin-top:2px}
+.food-online-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}.food-online-heading h3{font:800 16px var(--display);letter-spacing:-.35px;margin:2px 0 0;color:#2b4031}.food-online-badge{font-size:9px;letter-spacing:.8px;font-weight:850;color:#7c8a79;border:1px solid #e4e9df;padding:5px 7px;border-radius:7px}
+.food-online-tools{margin:0 0 7px;grid-template-columns:1fr 1fr}.food-online-tools .outline-button,.food-barcode-row .outline-button{border-radius:12px;background:#f8faf5;font-size:11px;min-height:42px}
+.food-barcode-row{margin:0 0 8px}.food-barcode-row input{border-radius:12px;height:42px;font-size:15px}
+.food-online-results{max-height:190px;margin-bottom:11px;gap:6px;overscroll-behavior:contain}.food-online-results .search-result{padding:8px 9px;min-height:58px}.food-no-match{min-height:60px;display:flex;align-items:center;justify-content:center;padding:12px!important;line-height:1.45}
+.food-empty-prompt{display:grid;justify-items:center;text-align:center;gap:6px;padding:21px 15px;margin:4px 0 8px}.food-empty-prompt strong{font-size:13px;color:#617660}.food-empty-prompt span:last-child{max-width:310px}
+.food-prompt-icon{font-size:26px;color:#9aad8b}
+.food-more-hint{text-align:center;color:#8c998b;font-size:10px;padding:4px}
+.food-selection-panel{border-top:1px solid #e1e9dc;padding-top:12px;margin-top:12px;animation:sheetup .18s ease}
+.food-selection-panel[hidden]{display:none!important}
+.food-selection-panel .selected-food{border:1px solid #dbe7d0;background:#f2f7eb;align-items:center;padding:12px;border-radius:15px;margin:0 0 13px}
+.food-selection-panel .selected-food strong{color:#293f2e;font-size:14px}.food-selection-panel .selected-food small{font-size:11px;line-height:1.45;color:#73836f}.food-selected-badge{font-size:9px;font-weight:850;letter-spacing:.4px;background:#e3efd5;color:#50783d;padding:6px 7px;border-radius:8px;white-space:nowrap}
+.food-detail-heading{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:0 1px 10px}.food-detail-heading strong{font-size:13px;color:#354a38}.food-detail-heading span{font-size:10px;color:#93a08f}
+.food-log-grid{grid-template-columns:1fr 1fr;gap:9px}.food-log-grid .field{margin-bottom:8px}.food-log-grid .field label{font-size:9px}
+.custom-food-macros{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.custom-food-macros .field{margin:0}.custom-food-macros .field input{height:42px}
+.barcode-scan-status{text-align:center;color:#c5d6bb;font-size:12px;margin:8px 0 3px}
+.exercise-search-hero{margin-bottom:10px;height:56px}
+.exercise-filter-block{margin:0 0 7px;padding:0}.exercise-filter-label{display:flex;align-items:center;justify-content:space-between;margin:0 1px 6px;color:#778675;font-size:9px;letter-spacing:.75px;font-weight:850}.exercise-filter-label span+span{letter-spacing:0;text-transform:none;font-weight:500;color:#a2ada0}
+.exercise-filter-strip{display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;padding:0 0 5px;scrollbar-width:thin;scrollbar-color:#dce5d5 transparent;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.filter-chip{white-space:nowrap;flex:0 0 auto;min-height:31px;padding:7px 10px;border:1px solid #e1e7dd;border-radius:999px;background:#fff;color:#7b8979;font-size:10px;font-weight:750;line-height:1}
+.filter-chip.active{background:#2c4431;border-color:#2c4431;color:#fff;box-shadow:0 2px 4px #1d3a2515}
+.exercise-filter-block.equipment{margin-bottom:8px}
+.exercise-results-heading{display:flex;align-items:baseline;justify-content:space-between;margin:4px 1px 7px}.exercise-results-heading strong{font:800 14px var(--display);color:#334936}.exercise-results-heading span{font-size:10px;color:#93a08e}
+.exercise-picker-results{max-height:clamp(155px,27dvh,255px);margin:0 0 11px;gap:6px;overscroll-behavior:contain}
+.exercise-picker-results .exercise-search-row{min-height:58px;border-radius:13px;gap:8px;padding-right:8px}.exercise-picker-results .exercise-media-trigger.picker{min-height:58px;max-width:62px;flex:0 0 58px}.exercise-picker-results .exercise-result-main{padding:8px 0;min-width:0}.exercise-picker-results .result-copy strong{font-size:12px;line-height:1.3}.exercise-picker-results .result-copy span{font-size:10px;margin-top:4px}.exercise-picker-results .exercise-rest-pill{font-size:9px;padding:5px 6px}
+.exercise-search-row.selected{border-color:#a3c682;background:#f1f7e8}
+.selected-exercise-card{border:1px solid #e1e9dc!important;background:#f3f6ee!important;border-radius:14px!important;padding:10px!important;min-height:67px}.selected-exercise-card .selected-exercise-name{font-size:13px}.selected-exercise-card .selected-exercise-sub{font-size:10px}.selected-exercise-card .selected-exercise-description{font-size:10px;line-height:1.4;color:#899788;display:block;margin-top:4px}
+@media(min-width:540px){.modal-backdrop{align-items:center;padding:20px}.modal-sheet{border-radius:24px;max-height:90vh}.food-local-results{max-height:260px}.exercise-picker-results{max-height:230px}}
+@media(max-width:390px){.modal-sheet{padding-inline:13px}.food-search-hero,.exercise-search-hero{height:54px}.food-search-shortcut{display:none}.food-create-card{padding:9px 8px;gap:7px}.food-create-icon{width:30px;height:30px;flex-basis:30px}.food-create-card strong{font-size:11px}.food-log-grid{gap:7px}}

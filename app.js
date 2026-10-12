@@ -20,6 +20,13 @@ let externalFoodMatches = [];
 let externalFoodSearchTerm = '';
 let barcodeStream = null;
 let barcodeScanTimer = null;
+let barcodeReaderControls = null;
+let barcodeReader = null;
+let foodSearchTimer = null;
+let foodKindFilters = { ingredients: true, recipes: true };
+let activeExerciseBodyFilter = 'all';
+let activeExerciseEquipmentFilter = 'all';
+let recipeReturnMeal = 'breakfast';
 let state = freshState();
 let expandedWaterLog = false;
 let activeFoodSelection = null;
@@ -542,7 +549,7 @@ function closeModal() {
   $('modalRoot').innerHTML=''; activeFoodSelection=null; editFoodEntryId=null; activeRecipeIngredient=null;
   const returnState=exerciseDetailReturnState; exerciseDetailReturnState=null;
   if(returnState){
-    openWorkoutModal();activeExerciseSelection=returnState.id;
+    openWorkoutModal();activeExerciseBodyFilter=returnState.bodyFilter||'all';activeExerciseEquipmentFilter=returnState.equipmentFilter||'all';activeExerciseSelection=returnState.id;renderExerciseFilters();
     const input=$('exerciseSearch');if(input){input.value=returnState.query;renderExerciseResults(returnState.query);updateExerciseDetail();}
     return;
   }
@@ -551,21 +558,52 @@ function closeModal() {
 function modalHead(kicker,title,description='') { return `<div class="modal-handle"></div><div class="modal-head"><div><div class="eyebrow">${kicker}</div><h2>${title}</h2>${description?`<p>${description}</p>`:''}</div><button class="close-modal" data-action="close-modal" aria-label="Close">×</button></div>`; }
 function openFoodModal(meal='breakfast', preselect=null, allowRecipeCreation=false) {
   activeFoodMeal=meal||'breakfast';activeFoodSelection=preselect||null;
-  externalFoodMatches=[];externalFoodSearchTerm='';
-  showModal(`${modalHead('ADD TO YOUR DAY','Log food','Search ${fmt(allFoods().length)} foods offline, or optionally look up packaged products online.')}
-    <div class="search-box"><span class="search-icon">⌕</span><input id="foodSearch" placeholder="Search food, ingredient or meal…" autocomplete="off" /></div>
-    <div class="food-filter-row"><label for="foodCategoryFilter">CATEGORY</label><select id="foodCategoryFilter"><option value="all">All categories</option>${[...new Set(allFoods().map(foodCategory))].sort().map(c=>`<option value="${safe(c)}">${safe(c)}</option>`).join('')}</select></div>
-    <div id="foodResults" class="search-results"></div>
-    <div class="food-online-tools"><button type="button" class="outline-button" data-action="search-online-foods">⌕ Search Open Food Facts</button><button type="button" class="outline-button" data-action="scan-food-barcode">▦ Scan barcode</button></div>
-    <div class="food-barcode-row"><input id="barcodeSearch" inputmode="numeric" autocomplete="off" placeholder="Or enter product barcode" aria-label="Product barcode" /><button type="button" class="outline-button" data-action="lookup-food-barcode">Look up</button></div>
-    <div id="foodOnlineResults" class="search-results"></div><div id="selectedFoodDetail"></div>
-    <div class="field-grid food-log-grid"><div class="field"><label for="foodAmount">AMOUNT</label><input id="foodAmount" type="number" min="0.01" step="0.1" value="100" /></div><div class="field"><label for="foodUnit">UNIT</label><select id="foodUnit"><option value="g">g</option></select></div><div class="field"><label for="foodMeal">MEAL</label><select id="foodMeal">${MEALS.map(m=>`<option value="${m.key}" ${m.key===activeFoodMeal?'selected':''}>${m.label}</option>`).join('')}</select></div></div>
-    <div class="form-note">Nutrition is scaled from the selected food's source basis. Imported CSV items provide calories, protein, carbs and fat only; fibre was not included in that file. Online product data can be incomplete or user-submitted, so check labels. Editing a logged item never changes the master library.</div>
-    <div class="modal-actions"><button class="cancel" data-action="close-modal">Cancel</button><button class="save lime" data-action="confirm-add-food">＋ Add to timeline</button></div>
-    ${allowRecipeCreation?'<div class="recipe-cta"><span>Make a meal from ingredients</span><button class="muted-link" data-action="open-recipe">＋ Create recipe</button></div>':''}`);
+  externalFoodMatches=[];externalFoodSearchTerm='';foodKindFilters={ingredients:true,recipes:true};
+  if(foodSearchTimer){clearTimeout(foodSearchTimer);foodSearchTimer=null;}
+  const clock=new Date();const defaultTime=`${String(clock.getHours()).padStart(2,'0')}:${String(clock.getMinutes()).padStart(2,'0')}`;
+  const ingredientCount=allFoods().filter(food=>!isRecipeFood(food)).length;
+  const recipeCount=allFoods().filter(isRecipeFood).length;
+  showModal(`${modalHead('NOURISH YOUR DAY','Add food','Search your library first, then explore packaged products online.')}
+    <div class="food-search-hero"><span class="search-icon">⌕</span><input id="foodSearch" type="search" placeholder="Search ingredients or recipes…" autocomplete="off" aria-label="Search ingredients and recipes"/><span class="food-search-shortcut">⌘ K</span></div>
+    <div class="food-type-pills" role="group" aria-label="Filter food type">
+      <button type="button" class="food-type-pill active" data-action="toggle-food-kind" data-kind="ingredients" aria-pressed="true"><span class="pill-dot ingredient-dot"></span>Ingredients <span class="food-pill-count">${fmt(ingredientCount)}</span></button>
+      <button type="button" class="food-type-pill active" data-action="toggle-food-kind" data-kind="recipes" aria-pressed="true"><span class="pill-dot recipe-dot"></span>Recipes <span class="food-pill-count">${fmt(recipeCount)}</span></button>
+    </div>
+    <div id="foodResults" class="search-results food-local-results"></div>
+    <div id="foodSelectionPanel" class="food-selection-panel" hidden>
+      <div id="selectedFoodDetail"></div>
+      <div class="food-detail-heading"><strong>Log details</strong><span>Adjust the amount before adding</span></div>
+      <div class="field-grid food-log-grid"><div class="field"><label for="foodAmount">QUANTITY / SERVINGS</label><input id="foodAmount" type="number" min="0.01" step="0.1" value="100" /></div><div class="field"><label for="foodUnit">UNIT</label><select id="foodUnit"><option value="g">g</option></select></div></div>
+      <div class="field-grid food-log-grid"><div class="field"><label for="foodMeal">MEAL</label><select id="foodMeal">${MEALS.map(m=>`<option value="${m.key}" ${m.key===activeFoodMeal?'selected':''}>${m.label}</option>`).join('')}</select></div><div class="field"><label for="foodTime">TIME</label><input id="foodTime" type="time" value="${defaultTime}" /></div></div>
+      <div class="form-note">Nutrition is scaled from the source basis. Imported foods may not include fibre. Online nutrition data can be incomplete; check the package label where accuracy matters.</div>
+      <div class="modal-actions"><button class="cancel" data-action="clear-food-selection">Back to search</button><button class="save lime" data-action="confirm-add-food">＋ Add to timeline</button></div>
+    </div>
+    <div class="food-create-row" aria-label="Add your own food">
+      <button type="button" class="food-create-card" data-action="add-custom-ingredient"><span class="food-create-icon">＋</span><span><strong>Add ingredient</strong><small>Enter nutrition details</small></span></button>
+      <button type="button" class="food-create-card recipe" data-action="open-recipe"><span class="food-create-icon">✳</span><span><strong>Create recipe</strong><small>Combine ingredients</small></span></button>
+    </div>
+    <div class="food-online-section"><div class="food-online-heading"><div><div class="eyebrow">MORE TO DISCOVER</div><h3>Packaged products</h3></div><span class="food-online-badge">ONLINE</span></div>
+      <div class="food-online-tools"><button type="button" class="outline-button" data-action="scan-food-barcode">▦ Scan barcode / QR</button><button type="button" class="outline-button" data-action="search-online-foods">⌕ Search online</button></div>
+      <div class="food-barcode-row"><input id="barcodeSearch" inputmode="numeric" autocomplete="off" placeholder="Enter barcode number" aria-label="Product barcode" /><button type="button" class="outline-button" data-action="lookup-food-barcode">Look up</button></div>
+      <div id="foodOnlineResults" class="search-results food-online-results"><div class="picker-prompt">Online matches for your search will appear here. Internet access is needed.</div></div>
+    </div>
+`);
   renderFoodResults('');
   if(activeFoodSelection) selectFoodInPicker(activeFoodSelection);
+  const input=$('foodSearch');if(input&&!activeFoodSelection&&window.matchMedia?.('(pointer: fine)').matches)input.focus({preventScroll:true});
 }
+function isRecipeFood(food) {
+  return !!food && (food.type==='custom_recipe' || String(food.category||'').toLowerCase()==='recipes' || (food.tags||[]).some(tag=>String(tag).toLowerCase()==='recipe'));
+}
+function scheduleOnlineFoodSearch(query) {
+  if(foodSearchTimer){clearTimeout(foodSearchTimer);foodSearchTimer=null;}
+  const q=String(query||'').trim();const host=$('foodOnlineResults');
+  if(!host)return;
+  if(q.length<3){host.innerHTML='<div class="picker-prompt">Type at least 3 characters to search packaged products online.</div>';return;}
+  host.innerHTML='<div class="picker-prompt">Searching local foods now. Online products will load below…</div>';
+  foodSearchTimer=setTimeout(()=>{searchOpenFoodFacts(q);},850);
+}
+
 function searchScore(query,text) {
   const q=query.toLowerCase().trim();const t=text.toLowerCase();if(!q)return 1;
   if(t.startsWith(q))return 100-q.length/100;if(t.includes(q))return 80-q.length/100;
@@ -574,19 +612,39 @@ function searchScore(query,text) {
 function renderFoodResults(query) {
   const host=$('foodResults');if(!host)return;
   const q=String(query||'').trim();
-  const category=$('foodCategoryFilter')?.value||'all';
+  const enabled=food=>isRecipeFood(food)?foodKindFilters.recipes:foodKindFilters.ingredients;
+  const local=allFoods().filter(enabled);
+  if(!foodKindFilters.ingredients&&!foodKindFilters.recipes){
+    host.innerHTML='<div class="picker-prompt">Both filters are off. Turn on Ingredients or Recipes to show results.</div>';return;
+  }
+  const renderGroup=(label,items)=>items.length?`<div class="food-result-group"><div class="picker-caption">${label} <span>${items.length}</span></div>${items.map(({food})=>foodResultButton(food,activeFoodSelection===food.id)).join('')}</div>`:'';
   if(!q){
-    const recents=(state.recentFoodIds||[]).map(findFood).filter(Boolean).filter(food=>category==='all'||foodCategory(food)===category).slice(0,3);
-    host.innerHTML=recents.length?`<div class="picker-caption">RECENTLY USED</div>${recents.map(food=>foodResultButton(food,activeFoodSelection===food.id)).join('')}`:`<div class="picker-prompt">Start typing to search ${fmt(allFoods().length)} foods, ingredients and meals.</div>`;
+    const recents=(state.recentFoodIds||[]).map(findFood).filter(Boolean).filter(food=>enabled(food));
+    if(recents.length){
+      const ing=recents.filter(food=>!isRecipeFood(food)).slice(0,3).map(food=>({food}));
+      const recipes=recents.filter(isRecipeFood).slice(0,3).map(food=>({food}));
+      host.innerHTML=renderGroup('RECENT INGREDIENTS',ing)+renderGroup('RECENT RECIPES',recipes);
+    } else {
+      host.innerHTML='<div class="picker-prompt food-empty-prompt"><span class="food-prompt-icon">⌕</span><strong>Your food library is ready</strong><span>Search by name, ingredient, recipe, brand or tag. You can also add an ingredient or build a recipe below.</span></div>';
+    }
     return;
   }
-  const results=allFoods().filter(food=>category==='all'||foodCategory(food)===category).map(food=>({food,score:searchScore(q,`${food.name} ${(food.tags||[]).join(' ')} ${foodCategory(food)}`)})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||a.food.name.localeCompare(b.food.name)).slice(0,10);
-  host.innerHTML=results.length?`<div class="picker-caption">LOCAL RESULTS · ${results.length} SHOWN</div>${results.map(({food})=>foodResultButton(food,activeFoodSelection===food.id)).join('')}`:`<div class="empty-chart" style="height:65px">No local match. Try Open Food Facts for packaged products.</div>`;
+  const scored=local.map(food=>({food,score:searchScore(q,`${food.name} ${(food.tags||[]).join(' ')} ${foodCategory(food)} ${food.subcategory||''} ${food.brand||''} ${food.description||''}`)})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||a.food.name.localeCompare(b.food.name));
+  const ingredients=scored.filter(x=>!isRecipeFood(x.food));
+  const recipes=scored.filter(x=>isRecipeFood(x.food));
+  let shownIngredients=[],shownRecipes=[];
+  if(foodKindFilters.ingredients&&foodKindFilters.recipes){
+    shownIngredients=ingredients.slice(0,7);shownRecipes=recipes.slice(0,5);
+  } else if(foodKindFilters.ingredients){shownIngredients=ingredients.slice(0,12);}
+  else {shownRecipes=recipes.slice(0,12);}
+  const total=ingredients.length+recipes.length;
+  host.innerHTML=total?`${renderGroup(`INGREDIENTS · ${ingredients.length} MATCH${ingredients.length===1?'':'ES'}`,shownIngredients)}${renderGroup(`RECIPES · ${recipes.length} MATCH${recipes.length===1?'':'ES'}`,shownRecipes)}${total>(shownIngredients.length+shownRecipes.length)?'<div class="food-more-hint">Refine your search to narrow the results.</div>':''}`:'<div class="empty-chart food-no-match">No local match. Add it yourself above, or check packaged products online below.</div>';
 }
+
 function foodResultButton(food,selected=false) {
   const kcal=foodMacros(food,defaultFoodAmount(food),foodAmountUnit(food)).calories;
   const image=food.image_url?`<img class="food-result-image" src="${safe(food.image_url)}" alt="" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="food-result-emoji" hidden>${nutritionEmoji(food)}</span>`:`<span class="food-result-emoji">${nutritionEmoji(food)}</span>`;
-  return `<button type="button" class="search-result ${selected?'selected':''}" data-action="select-food" data-id="${safe(food.id)}"><span class="result-icon food-result-icon">${image}</span><span class="result-copy"><strong>${safe(food.name)}</strong><span>${safe(foodCategory(food))} · ${safe(foodAmountUnit(food))} · ${safe(foodSourceLabel(food))}</span></span><span class="result-calories">${fmt(kcal)} kcal</span></button>`;
+  return `<button type="button" class="search-result ${selected?'selected':''}" data-action="select-food" data-id="${safe(food.id)}"><span class="result-icon food-result-icon">${image}</span><span class="result-copy"><strong>${safe(food.name)}</strong><span>${isRecipeFood(food)?'Recipe':'Ingredient'} · ${safe(foodCategory(food))} · ${safe(foodSourceLabel(food))}</span></span><span class="result-calories">${fmt(kcal)} kcal</span></button>`;
 }
 function externalFoodResultButton(food) {
   const amount=100;const m=foodMacros(food,amount,'g');
@@ -620,7 +678,7 @@ async function searchOpenFoodFacts(query) {
   try{
     const url=`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&page_size=8&fields=code,product_name,product_name_en,brands,categories_tags,nutriments,image_front_small_url,image_front_url,quantity`;
     const response=await fetch(url,{headers:{Accept:'application/json'}});if(!response.ok)throw new Error(`Open Food Facts returned ${response.status}`);
-    const data=await response.json();externalFoodMatches=(data.products||[]).map(productToExternalFood).filter(Boolean);externalFoodSearchTerm=q.toLowerCase();
+    const data=await response.json();if(($('foodSearch')?.value||'').trim()!==q)return;externalFoodMatches=(data.products||[]).map(productToExternalFood).filter(Boolean);externalFoodSearchTerm=q.toLowerCase();
     host.innerHTML=externalFoodMatches.length?`<div class="picker-caption">OPEN FOOD FACTS · ${externalFoodMatches.length} RESULTS</div>${externalFoodMatches.map(externalFoodResultButton).join('')}<div class="food-source-note">Community-submitted product database. Verify the packet label if values matter. Data and image licence information: <a href="https://openfoodfacts.github.io/documentation/docs/Product-Opener/api/tutorials/license-be-on-the-legal-side/" target="_blank" rel="noopener noreferrer">Open Food Facts licences</a>.</div>`:'<div class="empty-chart">No packaged products found. Try the brand or a shorter search phrase.</div>';
   }catch(error){console.warn('Open Food Facts search failed',error);host.innerHTML='<div class="empty-chart">Online lookup failed. Check your connection and try again; your local food library still works offline.</div>';}
 }
@@ -638,32 +696,80 @@ async function lookupOpenFoodFactsBarcode(rawCode, selectAfterLookup=false) {
     else if(host)host.innerHTML=`<div class="picker-caption">BARCODE MATCH</div>${externalFoodResultButton(food)}<div class="food-source-note">Community-submitted product data. Verify the packet label if values matter. Data and image licence information: <a href="https://openfoodfacts.github.io/documentation/docs/Product-Opener/api/tutorials/license-be-on-the-legal-side/" target="_blank" rel="noopener noreferrer">Open Food Facts licences</a>.</div>`;
   }catch(error){console.warn('Open Food Facts barcode lookup failed',error);if(host)host.innerHTML=`<div class="empty-chart">${safe(error.message||'Barcode lookup failed.')} Check the number and connection, or enter the nutrition from the product label manually.</div>`;if(selectAfterLookup)toast(error.message||'Barcode lookup failed.',true);}
 }
+function loadZXingFallback() {
+  if(window.ZXing?.BrowserMultiFormatReader)return Promise.resolve(window.ZXing);
+  if(window.__formaZXingPromise)return window.__formaZXingPromise;
+  window.__formaZXingPromise=new Promise((resolve,reject)=>{
+    const script=document.createElement('script');
+    script.src='https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js';
+    script.async=true;script.onload=()=>window.ZXing?.BrowserMultiFormatReader?resolve(window.ZXing):reject(new Error('Camera scanner library did not load.'));
+    script.onerror=()=>reject(new Error('Could not load the camera scanner. Connect to the internet or enter the barcode manually.'));
+    document.head.appendChild(script);
+  });
+  return window.__formaZXingPromise;
+}
+function scannedProductCode(rawValue) {
+  const raw=String(rawValue||'').trim();
+  const direct=raw.match(/^\d{8,14}$/);if(direct)return direct[0];
+  try{const url=new URL(raw);const matches=[...url.pathname.matchAll(/(?:product\/|\/)(\d{8,14})(?:\/|$)/g)];if(matches.length)return matches[matches.length-1][1];const q=url.searchParams.get('code')||url.searchParams.get('barcode');if(q&&/^\d{8,14}$/.test(q))return q;}catch(_){}
+  const embedded=raw.match(/(?:barcode|product)[^\d]{0,12}(\d{8,14})/i);return embedded?embedded[1]:'';
+}
+async function handleScannedFoodValue(rawValue) {
+  const meal=activeFoodMeal||'breakfast';const raw=String(rawValue||'').trim();
+  stopBarcodeScanner();
+  const code=scannedProductCode(raw);
+  openFoodModal(meal);
+  if(code){if($('barcodeSearch'))$('barcodeSearch').value=code;await lookupOpenFoodFactsBarcode(code,true);return;}
+  if($('foodSearch'))$('foodSearch').value=raw.slice(0,120);
+  renderFoodResults(raw.slice(0,120));
+  if(raw.length>=3)await searchOpenFoodFacts(raw.slice(0,120));
+  else toast('QR code read. It was not a product barcode; try the decoded text as a search.',true);
+}
 async function startBarcodeScanner() {
-  if(!navigator.mediaDevices?.getUserMedia||typeof window.BarcodeDetector!=='function'){
-    toast('Camera barcode scanning is not supported in this browser. Use the barcode field and Look up button instead.',true);return;
-  }
-  showModal(`${modalHead('SCAN PRODUCT','Scan barcode','Allow camera access and hold the barcode inside the frame.')}<div class="barcode-camera-frame"><video id="foodBarcodeVideo" autoplay muted playsinline></video><div class="barcode-reticle"></div></div><p class="food-source-note">Camera access is used only for scanning. The barcode is sent to Open Food Facts for lookup.</p><div class="modal-actions"><button type="button" class="cancel" data-action="stop-food-barcode">Cancel scan</button></div>`);
-  try{
-    const detector=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e']});
-    barcodeStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
-    const video=$('foodBarcodeVideo');if(!video)throw new Error('Camera view is unavailable.');video.srcObject=barcodeStream;await video.play();
-    barcodeScanTimer=setInterval(async()=>{
-      if(!video||video.readyState<2)return;
-      try{const codes=await detector.detect(video);if(codes?.length&&codes[0].rawValue){const code=codes[0].rawValue;stopBarcodeScanner();openFoodModal(activeFoodMeal);if($('barcodeSearch'))$('barcodeSearch').value=code;await lookupOpenFoodFactsBarcode(code,true);}}
-      catch(error){console.warn('Barcode frame scan failed',error);}
-    },450);
-  }catch(error){stopBarcodeScanner();closeModal();toast(error.message||'Could not start the camera. Try manual barcode entry.',true);}
+  showModal(`${modalHead('CAMERA SCANNER','Scan a barcode or QR','Allow camera access, then fit the code inside the frame.')}
+    <div class="barcode-camera-frame"><video id="foodBarcodeVideo" autoplay muted playsinline></video><div class="barcode-reticle"></div></div>
+    <div class="barcode-scan-status" id="barcodeScanStatus">Starting camera…</div>
+    <p class="food-source-note">The camera is used to read the code. Product barcodes are looked up through Open Food Facts. QR content is searched when it is not a product barcode.</p>
+    <div class="modal-actions"><button type="button" class="cancel" data-action="stop-food-barcode">Cancel scan</button></div>`);
+  try {
+    if(!navigator.mediaDevices?.getUserMedia)throw new Error('Camera access requires a secure HTTPS connection or localhost.');
+    const video=$('foodBarcodeVideo');if(!video)throw new Error('Camera view is unavailable.');
+    let nativeScannerReady=typeof window.BarcodeDetector==='function';
+    let detector=null;
+    if(nativeScannerReady){
+      let formats=['ean_13','ean_8','upc_a','upc_e','qr_code'];
+      if(BarcodeDetector.getSupportedFormats){const supported=await BarcodeDetector.getSupportedFormats();formats=formats.filter(f=>supported.includes(f));if(!formats.length)nativeScannerReady=false;}
+      if(nativeScannerReady)detector=new BarcodeDetector({formats});
+    }
+    if(nativeScannerReady){
+      barcodeStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});video.srcObject=barcodeStream;await video.play();
+      const status=$('barcodeScanStatus');if(status)status.textContent='Camera ready · Hold the code steady';
+      barcodeScanTimer=setInterval(async()=>{if(!video||video.readyState<2)return;try{const codes=await detector.detect(video);if(codes?.length&&codes[0].rawValue){await handleScannedFoodValue(codes[0].rawValue);}}catch(error){console.warn('Barcode frame scan failed',error);}},350);
+      return;
+    }
+    // Safari/iOS currently lacks BarcodeDetector on many versions. Load ZXing as a fallback.
+    const zxing=await loadZXingFallback();
+    const reader=new zxing.BrowserMultiFormatReader();barcodeReader=reader;
+    const status=$('barcodeScanStatus');if(status)status.textContent='Camera ready · Barcode and QR modes enabled';
+    barcodeReaderControls=await reader.decodeFromVideoDevice(undefined,video,(result,error,controls)=>{
+      if(result){handleScannedFoodValue(result.getText());}
+    });
+  }catch(error){stopBarcodeScanner();closeModal();toast(error.message||'Could not start the camera. Use manual barcode entry instead.',true);}
 }
 function stopBarcodeScanner() {
   if(barcodeScanTimer){clearInterval(barcodeScanTimer);barcodeScanTimer=null;}
+  if(barcodeReaderControls){try{barcodeReaderControls.stop();}catch(_){}barcodeReaderControls=null;}
+  if(barcodeReader){try{barcodeReader.reset();}catch(_){}barcodeReader=null;}
   if(barcodeStream){for(const track of barcodeStream.getTracks())track.stop();barcodeStream=null;}
   const video=$('foodBarcodeVideo');if(video){video.pause?.();video.srcObject=null;}
 }
+
 function selectFoodInPicker(foodId) {
   const food=findFood(foodId);if(!food)return;activeFoodSelection=foodId;
   const amount=$('foodAmount');if(amount)amount.value=defaultFoodAmount(food);
   const unitSelect=$('foodUnit');if(unitSelect){unitSelect.innerHTML=foodUnits(food).map(u=>`<option value="${safe(u)}">${safe(u)}</option>`).join('');unitSelect.value=foodAmountUnit(food);}
-  const detail=$('selectedFoodDetail');if(detail){const macros=foodMacros(food,defaultFoodAmount(food),foodAmountUnit(food));detail.innerHTML=`<div class="selected-food"><span class="result-icon">${nutritionEmoji(food)}</span><div style="flex:1;min-width:0"><strong class="selected-food-name">${safe(food.name)}</strong><small>${fmt(macros.calories)} kcal · P ${fmt(macros.protein,1)}g · C ${fmt(macros.carbs,1)}g · F ${fmt(macros.fat,1)}g</small><small class="food-source-caption">Source: ${safe(foodSourceLabel(food))}${!foodFiberKnown(food)?' · Fibre data unavailable':''}${food.data_quality?.includes('partial')?' · nutrition is incomplete':''}</small></div><span style="font-size:var(--fs-cap);font-weight:800;color:#65864b">SELECTED</span></div>`;}
+  const panel=$('foodSelectionPanel');if(panel)panel.hidden=false;
+  const detail=$('selectedFoodDetail');if(detail){const macros=foodMacros(food,defaultFoodAmount(food),foodAmountUnit(food));detail.innerHTML=`<div class="selected-food"><span class="result-icon">${nutritionEmoji(food)}</span><div style="flex:1;min-width:0"><strong class="selected-food-name">${safe(food.name)}</strong><small>${fmt(macros.calories)} kcal · P ${fmt(macros.protein,1)}g · C ${fmt(macros.carbs,1)}g · F ${fmt(macros.fat,1)}g</small><small class="food-source-caption">Source: ${safe(foodSourceLabel(food))}${!foodFiberKnown(food)?' · Fibre data unavailable':''}${food.data_quality?.includes('partial')?' · nutrition is incomplete':''}</small></div><span class="food-selected-badge">SELECTED</span></div>`;}
   const search=$('foodSearch');if(search&&search.value.trim())renderFoodResults(search.value);else renderFoodResults('');
   updateSelectedFoodPreview();
 }
@@ -673,7 +779,7 @@ function updateSelectedFoodPreview() {
 function addSelectedFood() {
   const food=findFood(activeFoodSelection);if(!food){toast('Search and select a food first.',true);return;}
   const amount=Math.max(.01,n($('foodAmount')?.value)||defaultFoodAmount(food));const unit=$('foodUnit')?.value||foodAmountUnit(food);const meal=$('foodMeal')?.value||activeFoodMeal;
-  const macros=foodMacros(food,amount,unit);const item={entry_id:uid('log'),food_id:food.id,name:food.name,type:food.type,category:foodCategory(food),data_source:foodSourceLabel(food),fiber_data_available:foodFiberKnown(food),amount,unit,amount_label:amountLabel(food,amount,unit),macros:{...macros},logged_at:new Date().toISOString(),tags:[...(food.tags||[])]};
+  const macros=foodMacros(food,amount,unit);const timeValue=$('foodTime')?.value||'';const logDateTime=timeValue?new Date(`${state.activeDate}T${timeValue}:00`):new Date();const loggedAt=Number.isNaN(logDateTime.getTime())?new Date().toISOString():logDateTime.toISOString();const item={entry_id:uid('log'),food_id:food.id,name:food.name,type:food.type,category:foodCategory(food),data_source:foodSourceLabel(food),fiber_data_available:foodFiberKnown(food),amount,unit,amount_label:amountLabel(food,amount,unit),macros:{...macros},logged_at:loggedAt,tags:[...(food.tags||[])]};
   currentLog().diet_log[meal].push(item);state.recentFoodIds=recentIds(state.recentFoodIds,food.id);state.selectedDomain='diet';state.selectedTab='timeline';scheduleSave();closeModal();render();toast(`${food.name} added to ${meal}.`);
 }
 function findFoodEntry(entryId) {
@@ -698,7 +804,35 @@ function removeFoodEntry(entryId) {
   const log=activeLog();for(const meal of MEALS){const i=log.diet_log[meal.key].findIndex(x=>x.entry_id===entryId);if(i>=0){log.diet_log[meal.key].splice(i,1);scheduleSave();render();toast('Food entry removed.');return;}}
 }
 
+function openCustomIngredientModal() {
+  activeFoodMeal=$('foodMeal')?.value||activeFoodMeal||'breakfast';
+  showModal(`${modalHead('YOUR FOOD LIBRARY','Add an ingredient','Enter known nutrition values. Unknown nutrients should be left blank, not guessed.')}
+    <div class="field"><label for="customIngredientName">INGREDIENT NAME *</label><input id="customIngredientName" maxlength="100" placeholder="e.g. Homemade paneer" autocomplete="off" /></div>
+    <div class="field-grid"><div class="field"><label for="customIngredientUnit">UNIT / BASIS *</label><select id="customIngredientUnit"><option value="g">g · per 100 g</option><option value="ml">ml · per 100 ml</option><option value="scoop">scoop · per 100 g (scoop size below)</option><option value="piece">piece · per serving</option><option value="bowl">bowl · per serving</option><option value="slice">slice · per serving</option><option value="serving">serving · per serving</option></select></div><div class="field"><label for="customIngredientDefault">DEFAULT AMOUNT</label><input id="customIngredientDefault" type="number" min="0.1" step="0.1" value="100" /></div></div>
+    <div class="field"><label for="customIngredientCategory">CATEGORY</label><input id="customIngredientCategory" maxlength="50" placeholder="e.g. Pulses & Legumes" value="Other/Mixed" /></div>
+    <div class="macro-edit-grid custom-food-macros"><div class="field"><label for="customFoodCalories">KCAL *</label><input id="customFoodCalories" type="number" min="0" step="0.1" placeholder="0" /></div><div class="field"><label for="customFoodProtein">PROTEIN g *</label><input id="customFoodProtein" type="number" min="0" step="0.1" placeholder="0" /></div><div class="field"><label for="customFoodCarbs">CARBS g *</label><input id="customFoodCarbs" type="number" min="0" step="0.1" placeholder="0" /></div><div class="field"><label for="customFoodFat">FAT g *</label><input id="customFoodFat" type="number" min="0" step="0.1" placeholder="0" /></div><div class="field"><label for="customFoodFiber">FIBRE g</label><input id="customFoodFiber" type="number" min="0" step="0.1" placeholder="Unknown" /></div></div>
+    <div class="field"><label for="customIngredientSource">SOURCE / REFERENCE</label><input id="customIngredientSource" maxlength="120" placeholder="Package label, database, or your calculation" /></div>
+    <div class="field"><label for="customIngredientTags">SEARCH TAGS</label><input id="customIngredientTags" maxlength="180" placeholder="e.g. vegetarian, high-protein, breakfast" /></div>
+    <div class="form-note">For g and ml, nutrients are recorded per 100 g or 100 ml. For piece, bowl, slice and serving, values are for the default serving amount. Keep the original source so you can verify values later.</div>
+    <div class="modal-actions"><button class="cancel" data-action="close-modal">Cancel</button><button class="save lime" data-action="save-custom-ingredient">Save ingredient</button></div>`);
+  const unit=$('customIngredientUnit');unit?.addEventListener('change',()=>{const defaultInput=$('customIngredientDefault');if(defaultInput)defaultInput.value=['g','ml'].includes(unit.value)?100:unit.value==='scoop'?30:1;});
+}
+function saveCustomIngredient() {
+  const name=$('customIngredientName')?.value.trim()||'';if(!name){toast('Enter an ingredient name.',true);return;}
+  const unit=$('customIngredientUnit')?.value||'g';const servingSize=Math.max(.01,n($('customIngredientDefault')?.value)||(['g','ml'].includes(unit)?100:unit==='scoop'?30:1));
+  const nutrientIds=['customFoodCalories','customFoodProtein','customFoodCarbs','customFoodFat'];
+  if(nutrientIds.some(id=>$(id)?.value===''||!Number.isFinite(Number($(id)?.value))||Number($(id).value)<0)){toast('Enter non-negative values for calories, protein, carbohydrates and fat. Leave fibre blank if unknown.',true);return;}
+  const macros={calories:n($('customFoodCalories').value),protein:n($('customFoodProtein').value),carbs:n($('customFoodCarbs').value),fat:n($('customFoodFat').value)};
+  const fiberRaw=$('customFoodFiber')?.value??'';const fiberKnown=String(fiberRaw).trim()!==''&&Number.isFinite(Number(fiberRaw))&&Number(fiberRaw)>=0;if(fiberKnown)macros.fiber=n(fiberRaw);
+  const liquid=unit==='ml';const gramBased=unit==='g'||unit==='scoop';const item={id:uid('food'),name,type:gramBased||liquid?'raw_ingredient':'standard_estimate',serving_unit:unit,default_serving_size:servingSize,tags:String($('customIngredientTags')?.value||'').split(',').map(x=>x.trim()).filter(Boolean),category:$('customIngredientCategory')?.value.trim()||'Other/Mixed',data_source:$('customIngredientSource')?.value.trim()||'User added',data_quality:$('customIngredientSource')?.value.trim()?'source-reported; user-entered':'user-entered; verify before relying on values',nutrient_fields_available:['calories','protein','carbs','fat',...(fiberKnown?['fiber']:[])],fiber_data_available:fiberKnown};
+  if(liquid)item.macros_per_100ml=macros;else if(gramBased)item.macros_per_100g=macros;else item.macros_per_serving=macros;
+  const returnMeal=$('foodMeal')?.value||activeFoodMeal||'breakfast';
+  state.customFoods.push(item);state.recentFoodIds=recentIds(state.recentFoodIds,item.id);state.syncMeta.dirtyFoodIds=Array.from(new Set([...(state.syncMeta.dirtyFoodIds||[]),item.id]));scheduleSave(false);
+  closeModal();openFoodModal(returnMeal,item.id);toast(`${name} added to your food library.`);
+}
+
 function openRecipeModal() {
+  recipeReturnMeal=$('foodMeal')?.value||activeFoodMeal||'breakfast';
   recipeIngredients=[{foodId:'',amount:100,unit:'g',query:''}];
   showModal(`${modalHead('CUSTOM RECIPE','Build your own recipe','Search each ingredient, add its amount and unit, then set how many servings the finished recipe makes.')}
     <div class="field"><label for="recipeName">RECIPE NAME</label><input id="recipeName" placeholder="e.g. Paneer & soya bowl" maxlength="70" /></div>
@@ -740,37 +874,72 @@ function saveRecipe() {
   if(!components.length){toast('Add at least one ingredient.',true);return;}
   const containsNonVegetarian=components.some(c=>foodCategory(findFood(c.food_id))==='Meat & Eggs'||/\b(egg|eggs|meat|chicken|fish|pork|beef|lamb|poultry|shrimp|prawn|tuna|salmon|mutton|seafood|bacon|ham|turkey|duck)\b/i.test(c.name));
   const item={id:uid('recipe'),name,type:'custom_recipe',serving_unit:'serving',default_serving_size:1,macros_per_serving:Object.fromEntries(Object.entries(total).map(([k,v])=>[k,round(v/yieldCount,2)])),fiber_data_available:components.every(c=>findFood(c.food_id)&&foodFiberKnown(findFood(c.food_id))),tags:['custom','recipe',...(containsNonVegetarian?[]:['vegetarian'])],recipe_ingredients:components,yield:yieldCount,created_at:new Date().toISOString(),updated_at:new Date().toISOString()};
-  state.customFoods.push(item);state.recentFoodIds=recentIds(state.recentFoodIds,item.id);state.syncMeta.dirtyFoodIds=Array.from(new Set([...(state.syncMeta.dirtyFoodIds||[]),item.id]));scheduleSave(false);closeModal();openFoodModal('breakfast',item.id);toast('Recipe saved. Add it to any meal when ready.');
+  state.customFoods.push(item);state.recentFoodIds=recentIds(state.recentFoodIds,item.id);state.syncMeta.dirtyFoodIds=Array.from(new Set([...(state.syncMeta.dirtyFoodIds||[]),item.id]));scheduleSave(false);const returnMeal=recipeReturnMeal||'breakfast';closeModal();openFoodModal(returnMeal,item.id);toast('Recipe saved. Add it to any meal when ready.');
 }
 
 
 // Workout progression & execution
+const EXERCISE_BODY_FILTERS = [
+  ['all','All parts'],['chest','Chest'],['back','Back'],['shoulders','Shoulders'],['arms','Arms'],['core','Core / waist'],['legs','Legs'],['glutes','Glutes / hips'],['calves','Calves'],['cardio','Cardio'],['full-body','Full body'],['neck','Neck'],['ankles','Ankles']
+];
+const EXERCISE_EQUIPMENT_FILTERS = [
+  ['all','All equipment'],['bodyweight','Bodyweight'],['dumbbell','Dumbbell'],['barbell','Barbell'],['cable','Cable'],['bench','Bench'],['machine','Machine'],['kettlebell','Kettlebell'],['bands','Bands'],['ball-roller','Ball / roller'],['cardio-equipment','Cardio gear'],['other','Other']
+];
+function exerciseBodyMatches(ex,filter) {
+  if(filter==='all')return true;
+  const fields=[ex.body_part,ex.primary_muscle,ex.target,ex.muscle_group,ex.category,...(ex.secondary_muscles||[])].filter(Boolean).join(' ').toLowerCase();
+  const patterns={chest:/chest|pectoral/,back:/back|lat\b|traps?|rhomboid|spine/,shoulders:/shoulder|delt|rotator cuff/,arms:/arm|biceps?|triceps?|forearm|brachialis|wrists?/,core:/waist|abs|abdom|core|oblique|spine/,legs:/leg|quad|hamstring|thigh|calf|calves|soleus/,glutes:/glute|hip|adductor|abductor/,calves:/calf|calves|soleus|lower leg/,cardio:/cardio|cardiovascular|heart|aerobic/, 'full-body':/full body|total body/,neck:/neck|sternocleidomastoid/,ankles:/ankle/};
+  return (patterns[filter]||/.^/).test(fields);
+}
+function exerciseEquipmentMatches(ex,filter) {
+  if(filter==='all')return true;
+  const equipment=String(ex.equipment||'Other').toLowerCase();
+  const patterns={bodyweight:/body ?weight|calisthenics/,dumbbell:/dumbbell/,barbell:/barbell|ez bar|trap bar|olympic bar/,cable:/cable/,bench:/bench/,machine:/machine|smith|leverage|assisted/,kettlebell:/kettlebell/,bands:/band|resistance tubing/,'ball-roller':/ball|roller|bosu|mat|foam roll/,'cardio-equipment':/treadmill|bike|bicycle|ergometer|ski.?erg|elliptical|rower|rowing|pool/,other:/.*/};
+  if(filter==='other')return !EXERCISE_EQUIPMENT_FILTERS.filter(([key])=>!['all','other'].includes(key)).some(([key])=>exerciseEquipmentMatches(ex,key));
+  return (patterns[filter]||/.^/).test(equipment);
+}
+function renderExerciseFilters() {
+  const bodyHost=$('exerciseBodyFilters');const equipmentHost=$('exerciseEquipmentFilters');
+  if(bodyHost)bodyHost.innerHTML=EXERCISE_BODY_FILTERS.map(([key,label])=>`<button type="button" class="filter-chip ${activeExerciseBodyFilter===key?'active':''}" data-action="exercise-body-filter" data-filter="${key}" aria-pressed="${activeExerciseBodyFilter===key}">${label}</button>`).join('');
+  if(equipmentHost)equipmentHost.innerHTML=EXERCISE_EQUIPMENT_FILTERS.map(([key,label])=>`<button type="button" class="filter-chip ${activeExerciseEquipmentFilter===key?'active':''}" data-action="exercise-equipment-filter" data-filter="${key}" aria-pressed="${activeExerciseEquipmentFilter===key}">${label}</button>`).join('');
+}
 function openWorkoutModal() {
-  activeExerciseSelection=null;
-  showModal(`${modalHead('SETUP · TOUCH 1','Add an exercise','Choose a movement, then set your target. Progressive overload pre-fills a planned load for each set.')}
-    <div class="search-box"><span class="search-icon">⌕</span><input id="exerciseSearch" placeholder="Search exercise or muscle group…" autocomplete="off" /></div>
-    <div id="exerciseResults" class="search-results" style="max-height:195px"></div>
-    <div class="selected-food selected-exercise-card" id="selectedExerciseDetail"><span class="result-icon">🏋️</span><div><strong class="selected-exercise-name">Choose an exercise</strong><small class="selected-exercise-sub">Search by name, body part, target muscle or equipment.</small></div></div>
+  activeExerciseSelection=null;activeExerciseBodyFilter='all';activeExerciseEquipmentFilter='all';
+  showModal(`${modalHead('BUILD YOUR SESSION','Add exercise','Find your movement with search, muscle filters and equipment filters.')}
+    <div class="exercise-search-hero"><span class="search-icon">⌕</span><input id="exerciseSearch" type="search" placeholder="Search exercises, muscles or movement…" autocomplete="off" aria-label="Search exercises" /></div>
+    <div class="exercise-filter-block"><div class="exercise-filter-label"><span>BODY PART</span><span>Choose one</span></div><div id="exerciseBodyFilters" class="exercise-filter-strip" role="group" aria-label="Filter by body part"></div></div>
+    <div class="exercise-filter-block equipment"><div class="exercise-filter-label"><span>EQUIPMENT</span><span>Choose one</span></div><div id="exerciseEquipmentFilters" class="exercise-filter-strip" role="group" aria-label="Filter by equipment"></div></div>
+    <div class="exercise-results-heading"><strong>Exercise library</strong><span>${fmt(masterExercises.length)} movements</span></div>
+    <div id="exerciseResults" class="search-results exercise-picker-results"></div>
+    <div class="selected-food selected-exercise-card" id="selectedExerciseDetail"><span class="result-icon">🏋️</span><div><strong class="selected-exercise-name">Choose an exercise</strong><small class="selected-exercise-sub">Select a result to set your training target.</small></div></div>
     <div class="field-grid"><div class="field"><label for="targetSets">TARGET SETS</label><input type="number" id="targetSets" min="1" max="20" value="3" /></div><div class="field"><label for="targetReps">REPS PER SET</label><input type="number" id="targetReps" min="1" max="100" value="10" /></div></div>
     <div class="field"><label for="startingWeight">STARTING WEIGHT (KG)</label><input type="number" id="startingWeight" min="0" step="0.5" value="40" /></div>
     <div class="setting-section"><div class="switch-row"><div class="switch-copy"><strong>Progressive overload</strong><span>Increase the planned weight with each set.</span></div><label class="switch"><input type="checkbox" id="progressiveToggle" checked><span class="switch-track"></span></label></div><div class="field" style="margin:0"><label for="weightIncrement">INCREMENT PER SET (KG)</label><input type="number" id="weightIncrement" min="0" step="0.5" value="5" /></div></div>
     <div id="setPreview" class="form-note">Set 1: 40 kg · Set 2: 45 kg · Set 3: 50 kg</div>
     <div class="modal-actions"><button class="cancel" data-action="close-modal">Cancel</button><button class="save lime" data-action="save-exercise">Add to session →</button></div>`);
-  renderExerciseResults('');updateExerciseDetail();updateSetPreview();
+  renderExerciseFilters();renderExerciseResults('');updateExerciseDetail();updateSetPreview();
 }
 function renderExerciseResults(query) {
   const host=$('exerciseResults');if(!host)return;const q=String(query||'').trim();
-  if(!q){const recents=(state.recentExerciseIds||[]).map(findExercise).filter(Boolean).slice(0,3);host.innerHTML=recents.length?`<div class="picker-caption">RECENT EXERCISES</div>${recents.map(ex=>exerciseResultButton(ex)).join('')}`:`<div class="picker-prompt">Start typing to search ${fmt(masterExercises.length)} exercises across strength, cardio, bodyweight, conditioning and mobility.</div>`;return;}
-const ranked=masterExercises.map(ex=>({ex,score:searchScore(q,`${ex.name} ${ex.primary_muscle} ${ex.target||''} ${ex.body_part||''} ${ex.muscle_group||''} ${(ex.secondary_muscles||[]).join(' ')} ${ex.category} ${ex.equipment} ${ex.description||''}`)})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||a.ex.name.localeCompare(b.ex.name));
-  const results=[];const seenNames=new Set();for(const item of ranked){const key=String(item.ex.name||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();if(seenNames.has(key))continue;seenNames.add(key);results.push(item);if(results.length===8)break;}
-  host.innerHTML=results.length?`<div class="picker-caption">SEARCH RESULTS · ${results.length}</div>${results.map(({ex})=>exerciseResultButton(ex)).join('')}`:'<div class="empty-chart" style="height:68px">No exercise matched. Try a muscle, equipment or movement name.</div>';
+  const filtered=masterExercises.filter(ex=>exerciseBodyMatches(ex,activeExerciseBodyFilter)&&exerciseEquipmentMatches(ex,activeExerciseEquipmentFilter));
+  if(!q){
+    if(activeExerciseBodyFilter==='all'&&activeExerciseEquipmentFilter==='all'){
+      const recents=(state.recentExerciseIds||[]).map(findExercise).filter(Boolean).slice(0,5);
+      host.innerHTML=recents.length?`<div class="picker-caption">RECENT EXERCISES</div>${recents.map(ex=>exerciseResultButton(ex)).join('')}`:'<div class="picker-prompt">Start typing, or use the filters above to browse the library.</div>';return;
+    }
+    const results=filtered.slice(0,12);host.innerHTML=results.length?`<div class="picker-caption">FILTERED RESULTS · ${fmt(filtered.length)} MOVEMENTS</div>${results.map(ex=>exerciseResultButton(ex)).join('')}`:'<div class="empty-chart">No movements match these filters. Try another body part or equipment.</div>';return;
+  }
+  const ranked=filtered.map(ex=>({ex,score:searchScore(q,`${ex.name} ${ex.primary_muscle} ${ex.target||''} ${ex.body_part||''} ${ex.muscle_group||''} ${(ex.secondary_muscles||[]).join(' ')} ${ex.category} ${ex.equipment} ${ex.description||''}`)})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||a.ex.name.localeCompare(b.ex.name));
+  const results=[];const seenNames=new Set();for(const item of ranked){const key=String(item.ex.name||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();if(seenNames.has(key))continue;seenNames.add(key);results.push(item);if(results.length===12)break;}
+  host.innerHTML=results.length?`<div class="picker-caption">${results.length} MATCHING MOVEMENTS</div>${results.map(({ex})=>exerciseResultButton(ex)).join('')}`:'<div class="empty-chart">No exercise matched these filters. Try a different keyword, body part or equipment.</div>';
 }
 function exerciseResultButton(ex) {
   const selected=activeExerciseSelection===ex.id;
   const primary=ex.primary_muscle||ex.target||'Full body';
   const body=ex.body_part||ex.category||'Exercise';
-  return `<div class="exercise-search-row">${renderExerciseThumbnail(ex,'picker')}<button type="button" class="exercise-result-main ${selected?'selected':''}" data-action="select-exercise" data-id="${safe(ex.id)}"><span class="result-copy"><strong>${safe(ex.name)}</strong><span>${safe(primary)} · ${safe(body)} · ${safe(ex.equipment||'Bodyweight')}</span></span></button><span class="exercise-rest-pill">${n(ex.default_rest_sec)}s</span></div>`;
+  return `<div class="exercise-search-row ${selected?'selected':''}">${renderExerciseThumbnail(ex,'picker')}<button type="button" class="exercise-result-main ${selected?'selected':''}" data-action="select-exercise" data-id="${safe(ex.id)}"><span class="result-copy"><strong>${safe(ex.name)}</strong><span>${safe(primary)} · ${safe(body)} · ${safe(ex.equipment||'Bodyweight')}</span></span></button><span class="exercise-rest-pill">${n(ex.default_rest_sec)}s</span></div>`;
 }
+
 function updateExerciseDetail() {
   const ex=findExercise(activeExerciseSelection);if(!ex)return;
   const host=$('selectedExerciseDetail');
@@ -780,7 +949,7 @@ function updateExerciseDetail() {
 }
 function openExerciseDetail(id) {
   const ex=findExercise(id);if(!ex)return;
-  if($('exerciseSearch')) exerciseDetailReturnState={id:ex.id,query:$('exerciseSearch').value||''};
+  if($('exerciseSearch')) exerciseDetailReturnState={id:ex.id,query:$('exerciseSearch').value||'',bodyFilter:activeExerciseBodyFilter,equipmentFilter:activeExerciseEquipmentFilter};
   else exerciseDetailReturnState=null;
   const licensed=exerciseHasLicensedMedia(ex);
   const media=licensed
@@ -1161,6 +1330,10 @@ document.addEventListener('click', async (event)=>{
     case 'open-add': openCurrentAdd();break;
     case 'open-food': openFoodModal(button.dataset.meal||'breakfast');break;
     case 'select-food': selectFoodInPicker(button.dataset.id);break;
+    case 'toggle-food-kind': { const kind=button.dataset.kind;if(kind==='ingredients'||kind==='recipes'){foodKindFilters[kind]=!foodKindFilters[kind];button.classList.toggle('active',foodKindFilters[kind]);button.setAttribute('aria-pressed',String(foodKindFilters[kind]));renderFoodResults($('foodSearch')?.value||'');}break; }
+    case 'clear-food-selection': { activeFoodSelection=null;const panel=$('foodSelectionPanel');if(panel)panel.hidden=true;renderFoodResults($('foodSearch')?.value||'');break; }
+    case 'add-custom-ingredient': openCustomIngredientModal();break;
+    case 'save-custom-ingredient': saveCustomIngredient();break;
     case 'select-external-food': { const food=externalFoodMatches.find(x=>x.id===button.dataset.id)||(state.externalFoods||[]).find(x=>x.id===button.dataset.id);if(food){const index=state.externalFoods.findIndex(x=>x.id===food.id);if(index>=0)state.externalFoods[index]=food;else state.externalFoods.push(food);selectFoodInPicker(food.id);scheduleSave(false);}break; }
     case 'search-online-foods': await searchOpenFoodFacts($('foodSearch')?.value||'');break;
     case 'lookup-food-barcode': await lookupOpenFoodFactsBarcode($('barcodeSearch')?.value||'');break;
@@ -1177,6 +1350,8 @@ document.addEventListener('click', async (event)=>{
     case 'save-recipe': saveRecipe();break;
     case 'add-exercise': openWorkoutModal();break;
     case 'select-exercise': activeExerciseSelection=button.dataset.id;renderExerciseResults($('exerciseSearch')?.value||'');updateExerciseDetail();break;
+    case 'exercise-body-filter': activeExerciseBodyFilter=button.dataset.filter||'all';renderExerciseFilters();renderExerciseResults($('exerciseSearch')?.value||'');break;
+    case 'exercise-equipment-filter': activeExerciseEquipmentFilter=button.dataset.filter||'all';renderExerciseFilters();renderExerciseResults($('exerciseSearch')?.value||'');break;
     case 'open-exercise-detail': openExerciseDetail(button.dataset.id);break;
     case 'edit-exercise': openEditExercise(n(button.dataset.exIndex));break;
     case 'edit-add-set': editExerciseAddSet();break;
@@ -1214,9 +1389,13 @@ document.addEventListener('click', async (event)=>{
   }
 });
 
+document.addEventListener('keydown',(event)=>{
+  if((event.metaKey||event.ctrlKey)&&String(event.key).toLowerCase()==='k'&&$('foodSearch')){event.preventDefault();$('foodSearch').focus({preventScroll:true});}
+});
+
 document.addEventListener('input',(event)=>{
   const target=event.target;
-  if(target.id==='foodSearch'){renderFoodResults(target.value);return;}
+  if(target.id==='foodSearch'){renderFoodResults(target.value);scheduleOnlineFoodSearch(target.value);return;}
   if(target.id==='foodAmount'){updateSelectedFoodPreview();return;}
   if(target.id==='foodUnit'){updateSelectedFoodPreview();return;}
   if(target.dataset.role==='recipe-search'){const i=n(target.dataset.index);const ing=recipeIngredients[i];if(ing){ing.query=target.value;if(findFood(ing.foodId)?.name.toLowerCase()!==target.value.trim().toLowerCase())ing.foodId='';renderRecipeSearchResults(i,target.value);updateRecipePreview();}return;}
@@ -1227,6 +1406,7 @@ document.addEventListener('input',(event)=>{
 document.addEventListener('change',(event)=>{
   const target=event.target;
   if(target.id==='datePicker'&&target.value){state.activeDate=target.value;currentLog();render();persistState();return;}
+  if(target.id==='foodMeal'){activeFoodMeal=target.value||'breakfast';return;}
   if(target.id==='foodCategoryFilter'){renderFoodResults($('foodSearch')?.value||'');return;}
   if(target.id==='recipeYield'){updateRecipePreview();return;}
   if(target.id==='progressiveToggle'){updateSetPreview();return;}
