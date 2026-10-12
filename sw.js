@@ -1,4 +1,4 @@
-const CACHE_NAME = 'forma-shell-v2-4-exercise-media';
+const CACHE_NAME = 'timely-fit-shell-v6-session-cleanup-food-meal-wheel-touch';
 const SUPABASE_SDK_URL = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
 const SHELL = ['./', './index.html', './styles.css', './app.js', './manifest.json', './icon.svg', './foods.json', './exercises.json', './supabase-config.js', './viewport-lock.js'];
 self.addEventListener('install', event => {
