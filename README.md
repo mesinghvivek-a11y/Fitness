@@ -154,3 +154,7 @@ The optional online lookup uses the legacy free-text search endpoint because Ope
 - [Open Food Facts licence and attribution guidance](https://openfoodfacts.github.io/documentation/docs/Product-Opener/api/tutorials/license-be-on-the-legal-side/)
 
 Open Food Facts describes its database as ODbL, individual database contents under the Database Contents License, and product images under CC BY-SA; product records are community-submitted and may be incomplete. Forma labels the external source and provides the licence guidance in the online-results panel. Review the current attribution/share-alike requirements before redistributing or launching publicly.
+
+
+## Latest interaction update
+This build adds AMOLED pitch-black dark mode, touch-swipe navigation among Diet/Workout/Hydration, vertical scroll-wheel controls for serving quantities and exercise setup, and edit controls for both current and saved workout exercises. Review `TIMELY_FIT_UI_IMPLEMENTATION.md` for details.

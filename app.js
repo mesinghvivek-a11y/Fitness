@@ -33,6 +33,8 @@ let activeFoodSelection = null;
 let activeFoodMeal = 'breakfast';
 let editFoodEntryId = null;
 let editExerciseIndex = null;
+let editExerciseLocation = null;
+const numberWheelTimers = new WeakMap();
 let activeExerciseSelection = null;
 let exerciseDetailReturnState = null;
 let recipeIngredients = [];
@@ -390,7 +392,7 @@ function renderWorkout(log,totals) {
       const startedAt=n(ex.start_ms)||n(session.start_ms);
       const endedAt=Date.parse(ex.finished_at||'')||n(session.end_ms)||Date.parse(session.end_time||'');
       const exDuration=startedAt&&endedAt&&endedAt>=startedAt?formatDurationHMS(endedAt-startedAt):'—';
-      return `<div class="completed-exercise-row"><div class="completed-exercise-media">${renderExerciseThumbnail(reference,'history')}</div><div class="completed-exercise-copy"><strong>${safe(ex.name)}</strong><span>${safe(ex.primary_muscle||ex.target||'Full body')} · ${safe(ex.equipment||'Bodyweight')}</span><small>${setSummary}</small></div><div class="completed-exercise-duration"><b>${exDuration}</b><span>duration</span></div><span class="completed-check" aria-label="Completed">✓</span></div>`;
+      return `<div class="completed-exercise-row"><div class="completed-exercise-media">${renderExerciseThumbnail(reference,'history')}</div><div class="completed-exercise-copy"><div class="completed-exercise-title"><strong>${safe(ex.name)}</strong><button type="button" class="history-edit-button" data-action="edit-history-exercise" data-session-index="${(log.workout_history||[]).indexOf(session)}" data-ex-index="${(session.exercises||[]).indexOf(ex)}" aria-label="Edit ${safe(ex.name)}">Edit</button></div><span>${safe(ex.primary_muscle||ex.target||'Full body')} · ${safe(ex.equipment||'Bodyweight')}</span><small>${setSummary}</small></div><div class="completed-exercise-duration"><b>${exDuration}</b><span>duration</span></div><span class="completed-check" aria-label="Completed">✓</span></div>`;
     }).join('');
     const sessionStart=n(session.start_ms)||Date.parse(session.start_time||'');
     const sessionEnd=n(session.end_ms)||Date.parse(session.end_time||'');
@@ -574,10 +576,87 @@ function renderWaterAnalytics() {
 }
 
 // Modal shell and diet logging
-function showModal(html) { $('modalRoot').innerHTML=`<div class="modal-backdrop" data-action="backdrop-close"><section class="modal-sheet" role="dialog" aria-modal="true">${html}</section></div>`; }
+function showModal(html) {
+  $('modalRoot').innerHTML=`<div class="modal-backdrop" data-action="backdrop-close"><section class="modal-sheet" role="dialog" aria-modal="true">${html}</section></div>`;
+  upgradeNumberWheels($('modalRoot'));
+}
+function numericWheelEligible(input) {
+  if(!input || input.type!=='number')return false;
+  const id=input.id||'';
+  return ['foodAmount','recipeYield','targetSets','targetReps','startingWeight','weightIncrement','editRest','customIngredientDefault','customWaterAmount','editWaterAmount'].includes(id)
+    || /^editSet(?:Weight|Reps)\d+$/.test(id)
+    || input.dataset.role==='recipe-amount'
+    || input.closest('.recipe-ingredient')!==null;
+}
+function wheelStep(input) {
+  const parsed=Number(input.step);return Number.isFinite(parsed)&&parsed>0?parsed:1;
+}
+function wheelBounds(input) {
+  let min=input.min!==''&&Number.isFinite(Number(input.min))?Number(input.min):0;
+  let max=input.max!==''&&Number.isFinite(Number(input.max))?Number(input.max):10000;
+  if(input.id==='foodAmount'||input.dataset.role==='recipe-amount'){min=0.1;max=5000;}
+  if(input.id==='recipeYield'){min=1;max=100;}
+  if(input.id==='targetSets'){min=1;max=20;}
+  if(input.id==='targetReps'){min=1;max=100;}
+  if(input.id==='startingWeight'){min=0;max=500;}
+  if(input.id==='weightIncrement'){min=0;max=50;}
+  if(input.id==='editRest'){min=0;max=1800;}
+  return {min,max};
+}
+function wheelDigits(step) {const text=String(step);return text.includes('.')?Math.min(3,text.split('.')[1].length):0;}
+function wheelDisplay(value,step) {return Number(value).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:wheelDigits(step)});}
+function upgradeNumberWheels(root=document) {
+  if(!root)return;
+  const all=[];
+  if(root.matches?.('input[type=number]'))all.push(root);
+  all.push(...(root.querySelectorAll?.('input[type=number]')||[]));
+  for(const input of all){
+    if(!numericWheelEligible(input)||input.dataset.wheelReady==='1')continue;
+    const originalParent=input.parentNode;if(!originalParent)continue;
+    const slot=document.createElement('div');slot.className='number-wheel-slot';
+    originalParent.insertBefore(slot,input);slot.appendChild(input);input.classList.add('number-wheel-source');input.dataset.wheelReady='1';
+    const wheel=document.createElement('div');wheel.className='number-wheel';wheel.tabIndex=0;wheel.setAttribute('role','spinbutton');wheel.setAttribute('aria-label',input.getAttribute('aria-label')||document.querySelector(`label[for="${CSS.escape(input.id)}"]`)?.textContent?.trim()||'Adjust value');
+    wheel.innerHTML='<div class="number-wheel-list"></div><div class="number-wheel-focus" aria-hidden="true"></div>';
+    slot.appendChild(wheel);
+    const updateValue=(next,dispatch=true)=>{
+      const {min,max}=wheelBounds(input),step=wheelStep(input),digits=wheelDigits(step);
+      next=clamp(round(next,digits),min,max);input.value=String(next);
+      wheel.setAttribute('aria-valuemin',String(min));wheel.setAttribute('aria-valuemax',String(max));wheel.setAttribute('aria-valuenow',String(next));wheel.setAttribute('aria-valuetext',wheelDisplay(next,step));
+      const list=wheel.querySelector('.number-wheel-list');list.innerHTML=Array.from({length:7},(_,i)=>{const offset=i-3,val=clamp(round(next+offset*step,digits),min,max);return `<div class="number-wheel-item ${offset===0?'is-current':''}" data-offset="${offset}" data-value="${val}"><span>${wheelDisplay(val,step)}</span></div>`;}).join('');
+      const rowHeight=parseFloat(getComputedStyle(wheel.querySelector('.number-wheel-item')).height)||36;wheel.dataset.recentering='1';wheel.scrollTop=2*rowHeight;requestAnimationFrame(()=>{delete wheel.dataset.recentering;});
+      if(dispatch){input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));}
+    };
+    input._wheelRefresh=()=>updateValue(n(input.value),false);
+    input._wheelSet=(value,dispatch=true)=>updateValue(value,dispatch);
+    updateValue(n(input.value),false);
+    const finishScroll=()=>{
+      if(wheel.dataset.recentering==='1')return;
+      const rowHeight=parseFloat(getComputedStyle(wheel.querySelector('.number-wheel-item')).height)||36,centerItem=Math.round(wheel.scrollTop/rowHeight)+1,delta=centerItem-3;
+      if(delta)updateValue(n(input.value)+delta*wheelStep(input),true);else updateValue(n(input.value),false);
+    };
+    wheel.addEventListener('scroll',()=>{
+      if(wheel.dataset.recentering==='1')return;
+      clearTimeout(numberWheelTimers.get(wheel));numberWheelTimers.set(wheel,setTimeout(finishScroll,90));
+    },{passive:true});
+    wheel.addEventListener('click',event=>{const item=event.target.closest('.number-wheel-item');if(item)updateValue(n(input.value)+n(item.dataset.offset)*wheelStep(input),true);});
+    wheel.addEventListener('keydown',event=>{
+      const step=wheelStep(input);let delta=0;
+      if(event.key==='ArrowUp')delta=step;
+      else if(event.key==='ArrowDown')delta=-step;
+      else if(event.key==='PageUp')delta=step*5;
+      else if(event.key==='PageDown')delta=-step*5;
+      else return;
+      event.preventDefault();updateValue(n(input.value)+delta,true);
+    });
+    const lab=document.querySelector(`label[for="${CSS.escape(input.id)}"]`);
+    if(lab)lab.addEventListener('click',()=>wheel.focus({preventScroll:true}));
+  }
+}
+function refreshNumberWheel(input) {if(input?._wheelRefresh)input._wheelRefresh();}
+
 function closeModal() {
   stopBarcodeScanner();
-  $('modalRoot').innerHTML=''; activeFoodSelection=null; editFoodEntryId=null; activeRecipeIngredient=null;
+  $('modalRoot').innerHTML=''; activeFoodSelection=null; editFoodEntryId=null; activeRecipeIngredient=null; editExerciseIndex=null; editExerciseLocation=null;
   const returnState=exerciseDetailReturnState; exerciseDetailReturnState=null;
   if(returnState){
     openWorkoutModal();activeExerciseBodyFilter=returnState.bodyFilter||'all';activeExerciseEquipmentFilter=returnState.equipmentFilter||'all';activeExerciseSelection=returnState.id;renderExerciseFilters();
@@ -804,7 +883,7 @@ function stopBarcodeScanner() {
 
 function selectFoodInPicker(foodId) {
   const food=findFood(foodId);if(!food)return;activeFoodSelection=foodId;
-  const amount=$('foodAmount');if(amount)amount.value=defaultFoodAmount(food);
+  const amount=$('foodAmount');if(amount){amount.value=defaultFoodAmount(food);refreshNumberWheel(amount);}
   const unitSelect=$('foodUnit');if(unitSelect){unitSelect.innerHTML=foodUnits(food).map(u=>`<option value="${safe(u)}">${safe(u)}</option>`).join('');unitSelect.value=foodAmountUnit(food);}
   const panel=$('foodSelectionPanel');if(panel)panel.hidden=false;
   const detail=$('selectedFoodDetail');if(detail){const macros=foodMacros(food,defaultFoodAmount(food),foodAmountUnit(food));detail.innerHTML=`<div class="selected-food"><span class="result-icon">${nutritionEmoji(food)}</span><div style="flex:1;min-width:0"><strong class="selected-food-name">${safe(food.name)}</strong><small>${fmt(macros.calories)} kcal · P ${fmt(macros.protein,1)}g · C ${fmt(macros.carbs,1)}g · F ${fmt(macros.fat,1)}g</small><small class="food-source-caption">Source: ${safe(foodSourceLabel(food))}${!foodFiberKnown(food)?' · Fibre data unavailable':''}${food.data_quality?.includes('partial')?' · nutrition is incomplete':''}</small></div><span class="food-selected-badge">SELECTED</span></div>`;}
@@ -888,6 +967,7 @@ function renderRecipeIngredients() {
     const query=ingredient.query||(food?food.name:'');
     return `<div class="recipe-ingredient"><div class="recipe-picker"><input class="recipe-search" data-role="recipe-search" data-index="${index}" placeholder="Search ingredient…" value="${safe(query)}" autocomplete="off" aria-label="Search ingredient ${index+1}"/><div class="recipe-selected">${food?`<span>${safe(food.name)}</span><small>${safe(food.type==='raw_ingredient'?'Ingredient':'Estimate')} selected</small>`:'<small>Search and select an ingredient</small>'}</div><div class="recipe-results-mini" id="recipe-results-${index}"></div></div><input type="number" min="0.01" step="0.1" value="${safe(ingredient.amount)}" data-role="recipe-amount" data-index="${index}" aria-label="Ingredient amount"/><select data-role="recipe-unit" data-index="${index}" aria-label="Ingredient unit">${units.map(u=>`<option value="${safe(u)}" ${unit===u?'selected':''}>${safe(u)}</option>`).join('')}</select><button data-action="recipe-remove-ingredient" data-index="${index}" aria-label="Remove ingredient">×</button></div>`;
   }).join('');
+  upgradeNumberWheels(host);
   recipeIngredients.forEach((ing,index)=>{if(ing.query&&(!findFood(ing.foodId)||ing.query.toLowerCase()!==findFood(ing.foodId).name.toLowerCase()))renderRecipeSearchResults(index,ing.query);});
   updateRecipePreview();
 }
@@ -950,8 +1030,8 @@ function openWorkoutModal() {
     <div class="exercise-results-heading"><strong>Exercise library</strong><span>${fmt(masterExercises.length)} movements</span></div>
     <div id="exerciseResults" class="search-results exercise-picker-results"></div>
     <div class="selected-food selected-exercise-card" id="selectedExerciseDetail"><span class="result-icon">🏋️</span><div><strong class="selected-exercise-name">Choose an exercise</strong><small class="selected-exercise-sub">Select a result to set your training target.</small></div></div>
-    <div class="field-grid"><div class="field"><label for="targetSets">TARGET SETS</label><div class="stepper-field"><button type="button" data-action="adjust-workout-input" data-target="targetSets" data-delta="-1" aria-label="Decrease target sets">−</button><input type="number" id="targetSets" min="1" max="20" value="3"/><button type="button" data-action="adjust-workout-input" data-target="targetSets" data-delta="1" aria-label="Increase target sets">＋</button></div></div><div class="field"><label for="targetReps">REPS PER SET</label><input type="number" id="targetReps" min="1" max="100" value="10"/></div></div>
-    <div class="field"><label for="startingWeight">STARTING WEIGHT (KG)</label><div class="stepper-field"><button type="button" data-action="adjust-workout-input" data-target="startingWeight" data-delta="-2.5" aria-label="Decrease starting weight">−</button><input type="number" id="startingWeight" min="0" step="2.5" value="40"/><button type="button" data-action="adjust-workout-input" data-target="startingWeight" data-delta="2.5" aria-label="Increase starting weight">＋</button></div></div>
+    <div class="field-grid workout-wheel-grid"><div class="field"><label for="targetSets">TARGET SETS</label><input type="number" id="targetSets" min="1" max="20" step="1" value="3" aria-label="Target sets"/></div><div class="field"><label for="targetReps">REPS PER SET</label><input type="number" id="targetReps" min="1" max="100" step="1" value="10" aria-label="Reps per set"/></div></div>
+    <div class="field"><label for="startingWeight">STARTING WEIGHT (KG)</label><input type="number" id="startingWeight" min="0" max="500" step="2.5" value="40" aria-label="Starting weight in kilograms"/></div>
     <div class="setting-section progressive-setting"><div class="switch-row"><div class="switch-copy"><strong>Progressive overload</strong><span>Increase the planned weight with each set.</span></div><label class="switch"><input type="checkbox" id="progressiveToggle" checked><span class="switch-track"></span></label></div><div class="field" id="progressiveSettingsBox" style="margin:0"><label for="weightIncrement">INCREMENT PER SET (KG)</label><input type="number" id="weightIncrement" min="0" step="0.5" value="5"/></div></div>
     <div id="setPreview" class="form-note">Set 1: 40 kg · Set 2: 45 kg · Set 3: 50 kg</div>
     <div class="modal-actions"><button class="cancel" data-action="close-modal">Cancel</button><button class="save lime" data-action="save-exercise">Add to session →</button></div>`);
@@ -982,7 +1062,7 @@ function updateExerciseDetail() {
   const ex=findExercise(activeExerciseSelection);if(!ex)return;
   const host=$('selectedExerciseDetail');
   if(host)host.innerHTML=`${renderExerciseThumbnail(ex,'selected')}<div><strong class="selected-exercise-name">${safe(ex.name)}</strong><small class="selected-exercise-sub">${safe(ex.primary_muscle||ex.target||'Full body')} · ${safe(ex.equipment||'Bodyweight')} · ${n(ex.default_rest_sec)}s default rest</small><small class="selected-exercise-description">${safe(exerciseShortDescription(ex))}</small></div>`;
-  if(ex.tracking_metrics?.includes('duration')&&!ex.tracking_metrics.includes('weight')){if($('targetReps'))$('targetReps').value=20;if($('startingWeight'))$('startingWeight').value=0;}
+  if(ex.tracking_metrics?.includes('duration')&&!ex.tracking_metrics.includes('weight')){if($('targetReps')){$('targetReps').value=20;refreshNumberWheel($('targetReps'));}if($('startingWeight')){$('startingWeight').value=0;refreshNumberWheel($('startingWeight'));}}
   updateSetPreview();
 }
 function openExerciseDetail(id) {
@@ -998,47 +1078,62 @@ function openExerciseDetail(id) {
   const muscles=(ex.secondary_muscles||[]).filter(Boolean);
   showModal(`${modalHead('EXERCISE GUIDE',ex.name,'Quick movement reference')}${media}<p class="exercise-guide-description">${safe(exerciseShortDescription(ex))}</p><div class="exercise-guide-facts"><div><span>BODY PART</span><strong>${safe(bodyPart)}</strong></div><div><span>TARGET MUSCLE</span><strong>${safe(target)}</strong></div><div><span>EQUIPMENT</span><strong>${safe(ex.equipment||'Bodyweight')}</strong></div><div><span>REST</span><strong>${n(ex.default_rest_sec)?`${n(ex.default_rest_sec)} sec`:'No preset'}</strong></div>${muscles.length?`<div class="wide"><span>SECONDARY MUSCLES</span><strong>${safe(muscles.join(', '))}</strong></div>`:''}</div><div class="exercise-guide-credit">${ex.media_attribution?safe(ex.media_attribution):'Exercise metadata from the Timely Fit master catalogue.'}</div><div class="modal-actions"><button class="save lime" data-action="close-modal">Done</button></div>`);
 }
-function openEditExercise(index) {
-  const ex=activeLog().workout_log?.exercises?.[index];if(!ex)return;
+function getEditingExercise() {
+  const log=activeLog();
+  if(editExerciseLocation?.kind==='history')return log.workout_history?.[editExerciseLocation.sessionIndex]?.exercises?.[editExerciseLocation.exerciseIndex]||null;
+  return log.workout_log?.exercises?.[editExerciseIndex]||null;
+}
+function openEditExercise(index, historySessionIndex=null) {
   editExerciseIndex=index;
-  const reference=findExercise(ex.exercise_id)||ex;const locked=!!ex.finished;
-  const rows=ex.sets.map((set,i)=>`<div class="set-row edit-set-row"><div class="set-num">SET ${i+1}</div><input class="set-input" type="number" min="0" step="0.5" id="editSetWeight${i}" aria-label="Weight for set ${i+1}" value="${safe(set.weight??0)}" ${locked?'disabled':''}/><input class="set-input" type="number" min="0" step="1" id="editSetReps${i}" aria-label="Reps for set ${i+1}" value="${safe(set.reps??10)}" ${locked?'disabled':''}/><button type="button" class="mini-icon" data-action="edit-remove-set" data-set-index="${i}" aria-label="Remove set ${i+1}" ${locked||ex.sets.length<=1?'disabled':''}>✕</button></div>`).join('');
-  showModal(`${modalHead('EDIT EXERCISE',safe(ex.name),locked?'This exercise is finished, so its sets are locked. You can still remove it.':'Change the planned sets, or remove this exercise from the day.')}
+  editExerciseLocation=historySessionIndex===null?{kind:'active',exerciseIndex:index}:{kind:'history',sessionIndex:historySessionIndex,exerciseIndex:index};
+  const ex=getEditingExercise();if(!ex)return;
+  const reference=findExercise(ex.exercise_id)||ex;
+  const rows=ex.sets.map((set,i)=>`<div class="set-row edit-set-row"><div class="set-num">SET ${i+1}</div><input class="set-input" type="number" min="0" step="0.5" id="editSetWeight${i}" aria-label="Weight for set ${i+1}" value="${safe(set.weight??0)}"/><input class="set-input" type="number" min="0" step="1" id="editSetReps${i}" aria-label="Reps for set ${i+1}" value="${safe(set.reps??10)}"/><button type="button" class="mini-icon" data-action="edit-remove-set" data-set-index="${i}" aria-label="Remove set ${i+1}" ${ex.sets.length<=1?'disabled':''}>✕</button></div>`).join('');
+  const isHistory=editExerciseLocation.kind==='history';
+  const desc=isHistory?'Edit this saved workout, including sets, or add sets to its history.':ex.finished?'Reopen this exercise to change finished sets or add another set.':'Change planned sets or edit the exercise details.';
+  showModal(`${modalHead('EDIT EXERCISE',safe(ex.name),desc)}
     <div class="selected-food selected-exercise-card">${renderExerciseThumbnail(reference,'selected')}<div><strong class="selected-exercise-name">${safe(ex.name)}</strong><small class="selected-exercise-sub">${safe(ex.primary_muscle||'Full body')} · ${safe(ex.equipment||'Bodyweight')}</small></div></div>
     <div class="sets-header edit-sets-header"><span>SET</span><span>WEIGHT KG</span><span>REPS / MIN</span><span></span></div>
-    ${rows}
-    <div class="set-actions"><button type="button" class="outline-button full" data-action="edit-add-set" ${locked?'disabled':''}>＋ Add set</button></div>
-    <div class="field" style="margin-top:14px"><label for="editRest">REST BETWEEN SETS (SECONDS)</label><input id="editRest" type="number" min="0" step="5" value="${safe(n(ex.default_rest_sec))}" ${locked?'disabled':''}/></div>
-    <div class="modal-actions"><button class="cancel" data-action="close-modal">Cancel</button><button class="save" data-action="save-exercise-edit" ${locked?'disabled':''}>Save changes</button></div>
+    <div id="editExerciseSetRows">${rows}</div>
+    <div class="set-actions"><button type="button" class="outline-button full" data-action="edit-add-set">＋ Add set</button></div>
+    <div class="field" style="margin-top:14px"><label for="editRest">REST BETWEEN SETS (SECONDS)</label><input id="editRest" type="number" min="0" max="1800" step="5" value="${safe(n(ex.default_rest_sec))}"/></div>
+    <div class="modal-actions"><button class="cancel" data-action="close-modal">Cancel</button><button class="save" data-action="save-exercise-edit">Save changes</button></div>
     <button type="button" class="danger-button" data-action="delete-exercise">🗑 Delete exercise</button>`);
 }
-function readEditedSets(ex) {
-  if(ex.finished)return;
-  ex.sets.forEach((set,i)=>{const w=$('editSetWeight'+i),r=$('editSetReps'+i);if(w)set.weight=Math.max(0,n(w.value));if(r)set.reps=Math.max(0,n(r.value));});
+function readEditedSets(ex=getEditingExercise()) {
+  if(!ex)return;
+  ex.sets.forEach((set,i)=>{const w=$('editSetWeight'+i),r=$('editSetReps'+i);if(w)set.weight=Math.max(0,n(w.value));if(r)set.reps=Math.max(0,Math.round(n(r.value)));});
 }
 function editExerciseAddSet() {
-  const ex=activeLog().workout_log?.exercises?.[editExerciseIndex];if(!ex||ex.finished)return;
+  const ex=getEditingExercise();if(!ex)return;
   readEditedSets(ex);const last=ex.sets[ex.sets.length-1]||{weight:0,reps:10};
-  ex.sets.push({set_num:ex.sets.length+1,weight:n(last.weight),reps:n(last.reps),completed:false});
-  scheduleSave();render();openEditExercise(editExerciseIndex);
+  ex.sets.push({set_num:ex.sets.length+1,weight:n(last.weight),reps:n(last.reps),completed:false,completed_at:null});
+  if(editExerciseLocation?.kind==='active'&&ex.finished){ex.finished=false;ex.finished_at=null;ex.started=false;}
+  scheduleSave();render();openEditExercise(editExerciseIndex,editExerciseLocation?.kind==='history'?editExerciseLocation.sessionIndex:null);
 }
 function editExerciseRemoveSet(setIndex) {
-  const ex=activeLog().workout_log?.exercises?.[editExerciseIndex];if(!ex||ex.finished||ex.sets.length<=1)return;
-  readEditedSets(ex);ex.sets.splice(setIndex,1);ex.sets.forEach((s,i)=>{s.set_num=i+1;});
+  const ex=getEditingExercise();if(!ex||ex.sets.length<=1)return;
+  readEditedSets(ex);ex.sets.splice(setIndex,1);ex.sets.forEach((set,i)=>{set.set_num=i+1;});
   ex.rest_until=null;ex.last_completed_set=null;
-  scheduleSave();render();openEditExercise(editExerciseIndex);
+  scheduleSave();render();openEditExercise(editExerciseIndex,editExerciseLocation?.kind==='history'?editExerciseLocation.sessionIndex:null);
 }
 function saveExerciseEdit() {
-  const ex=activeLog().workout_log?.exercises?.[editExerciseIndex];if(!ex)return;
-  if(!ex.finished){readEditedSets(ex);if($('editRest'))ex.default_rest_sec=Math.max(0,Math.round(n($('editRest').value)));}
+  const ex=getEditingExercise();if(!ex)return;
+  readEditedSets(ex);if($('editRest'))ex.default_rest_sec=Math.max(0,Math.round(n($('editRest').value)));
+  ex.sets.forEach((set,i)=>{set.set_num=i+1;});
   scheduleSave();closeModal();render();toast('Exercise updated.');
 }
 function deleteExerciseEntry(button) {
   if(button&&button.dataset.armed!=='1'){button.dataset.armed='1';button.textContent='Tap again to delete this exercise';return;}
-  const log=activeLog();const workout=log.workout_log;const ex=workout?.exercises?.[editExerciseIndex];if(!ex)return;
-  const name=ex.name;workout.exercises.splice(editExerciseIndex,1);
-  if(!workout.exercises.length&&!workout.start_ms)log.workout_log=null;
-  editExerciseIndex=null;scheduleSave();closeModal();render();toast(`${name} deleted.`);
+  const nameEx=getEditingExercise();if(!nameEx)return;const name=nameEx.name;
+  if(editExerciseLocation?.kind==='history'){
+    const session=activeLog().workout_history?.[editExerciseLocation.sessionIndex];if(!session)return;
+    session.exercises.splice(editExerciseLocation.exerciseIndex,1);
+  }else{
+    const workout=activeLog().workout_log;if(!workout)return;workout.exercises.splice(editExerciseIndex,1);
+    if(!workout.exercises.length&&!workout.start_ms)activeLog().workout_log=null;
+  }
+  editExerciseIndex=null;editExerciseLocation=null;scheduleSave();closeModal();render();toast(`${name} deleted from the log.`);
 }
 function updateSetPreview() {
   const host=$('setPreview');if(!host)return;const sets=clamp(Math.round(n($('targetSets')?.value)||3),1,20);const start=Math.max(0,n($('startingWeight')?.value)||0);const inc=$('progressiveToggle')?.checked?Math.max(0,n($('weightIncrement')?.value)||0):0;const reps=Math.max(1,Math.round(n($('targetReps')?.value)||10));
@@ -1396,6 +1491,7 @@ document.addEventListener('click', async (event)=>{
     case 'exercise-equipment-filter': activeExerciseEquipmentFilter=button.dataset.filter||'all';renderExerciseFilters();renderExerciseResults($('exerciseSearch')?.value||'');break;
     case 'open-exercise-detail': openExerciseDetail(button.dataset.id);break;
     case 'edit-exercise': openEditExercise(n(button.dataset.exIndex));break;
+    case 'edit-history-exercise': openEditExercise(n(button.dataset.exIndex),n(button.dataset.sessionIndex));break;
     case 'edit-add-set': editExerciseAddSet();break;
     case 'edit-remove-set': editExerciseRemoveSet(n(button.dataset.setIndex));break;
     case 'save-exercise-edit': saveExerciseEdit();break;
@@ -1462,6 +1558,28 @@ document.addEventListener('change',(event)=>{
   }
   if(target.id==='foodAmount')return;
 });
+// Swipe horizontally across the active timeline to move Diet → Workout → Hydration.
+(function enableDomainSwipe(){
+  const main=$('mainContent');if(!main)return;
+  main.style.touchAction='pan-y';
+  let start=null;
+  main.addEventListener('touchstart',event=>{
+    if(event.touches.length!==1)return;
+    const target=event.target;
+    if(target.closest('input,textarea,select,[data-no-domain-swipe],.food-local-results,.food-online-results,.exercise-picker-results,.exercise-filter-strip,.date-options,.chart-scroll'))return;
+    start={x:event.touches[0].clientX,y:event.touches[0].clientY,time:Date.now()};
+  },{passive:true});
+  main.addEventListener('touchend',event=>{
+    if(!start||!event.changedTouches.length){start=null;return;}
+    const end=event.changedTouches[0],dx=end.clientX-start.x,dy=end.clientY-start.y,duration=Date.now()-start.time;start=null;
+    if(Math.abs(dx)<58||Math.abs(dx)<Math.abs(dy)*1.25||duration>1000)return;
+    const domains=['diet','workout','water'];const current=domains.indexOf(state.selectedDomain);if(current<0)return;
+    const next=clamp(current+(dx<0?1:-1),0,domains.length-1);if(next===current)return;
+    event.preventDefault();state.selectedDomain=domains[next];render();persistState();
+  },{passive:false});
+  main.addEventListener('touchcancel',()=>{start=null;},{passive:true});
+})();
+
 $('prevDate').addEventListener('click',()=>{state.activeDate=shiftDate(state.activeDate,-1);currentLog();render();persistState();});
 $('nextDate').addEventListener('click',()=>{state.activeDate=shiftDate(state.activeDate,1);currentLog();render();persistState();});
 $('settingsButton').addEventListener('click',openSettings);
@@ -1477,7 +1595,7 @@ function toast(message,error=false) {
 }
 
 // Live timers update labels only: no full render, so inputs and scroll position stay stable.
-function applyTheme(){document.documentElement.classList.toggle('theme-dark',!!state.preferences?.darkMode);document.body.classList.toggle('theme-dark',!!state.preferences?.darkMode);const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=state.preferences?.darkMode?'#101713':'#101b17';}
+function applyTheme(){document.documentElement.classList.toggle('theme-dark',!!state.preferences?.darkMode);document.body.classList.toggle('theme-dark',!!state.preferences?.darkMode);const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=state.preferences?.darkMode?'#000000':'#101b17';}
 setInterval(()=>{
   const sessionClock=$('session-clock');if(sessionClock)sessionClock.textContent=formatDurationHMS(Date.now()-n(sessionClock.dataset.startMs));
   for(const clock of document.querySelectorAll('.rest-clock')){const seconds=Math.max(0,Math.ceil((n(clock.dataset.until)-Date.now())/1000));clock.textContent=`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;if(seconds===0)clock.style.color='var(--orange)';}

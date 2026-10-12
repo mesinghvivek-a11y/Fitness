@@ -418,3 +418,90 @@ body.theme-dark .chart-label,body.theme-dark .analysis-card-sub{color:#a2b1a4}
  .session-live-clock strong{font-size:19px}
  .food-universal-add{min-width:68px;padding:0 9px}
 }
+
+
+/* Compact vertical number rollers for quantities and workout setup. The source input remains the saved value. */
+.number-wheel-slot{position:relative;min-width:0;width:100%;height:108px;}
+.number-wheel-source{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important;opacity:0!important;pointer-events:none!important;}
+.number-wheel{position:relative;width:100%;height:108px;overflow-y:auto;overscroll-behavior:contain;scroll-snap-type:y mandatory;scrollbar-width:none;border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);outline:none;touch-action:pan-y;-webkit-overflow-scrolling:touch;}
+.number-wheel::-webkit-scrollbar{display:none}
+.number-wheel-list{position:relative;z-index:1}
+.number-wheel-item{height:36px;display:flex;align-items:center;justify-content:center;scroll-snap-align:start;font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--muted-2);user-select:none;-webkit-user-select:none;cursor:pointer;}
+.number-wheel-item.is-current{color:var(--ink);font-size:17px;font-weight:900;}
+.number-wheel-focus{position:absolute;left:5px;right:5px;top:36px;height:36px;border-radius:9px;background:var(--green-soft);border:1px solid color-mix(in srgb,var(--green) 28%,transparent);pointer-events:none;z-index:0;}
+.number-wheel:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.workout-wheel-grid .field{min-width:0}
+.field:has(>.number-wheel-slot){align-content:start}
+.recipe-ingredient .number-wheel-slot{height:76px}
+.recipe-ingredient .number-wheel{height:76px;border-radius:10px}
+.recipe-ingredient .number-wheel-item{height:25.33px;font-size:12px}
+.recipe-ingredient .number-wheel-item.is-current{font-size:13px}
+.recipe-ingredient .number-wheel-focus{top:25.33px;height:25.33px;left:3px;right:3px}
+.recipe-ingredient{align-items:start}
+.edit-set-row .number-wheel-slot{height:72px}
+.edit-set-row .number-wheel{height:72px;border-radius:10px}
+.edit-set-row .number-wheel-item{height:24px;font-size:11px}
+.edit-set-row .number-wheel-item.is-current{font-size:12px}
+.edit-set-row .number-wheel-focus{top:24px;height:24px;left:3px;right:3px}
+.completed-exercise-title{display:flex;align-items:flex-start;gap:7px;min-width:0}
+.completed-exercise-title strong{flex:1;min-width:0}
+.history-edit-button{flex-shrink:0;border:1px solid var(--line);border-radius:8px;padding:4px 7px;background:var(--card);color:var(--muted);font-size:9px;font-weight:850;line-height:1.2}
+
+/* True AMOLED dark theme: the app canvas and surrounding surfaces are pure #000; content cards remain subtle charcoal. */
+html.theme-dark,body.theme-dark{--ink:#f5f7f5;--muted:#a1a8a2;--muted-2:#717873;--paper:#000000;--card:#0d0d0d;--line:#262626;--green:#c8ff62;--green-dark:#b9ed55;--green-soft:#171d10;--orange-soft:#1b100b;--blue-soft:#0b1418;--shadow:0 8px 26px rgba(0,0,0,.72);background:#000!important;color:#f5f7f5;color-scheme:dark;}
+html.theme-dark body,body.theme-dark{background:#000!important;color:#f5f7f5}
+body.theme-dark .app-shell,body.theme-dark .app-header,body.theme-dark .main-content,body.theme-dark .date-strip,body.theme-dark .safe-area{background:#000!important;color:#f5f7f5;border-color:#181818}
+body.theme-dark .app-header{background:rgba(0,0,0,.96)!important;backdrop-filter:blur(18px)}
+body.theme-dark .brand-mark{background:#d6ff83}
+body.theme-dark .brand-mark span{background:#244329}
+body.theme-dark .domain-tabs{background:#101010;border:1px solid #242424}
+body.theme-dark .domain-tab{background:transparent;color:#999f9a}
+body.theme-dark .domain-tab.active{background:#c8ff62;color:#10140b;box-shadow:0 2px 14px #c8ff6226}
+body.theme-dark .date-pill{background:#080808;color:#a4aaa5;border-color:#242424}
+body.theme-dark .date-pill.active{background:#111611;border-color:#4b6031;color:#f1f7eb}
+body.theme-dark .date-pill.today{background:#000;border-color:#c8ff62;color:#c8ff62;box-shadow:inset 0 0 0 1px #c8ff6240}
+body.theme-dark .date-pill.today.active{background:#151d0d;border-color:#c8ff62;color:#d8ff92}
+body.theme-dark .calendar-button,body.theme-dark .icon-button{background:#101010;border-color:#292929;color:#e8ede8}
+body.theme-dark .bottom-nav{background:rgba(0,0,0,.98);border-color:#252525;box-shadow:0 -8px 22px #0009}
+body.theme-dark .bottom-tab{color:#707772}body.theme-dark .bottom-tab.active{color:#c8ff62}
+body.theme-dark .center-add{border-color:#000;background:#c8ff62;color:#10140b}
+body.theme-dark .food-entry,body.theme-dark .micro-card,body.theme-dark .water-log-row,body.theme-dark .quick-water-btn,body.theme-dark .water-total-chip,body.theme-dark .meal-section .empty-meal,body.theme-dark .exercise-card,body.theme-dark .analysis-card,body.theme-dark .chart-card,body.theme-dark .setting-section,body.theme-dark .completed-session-card{background:#0d0d0d;border-color:#252525;color:#f5f7f5;box-shadow:0 4px 18px #0005}
+body.theme-dark .modal-backdrop{background:rgba(0,0,0,.86)}body.theme-dark .modal-sheet{background:#050505;border-color:#222;box-shadow:0 -10px 45px #000d}
+body.theme-dark .workout-hero,body.theme-dark .workout-hero.session-active{background:#0a0a0a;border:1px solid #242424;color:#f4f7f3}
+body.theme-dark .workout-hero:before{opacity:.25}
+body.theme-dark .workout-hero h2,body.theme-dark .session-live-clock{color:#eaf7d8}
+body.theme-dark .workout-hero p,body.theme-dark .workout-hero .eyebrow{color:#9ab385}
+body.theme-dark .session-summary>div{background:#101010;border:1px solid #242424}
+body.theme-dark .session-summary strong{color:#f3f5f2}body.theme-dark .session-summary span{color:#969e97}
+body.theme-dark .water-hero,body.theme-dark .streak-card{background:#0c0c0c;color:#f5f7f5;border:1px solid #252525}
+body.theme-dark .food-search-hero,body.theme-dark .exercise-search-hero,body.theme-dark .search-result,body.theme-dark .field input,body.theme-dark .field select,body.theme-dark .field textarea,body.theme-dark .recipe-ingredient input,body.theme-dark .recipe-ingredient select,body.theme-dark .food-barcode-row input,body.theme-dark .set-input,body.theme-dark .stepper-field input,body.theme-dark .number-wheel{background:#050505;color:#f3f5f3;border-color:#2a2a2a}
+body.theme-dark .food-search-hero input,body.theme-dark .exercise-search-hero input{background:transparent}
+body.theme-dark .food-type-pill,body.theme-dark .filter-chip{background:#080808;color:#a6ada7;border-color:#2a2a2a}
+body.theme-dark .food-type-pill.active,body.theme-dark .filter-chip.active{background:#c8ff62;color:#10140b;border-color:#c8ff62}
+body.theme-dark .food-pill-count{background:#171717;color:#c4ccc5}body.theme-dark .food-type-pill.active .food-pill-count{background:#a9e94a;color:#11150a}
+body.theme-dark .food-create-card{background:#101010;color:#f1f5ef;border-color:#272727}body.theme-dark .food-create-card.recipe{background:#100e17;border-color:#2f293d}
+body.theme-dark .food-selection-panel .selected-food,body.theme-dark .selected-exercise-card,body.theme-dark .selected-food{background:#101510!important;border-color:#2b3526!important}
+body.theme-dark .food-selection-panel .selected-food strong,body.theme-dark .selected-food strong,body.theme-dark .food-detail-heading strong{color:#f2f5ef}
+body.theme-dark .form-note,body.theme-dark .food-source-note{background:#11150d;color:#b3c99e;border-color:#242b1e}
+body.theme-dark .sets-panel{background:#080808;border-color:#282828}body.theme-dark .sets-header{color:#929a93;border-color:#282828}body.theme-dark .set-num{color:#aeb5af}body.theme-dark .set-row{border-color:#242424}
+body.theme-dark .set-complete{background:#111;border-color:#333;color:#b9c2ba}body.theme-dark .set-complete.checked{background:#c8ff62;color:#11150a}
+body.theme-dark .set-summary-line span{background:#11180b;color:#c8ff62}
+body.theme-dark .completed-session-heading{background:#0d0f0b;border-color:#252525}
+body.theme-dark .completed-session-heading h3,body.theme-dark .completed-session-total b{color:#f1f6eb}
+body.theme-dark .completed-session-meta,body.theme-dark .completed-session-total span{color:#9cae8b}
+body.theme-dark .completed-session-stats span{background:#141414;color:#bbc5ba}
+body.theme-dark .completed-exercise-copy strong,body.theme-dark .completed-exercise-duration b{color:#f3f6f2}
+body.theme-dark .completed-exercise-copy small{color:#c0e4aa}body.theme-dark .completed-exercise-media{background:#080808;border-color:#2b2b2b}
+body.theme-dark .completed-check{background:#c8ff62;color:#0e1507}
+body.theme-dark .history-edit-button{background:#111;color:#cad2cb;border-color:#303030}
+body.theme-dark .setting-section p,body.theme-dark .switch-copy span,body.theme-dark .field label{color:#9ea69f}
+body.theme-dark .switch-track{background:#343834}body.theme-dark .switch input:checked+.switch-track{background:#c8ff62}body.theme-dark .switch input:checked+.switch-track:before{background:#111}
+body.theme-dark .close-modal{background:#141414;color:#f0f4ef}body.theme-dark .modal-head p{color:#9da59d}body.theme-dark .modal-handle{background:#363636}
+body.theme-dark .modal-actions .cancel{background:#181818;color:#d2d8d2}body.theme-dark .modal-actions .save{background:#d8e0d5;color:#121612}body.theme-dark .modal-actions .save.lime{background:#c8ff62;color:#10140b}
+body.theme-dark .universal-add-toggle{background:#090909}body.theme-dark .universal-add-toggle button{color:#9ea69f}body.theme-dark .universal-add-toggle button.active{background:#1c1c1c;color:#f0f4ef}
+body.theme-dark .universal-add-explainer{background:#0c0c0c;border-color:#282828}body.theme-dark .universal-add-explainer strong{color:#f0f4ef}
+body.theme-dark .auth-gate{background:#000!important}body.theme-dark .auth-card{background:#0b0b0b;border-color:#252525;color:#f5f7f5}
+body.theme-dark .auth-fields input{background:#050505;color:#f5f7f5;border-color:#292929}body.theme-dark .auth-local-btn{background:#10150b;border-color:#39492b;color:#e6f6d8}
+body.theme-dark .water-log-info strong,body.theme-dark .water-log-amount{color:#eff7f1}body.theme-dark .water-log-icon{background:#081317}
+body.theme-dark .number-wheel-focus{background:#17200f;border-color:#516b2c}
+@media(max-width:390px){.number-wheel-slot,.number-wheel{height:96px}.number-wheel-item{height:32px}.number-wheel-focus{top:32px;height:32px}.recipe-ingredient .number-wheel-slot{height:72px}.recipe-ingredient .number-wheel{height:72px}.recipe-ingredient .number-wheel-item{height:24px}.recipe-ingredient .number-wheel-focus{top:24px;height:24px}}

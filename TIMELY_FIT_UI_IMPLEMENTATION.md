@@ -47,3 +47,11 @@ python tests/verify-food-import.py
 ```
 
 Supabase cloud sync needs the project's URL and publishable key in the existing `supabase-config.js` template and its schema applied. Without credentials the app remains local-only. Browser-based mobile-camera and visual interaction tests must still be performed on an HTTPS deployment/device; syntax and static-data tests do not establish that every real-device interaction has been verified.
+
+
+## Update: AMOLED theme, swipe navigation, number rollers and history editing
+- Dark mode uses a pure `#000000` canvas and app shell for AMOLED displays, with restrained near-black cards, dark controls and lime accents. The browser theme-color meta tag also switches to black.
+- Horizontal touch swipes within the main timeline navigate Diet → Workout → Hydration. Inputs and nested result/filter scrollers are excluded to reduce accidental navigation; the selected date remains shared state.
+- Numeric quantity/serving and workout setup controls use touch-friendly vertical scroll wheels. Their underlying numeric inputs remain the source of truth and emit normal input/change events.
+- Active exercises can be edited and sets added or removed. Completed-history rows also include Edit, opening the same editor against that saved session. Edit actions update the existing log and schedule local persistence/background sync.
+- Service worker cache name was bumped to avoid stale UI assets.
