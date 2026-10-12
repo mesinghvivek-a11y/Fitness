@@ -66,3 +66,38 @@
 .auth-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}.auth-primary{background:var(--ink);color:#fff}.auth-secondary{background:var(--green);color:var(--ink)}.auth-link{display:block;margin:13px auto 0;background:transparent;color:#6b8752;font-size:10px;font-weight:800;padding:7px 10px}
 .auth-footnote{font-size:9px;line-height:1.6;color:#a0aaa0;text-align:center;margin:18px 0 0}.auth-gate button:disabled,.auth-gate input:disabled{opacity:.45;cursor:not-allowed}
 @media(max-width:380px){.auth-gate{padding:14px}.auth-card{padding:22px 18px;border-radius:23px}.auth-intro h1{font-size:26px}}
+
+/* V2.2 — compact exercise thumbnails, accessible media viewer and concise details */
+.exercise-media-trigger{position:relative;display:grid;place-items:center;flex:0 0 auto;padding:0;overflow:hidden;border:1px solid #e4eade;background:#f0f4e8;color:#536b48;border-radius:12px;cursor:pointer}
+.exercise-media-trigger.timeline{width:44px;height:44px}
+.exercise-media-trigger.picker{width:42px;height:42px;border-radius:11px}
+.exercise-media-trigger.selected{width:44px;height:44px;border-radius:11px}
+.exercise-media-trigger img{display:block;width:100%;height:100%;object-fit:cover}
+.exercise-thumb-placeholder{display:grid;place-items:center;width:100%;height:100%;font-size:19px}
+.exercise-thumb-play{position:absolute;right:3px;bottom:3px;width:16px;height:16px;display:grid;place-items:center;border-radius:50%;background:#17251fdd;color:#c7f36c;font-size:7px;padding-left:1px}
+.exercise-media-trigger:focus-visible,.exercise-result-main:focus-visible{outline:2px solid #8db85b;outline-offset:2px}
+.exercise-search-row{display:flex;align-items:center;gap:8px;padding:7px;border:1px solid #e5eae1;border-radius:13px;background:#fff;min-width:0}
+.exercise-search-row:has(.exercise-result-main.selected){border-color:#91b567;background:#f4f9e9}
+.exercise-result-main{display:flex;align-items:center;text-align:left;flex:1;min-width:0;min-height:44px;padding:3px;background:transparent;border:0;color:var(--ink)}
+.exercise-result-main .result-copy{min-width:0;flex:1}
+.exercise-result-main .result-copy strong{font-size:11px;display:block;line-height:1.3;overflow-wrap:anywhere}
+.exercise-result-main .result-copy span{font-size:9px;color:#98a399;display:block;margin-top:4px;line-height:1.35}
+.exercise-rest-pill{flex:0 0 auto;font-size:9px;font-weight:800;color:#647a58;white-space:nowrap;background:#f0f4e9;border-radius:8px;padding:6px}
+.selected-exercise-card{align-items:center;min-width:0}
+.selected-exercise-card>div{min-width:0;flex:1}
+.selected-exercise-description{display:block;font-size:9px;color:#819080;line-height:1.4;margin-top:5px}
+.exercise-guide-media{width:100%;aspect-ratio:1/1;max-height:330px;overflow:hidden;display:grid;place-items:center;border:1px solid #e3e9df;border-radius:18px;background:#edf2e8;margin:0 0 13px}
+.exercise-guide-media>img{display:block;width:100%;height:100%;object-fit:contain;background:#f6f8f2}
+.exercise-media-fallback{width:100%;height:100%;padding:22px;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;gap:9px;color:#61745c}
+.exercise-media-fallback>span{font-size:43px;width:78px;height:78px;border-radius:24px;background:#e1ecd4;display:grid;place-items:center}
+.exercise-media-fallback strong{font-size:13px;color:#344b35}
+.exercise-media-fallback small{font-size:10px;line-height:1.55;color:#819080;max-width:330px;overflow-wrap:anywhere}
+.exercise-media-fallback code{font-size:9px;overflow-wrap:anywhere}
+.exercise-guide-description{font-size:12px;line-height:1.55;color:#55685a;margin:0 0 14px}
+.exercise-guide-facts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.exercise-guide-facts>div{padding:11px;border:1px solid #e6ebe1;background:#fff;border-radius:12px;min-width:0}
+.exercise-guide-facts>div.wide{grid-column:1/-1}
+.exercise-guide-facts span{display:block;font-size:8px;letter-spacing:.8px;font-weight:800;color:#96a295;margin-bottom:6px}
+.exercise-guide-facts strong{display:block;font-size:11px;line-height:1.45;color:#405444;overflow-wrap:anywhere}
+.exercise-guide-credit{margin-top:12px;text-align:center;font-size:8px;line-height:1.45;color:#a2aba0;overflow-wrap:anywhere}
+@media(max-width:360px){.exercise-search-row{gap:6px;padding:6px}.exercise-media-trigger.picker{width:37px;height:37px}.exercise-rest-pill{font-size:8px;padding:5px}.exercise-result-main .result-copy strong{font-size:10px}}

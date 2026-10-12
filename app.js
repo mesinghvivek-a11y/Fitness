@@ -22,6 +22,7 @@ let activeFoodSelection = null;
 let activeFoodMeal = 'breakfast';
 let editFoodEntryId = null;
 let activeExerciseSelection = null;
+let exerciseDetailReturnState = null;
 let recipeIngredients = [];
 let activeRecipeIngredient = null;
 let analyticsPeriod = 'weekly';
@@ -104,6 +105,20 @@ function activeLog() { return currentLog(state.activeDate); }
 function allFoods() { return [...masterFoods,...(state.customFoods||[])]; }
 function findFood(id) { return allFoods().find(food=>food.id===id); }
 function findExercise(id) { return masterExercises.find(ex=>ex.id===id); }
+function exerciseHasLicensedMedia(ex) { return ex?.media_status==='licensed' && !!ex.image && !!ex.gif_url; }
+function renderExerciseThumbnail(ex,size='regular') {
+  const glyph=exerciseEmoji(ex?.primary_muscle||ex?.target||'');
+  const licensed=exerciseHasLicensedMedia(ex);
+  const image=licensed ? `<img src="${safe(ex.image)}" alt="" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="exercise-thumb-placeholder" hidden>${glyph}</span>` : `<span class="exercise-thumb-placeholder">${glyph}</span>`;
+  return `<button type="button" class="exercise-media-trigger ${size}" data-action="open-exercise-detail" data-id="${safe(ex?.id||'')}" aria-label="View ${safe(ex?.name||'exercise')} demonstration">${image}<span class="exercise-thumb-play" aria-hidden="true">▶</span></button>`;
+}
+function exerciseShortDescription(ex) {
+  const description=String(ex?.description||'').trim();
+  if(description) return description;
+  const target=String(ex?.primary_muscle||ex?.body_part||'muscles').toLowerCase();
+  const equipment=String(ex?.equipment||'bodyweight').toLowerCase();
+  return `A ${target} exercise using ${equipment}.`;
+}
 function foodIsRaw(food) { return food?.type==='raw_ingredient'; }
 function unitScale(unit) {
   const u=String(unit||'').toLowerCase();
@@ -345,7 +360,7 @@ function renderWorkout(log,totals) {
     ${exerciseCards}
     <div class="session-summary"><div><strong>${doneSets}/${allSets}</strong><span>SETS DONE</span></div><div><strong>${calcVolume(workout)}</strong><span>VOLUME · KG</span></div><div><strong>${fmt(totals.burned)}</strong><span>KCAL BURNED TODAY</span></div></div>
     ${isStarted?`<button class="finish-button" data-action="finish-session">⏹ FINISH SESSION & CALCULATE CALORIES</button>`:''}
-    <div style="font-size:9px;color:#98a499;text-align:center;margin:13px 0 0;line-height:1.5">Session calories are estimated at finish using average exercise MET × body weight × elapsed hours.</div>`;
+    <div style="font-size:9px;color:#98a499;text-align:center;margin:13px 0 0;line-height:1.5">Session calories use available MET values × body weight × elapsed hours. Imported exercises without a verified MET value are not assigned a fabricated value.</div>`;
 }
 function durationLabel(ms) { const mins=Math.max(0,Math.floor(ms/60000)); return mins>=60?`${Math.floor(mins/60)}h ${mins%60}m`:`${mins} min`; }
 function calcVolume(workout) { return fmt((workout.exercises||[]).reduce((sum,ex)=>sum+ex.sets.reduce((s,set)=>s+n(set.weight)*n(set.reps)*(set.completed?1:0),0),0)); }
@@ -356,7 +371,8 @@ function renderExerciseCard(ex,index,workout) {
   const totalVolume=ex.sets.reduce((sum,s)=>sum+(s.completed?n(s.weight)*n(s.reps):0),0);
   const sets=ex.sets.map((set,sidx)=>`<div class="set-row"><div class="set-num">SET ${sidx+1}</div><input class="set-input" type="number" min="0" step="0.5" aria-label="Weight for set ${sidx+1}" value="${safe(set.weight??0)}" data-role="set-weight" data-ex-index="${index}" data-set-index="${sidx}" ${done?'disabled':''}/><input class="set-input" type="number" min="0" step="1" aria-label="Reps for set ${sidx+1}" value="${safe(set.reps??10)}" data-role="set-reps" data-ex-index="${index}" data-set-index="${sidx}" ${done?'disabled':''}/><button class="set-complete ${set.completed?'checked':''}" data-action="complete-set" data-ex-index="${index}" data-set-index="${sidx}" ${done?'disabled':''} aria-label="Mark set ${sidx+1} complete">${set.completed?'✓':'○'}</button></div>`).join('');
   const restSec=n(ex.default_rest_sec||60);
-  return `<article class="exercise-card"><div class="exercise-card-header"><div class="exercise-icon">${exerciseEmoji(ex.primary_muscle)}</div><div class="exercise-main"><div class="exercise-name">${safe(ex.name)}</div><div class="exercise-meta">${safe(ex.primary_muscle||'Full body')} · ${safe(ex.equipment||'Bodyweight')} · ${restSec?`${restSec}s rest`:'no rest preset'}</div></div><span class="exercise-state ${done?'done':''}">${done?'DONE':`${completedSets}/${ex.sets.length} SETS`}</span></div>
+  const reference=findExercise(ex.exercise_id)||ex;
+  return `<article class="exercise-card"><div class="exercise-card-header">${renderExerciseThumbnail(reference,'timeline')}<div class="exercise-main"><div class="exercise-name">${safe(ex.name)}</div><div class="exercise-meta">${safe(ex.primary_muscle||'Full body')} · ${safe(ex.equipment||'Bodyweight')} · ${restSec?`${restSec}s rest`:'no rest preset'}</div></div><span class="exercise-state ${done?'done':''}">${done?'DONE':`${completedSets}/${ex.sets.length} SETS`}</span></div>
     <div class="exercise-start-row"><div class="exercise-stats">${ex.sets.length} sets · ${totalVolume?fmt(totalVolume)+' kg volume':'Ready to lift'}</div><button class="exercise-start ${started?'running':''}" data-action="${started?'toggle-exercise':'start-exercise'}" data-ex-index="${index}" ${done?'disabled':''}>${done?'✓ COMPLETE':started?'⌄ SETS OPEN':'▶ START'}</button></div>
     ${started?`<div class="sets-panel"><div class="sets-header"><span>SET</span><span>WEIGHT KG</span><span>REPS / MIN</span><span>DONE</span></div>${sets}<div class="set-actions"><button class="outline-button full" data-action="add-set" data-ex-index="${index}">＋ Add set</button><button class="outline-button full" data-action="finish-exercise" data-ex-index="${index}">Finish exercise</button></div>${ex.rest_until&&ex.last_completed_set!=null?`<div class="rest-timer"><div class="rest-timer-text">⏱ <span>REST</span> <span class="rest-clock" id="rest-clock" data-until="${ex.rest_until}">--:--</span></div><div class="timer-adjust"><button data-action="adjust-rest" data-ex-index="${index}" data-seconds="-30">−30s</button><button data-action="adjust-rest" data-ex-index="${index}" data-seconds="30">+30s</button></div></div>`:''}</div>`:''}</article>`;
 }
@@ -504,7 +520,16 @@ function renderWaterAnalytics() {
 
 // Modal shell and diet logging
 function showModal(html) { $('modalRoot').innerHTML=`<div class="modal-backdrop" data-action="backdrop-close"><section class="modal-sheet" role="dialog" aria-modal="true">${html}</section></div>`; }
-function closeModal() { $('modalRoot').innerHTML=''; activeFoodSelection=null; editFoodEntryId=null; activeExerciseSelection=null; activeRecipeIngredient=null; }
+function closeModal() {
+  $('modalRoot').innerHTML=''; activeFoodSelection=null; editFoodEntryId=null; activeRecipeIngredient=null;
+  const returnState=exerciseDetailReturnState; exerciseDetailReturnState=null;
+  if(returnState){
+    openWorkoutModal();activeExerciseSelection=returnState.id;
+    const input=$('exerciseSearch');if(input){input.value=returnState.query;renderExerciseResults(returnState.query);updateExerciseDetail();}
+    return;
+  }
+  activeExerciseSelection=null;
+}
 function modalHead(kicker,title,description='') { return `<div class="modal-handle"></div><div class="modal-head"><div><div class="eyebrow">${kicker}</div><h2>${title}</h2>${description?`<p>${description}</p>`:''}</div><button class="close-modal" data-action="close-modal" aria-label="Close">×</button></div>`; }
 function openFoodModal(meal='breakfast', preselect=null, allowRecipeCreation=false) {
   activeFoodMeal=meal||'breakfast';activeFoodSelection=preselect||null;
@@ -628,7 +653,7 @@ function openWorkoutModal() {
   showModal(`${modalHead('SETUP · TOUCH 1','Add an exercise','Choose a movement, then set your target. Progressive overload pre-fills a planned load for each set.')}
     <div class="search-box"><span class="search-icon">⌕</span><input id="exerciseSearch" placeholder="Search exercise or muscle group…" autocomplete="off" /></div>
     <div id="exerciseResults" class="search-results" style="max-height:195px"></div>
-    <div class="selected-food" id="selectedExerciseDetail"><span class="result-icon">🏋️</span><div><strong class="selected-exercise-name">Choose an exercise</strong><small class="selected-exercise-sub">Search by name, muscle group, equipment or workout type.</small></div></div>
+    <div class="selected-food selected-exercise-card" id="selectedExerciseDetail"><span class="result-icon">🏋️</span><div><strong class="selected-exercise-name">Choose an exercise</strong><small class="selected-exercise-sub">Search by name, body part, target muscle or equipment.</small></div></div>
     <div class="field-grid"><div class="field"><label for="targetSets">TARGET SETS</label><input type="number" id="targetSets" min="1" max="20" value="3" /></div><div class="field"><label for="targetReps">REPS PER SET</label><input type="number" id="targetReps" min="1" max="100" value="10" /></div></div>
     <div class="field"><label for="startingWeight">STARTING WEIGHT (KG)</label><input type="number" id="startingWeight" min="0" step="0.5" value="40" /></div>
     <div class="setting-section"><div class="switch-row"><div class="switch-copy"><strong>Progressive overload</strong><span>Increase the planned weight with each set.</span></div><label class="switch"><input type="checkbox" id="progressiveToggle" checked><span class="switch-track"></span></label></div><div class="field" style="margin:0"><label for="weightIncrement">INCREMENT PER SET (KG)</label><input type="number" id="weightIncrement" min="0" step="0.5" value="5" /></div></div>
@@ -639,14 +664,35 @@ function openWorkoutModal() {
 function renderExerciseResults(query) {
   const host=$('exerciseResults');if(!host)return;const q=String(query||'').trim();
   if(!q){const recents=(state.recentExerciseIds||[]).map(findExercise).filter(Boolean).slice(0,3);host.innerHTML=recents.length?`<div class="picker-caption">RECENT EXERCISES</div>${recents.map(ex=>exerciseResultButton(ex)).join('')}`:`<div class="picker-prompt">Start typing to search ${fmt(masterExercises.length)} exercises across strength, cardio, bodyweight, conditioning and mobility.</div>`;return;}
-  const results=masterExercises.map(ex=>({ex,score:searchScore(q,`${ex.name} ${ex.primary_muscle} ${(ex.secondary_muscles||[]).join(' ')} ${ex.category} ${ex.equipment}`)})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||a.ex.name.localeCompare(b.ex.name)).slice(0,8);
+const ranked=masterExercises.map(ex=>({ex,score:searchScore(q,`${ex.name} ${ex.primary_muscle} ${ex.target||''} ${ex.body_part||''} ${ex.muscle_group||''} ${(ex.secondary_muscles||[]).join(' ')} ${ex.category} ${ex.equipment} ${ex.description||''}`)})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||a.ex.name.localeCompare(b.ex.name));
+  const results=[];const seenNames=new Set();for(const item of ranked){const key=String(item.ex.name||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();if(seenNames.has(key))continue;seenNames.add(key);results.push(item);if(results.length===8)break;}
   host.innerHTML=results.length?`<div class="picker-caption">SEARCH RESULTS · ${results.length}</div>${results.map(({ex})=>exerciseResultButton(ex)).join('')}`:'<div class="empty-chart" style="height:68px">No exercise matched. Try a muscle, equipment or movement name.</div>';
 }
-function exerciseResultButton(ex) { return `<button class="search-result ${activeExerciseSelection===ex.id?'selected':''}" data-action="select-exercise" data-id="${safe(ex.id)}"><span class="result-icon">${exerciseEmoji(ex.primary_muscle)}</span><span class="result-copy"><strong>${safe(ex.name)}</strong><span>${safe(ex.primary_muscle)} · ${safe(ex.category)} · ${safe(ex.equipment)}</span></span><span class="result-calories">${ex.default_rest_sec}s</span></button>`; }
+function exerciseResultButton(ex) {
+  const selected=activeExerciseSelection===ex.id;
+  const primary=ex.primary_muscle||ex.target||'Full body';
+  const body=ex.body_part||ex.category||'Exercise';
+  return `<div class="exercise-search-row">${renderExerciseThumbnail(ex,'picker')}<button type="button" class="exercise-result-main ${selected?'selected':''}" data-action="select-exercise" data-id="${safe(ex.id)}"><span class="result-copy"><strong>${safe(ex.name)}</strong><span>${safe(primary)} · ${safe(body)} · ${safe(ex.equipment||'Bodyweight')}</span></span></button><span class="exercise-rest-pill">${n(ex.default_rest_sec)}s</span></div>`;
+}
 function updateExerciseDetail() {
-  const ex=findExercise(activeExerciseSelection);if(!ex)return;const name=$('selectedExerciseDetail')?.querySelector('.selected-exercise-name');const sub=$('selectedExerciseDetail')?.querySelector('.selected-exercise-sub');if(name)name.textContent=ex.name;if(sub)sub.textContent=`${ex.primary_muscle} · ${ex.equipment} · ${ex.default_rest_sec}s default rest`;
+  const ex=findExercise(activeExerciseSelection);if(!ex)return;
+  const host=$('selectedExerciseDetail');
+  if(host)host.innerHTML=`${renderExerciseThumbnail(ex,'selected')}<div><strong class="selected-exercise-name">${safe(ex.name)}</strong><small class="selected-exercise-sub">${safe(ex.primary_muscle||ex.target||'Full body')} · ${safe(ex.equipment||'Bodyweight')} · ${n(ex.default_rest_sec)}s default rest</small><small class="selected-exercise-description">${safe(exerciseShortDescription(ex))}</small></div>`;
   if(ex.tracking_metrics?.includes('duration')&&!ex.tracking_metrics.includes('weight')){if($('targetReps'))$('targetReps').value=20;if($('startingWeight'))$('startingWeight').value=0;}
   updateSetPreview();
+}
+function openExerciseDetail(id) {
+  const ex=findExercise(id);if(!ex)return;
+  if($('exerciseSearch')) exerciseDetailReturnState={id:ex.id,query:$('exerciseSearch').value||''};
+  else exerciseDetailReturnState=null;
+  const licensed=exerciseHasLicensedMedia(ex);
+  const media=licensed
+    ? `<div class="exercise-guide-media"><img src="${safe(ex.gif_url)}" alt="${safe(ex.name)} movement animation" loading="eager" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><div class="exercise-media-fallback" hidden><span>${exerciseEmoji(ex.primary_muscle)}</span><strong>Animation could not be loaded</strong><small>Check the licensed media file path.</small></div></div>`
+    : `<div class="exercise-guide-media"><div class="exercise-media-fallback"><span>${exerciseEmoji(ex.primary_muscle||ex.target)}</span><strong>${ex.media_status==='needs_license'?'Animation slot ready':'No animation linked yet'}</strong><small>${ex.media_status==='needs_license'?'The source includes the media paths, but Gym Visual images/GIFs are not bundled until reuse rights are confirmed. Add licensed files under exercise-media/ and set this record\'s media_status to licensed.':'This older Forma exercise has no demonstration file linked. A licensed thumbnail/GIF can be added later if available.'}</small></div></div>`;
+  const bodyPart=ex.body_part||ex.category||'Not specified';
+  const target=ex.primary_muscle||ex.target||'Not specified';
+  const muscles=(ex.secondary_muscles||[]).filter(Boolean);
+  showModal(`${modalHead('EXERCISE GUIDE',ex.name,'Quick movement reference')}${media}<p class="exercise-guide-description">${safe(exerciseShortDescription(ex))}</p><div class="exercise-guide-facts"><div><span>BODY PART</span><strong>${safe(bodyPart)}</strong></div><div><span>TARGET MUSCLE</span><strong>${safe(target)}</strong></div><div><span>EQUIPMENT</span><strong>${safe(ex.equipment||'Bodyweight')}</strong></div><div><span>REST</span><strong>${n(ex.default_rest_sec)?`${n(ex.default_rest_sec)} sec`:'No preset'}</strong></div>${muscles.length?`<div class="wide"><span>SECONDARY MUSCLES</span><strong>${safe(muscles.join(', '))}</strong></div>`:''}</div><div class="exercise-guide-credit">${ex.media_attribution?safe(ex.media_attribution):'Exercise metadata from the Forma master catalogue.'}</div><div class="modal-actions"><button class="save lime" data-action="close-modal">Done</button></div>`);
 }
 function updateSetPreview() {
   const host=$('setPreview');if(!host)return;const sets=clamp(Math.round(n($('targetSets')?.value)||3),1,20);const start=Math.max(0,n($('startingWeight')?.value)||0);const inc=$('progressiveToggle')?.checked?Math.max(0,n($('weightIncrement')?.value)||0):0;const reps=Math.max(1,Math.round(n($('targetReps')?.value)||10));
@@ -695,10 +741,10 @@ function finishExercise(index) { const ex=activeLog().workout_log?.exercises?.[i
 function finishSession() {
   const log=activeLog();const workout=log.workout_log;if(!workout)return;
   if(!workout.start_ms){toast('Start the session before finishing it.',true);return;}
-  const end=Date.now();const hours=Math.max(0,(end-workout.start_ms)/3600000);const vals=(workout.exercises||[]).filter(ex=>ex.started||ex.finished||ex.sets.some(s=>s.completed)).map(ex=>n(ex.met_value));
-  const averageMET=vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:0;const burned=round(averageMET*n(state.profile.weightKg)*hours);
+  const end=Date.now();const hours=Math.max(0,(end-workout.start_ms)/3600000);const activeExercises=(workout.exercises||[]).filter(ex=>ex.started||ex.finished||ex.sets.some(s=>s.completed));const vals=activeExercises.map(ex=>Number(ex.met_value));const hasCompleteMET=activeExercises.length>0&&vals.every(value=>Number.isFinite(value)&&value>0);
+  const averageMET=hasCompleteMET?vals.reduce((a,b)=>a+b,0)/vals.length:0;const burned=hasCompleteMET?round(averageMET*n(state.profile.weightKg)*hours):0;
   workout.end_ms=end;workout.end_time=new Date(end).toISOString();workout.total_calories_burned=burned;workout.duration_minutes=round((end-workout.start_ms)/60000,1);workout.status='completed';workout.exercises.forEach(ex=>{ex.started=false;if(!ex.finished&&ex.sets.some(s=>s.completed))ex.finished=true;});
-  log.workout_history.push(workout);log.workout_log=null;scheduleSave();render();toast(`Session saved · ${fmt(burned)} kcal estimated.`);if(authUser)setTimeout(()=>syncNow(),350);
+  log.workout_history.push(workout);log.workout_log=null;scheduleSave();render();toast(hasCompleteMET?`Session saved · ${fmt(burned)} kcal estimated.`:'Session saved. Calorie estimate unavailable because one or more exercises have no MET values.');if(authUser)setTimeout(()=>syncNow(),350);
 }
 
 // Water and settings
@@ -983,6 +1029,7 @@ document.addEventListener('click', async (event)=>{
     case 'save-recipe': saveRecipe();break;
     case 'add-exercise': openWorkoutModal();break;
     case 'select-exercise': activeExerciseSelection=button.dataset.id;renderExerciseResults($('exerciseSearch')?.value||'');updateExerciseDetail();break;
+    case 'open-exercise-detail': openExerciseDetail(button.dataset.id);break;
     case 'save-exercise': saveExerciseSetup();break;
     case 'start-session': startSession();break;
     case 'start-exercise': startExercise(n(button.dataset.exIndex));break;

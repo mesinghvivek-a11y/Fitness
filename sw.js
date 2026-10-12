@@ -1,4 +1,4 @@
-const CACHE_NAME = 'forma-shell-v2-1';
+const CACHE_NAME = 'forma-shell-v2-2-exercise-library';
 const SUPABASE_SDK_URL = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
 const SHELL = ['./', './index.html', './styles.css', './app.js', './manifest.json', './icon.svg', './foods.json', './exercises.json', './supabase-config.js'];
 self.addEventListener('install', event => {
