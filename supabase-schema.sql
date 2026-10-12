@@ -1,4 +1,4 @@
--- Forma PWA: Supabase schema, run once in Supabase SQL Editor.
+-- Timely Fit PWA: Supabase schema, run once in Supabase SQL Editor.
 -- All user-owned rows are protected by RLS. The client uses only the publishable key.
 
 create table if not exists public.user_profiles (

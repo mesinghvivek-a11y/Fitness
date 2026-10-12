@@ -22,7 +22,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ## Media exception — important
 
-The source dataset's `images/` thumbnails and `videos/` GIF animations are **not covered by the MIT licence**. The upstream repository identifies them as © Gym visual and states that users must follow Gym Visual's terms and obtain any required permission/licence for their own use. The media files are not included in this Forma bundle.
+The source dataset's `images/` thumbnails and `videos/` GIF animations are **not covered by the MIT licence**. The upstream repository identifies them as © Gym visual and states that users must follow Gym Visual's terms and obtain any required permission/licence for their own use. The media files are not included in this Timely Fit bundle.
 
 - Rights holder: © Gym visual — https://gymvisual.com/
 - Terms: https://gymvisual.com/content/3-terms-and-conditions-of-use
