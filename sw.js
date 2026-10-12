@@ -1,6 +1,6 @@
-const CACHE_NAME = 'forma-shell-v2-2-exercise-library';
+const CACHE_NAME = 'timely-fit-shell-v3-0';
 const SUPABASE_SDK_URL = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
-const SHELL = ['./', './index.html', './styles.css', './app.js', './manifest.json', './icon.svg', './foods.json', './exercises.json', './supabase-config.js'];
+const SHELL = ['./', './index.html', './styles.css', './app.js', './manifest.json', './icon.svg', './foods.json', './exercises.json', './supabase-config.js', './viewport-lock.js'];
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
@@ -36,9 +36,13 @@ self.addEventListener('fetch', event => {
     }).catch(() => caches.match(event.request)));
     return;
   }
+  // Exercise GIFs are large and many; always load them from the network so they never fill the phone's storage.
+  if (requestURL.pathname.includes('/exercise-media/videos/')) return;
   event.respondWith(caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
-    const copy = response.clone();
-    caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy)).catch(() => {});
+    if (response.ok) {
+      const copy = response.clone();
+      caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy)).catch(() => {});
+    }
     return response;
   }).catch(() => caches.match('./index.html'))));
 });

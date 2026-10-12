@@ -1,7 +1,7 @@
 {
   "id": "/",
-  "name": "Forma — Fitness, Food & Water",
-  "short_name": "Forma",
+  "name": "Timely Fit — Fitness, Food & Water",
+  "short_name": "Timely Fit",
   "description": "A local-first daily health tracker.",
   "start_url": "./index.html",
   "scope": "./",

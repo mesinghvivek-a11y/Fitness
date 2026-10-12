@@ -1,0 +1,128 @@
+# Timely Fit — offline-first fitness, nutrition and hydration PWA
+
+Timely Fit is a lightweight mobile-first Progressive Web App for meal logging, recipe macro calculation, progressive-overload workouts, hydration events, and date-range dashboard analytics. The current version uses plain HTML/CSS/JavaScript instead of a React/Next.js build, so it can be hosted as static files while the core experience is validated.
+
+## Run locally
+
+Serve this directory over HTTP (do not open `index.html` directly via `file://`):
+
+```bash
+python -m http.server 8000
+```
+
+Open `http://localhost:8000`. For phone tests on your LAN, use your computer's local IP. PWA service workers require HTTPS except on localhost. GitHub Pages, Cloudflare Pages, and Netlify can host this static app.
+
+## What's included
+
+- `index.html`, `styles.css`, `app.js` — app shell, responsive UI, app logic and analytics.
+- `foods.json` — 227 seeded food, liquid ingredient and cooked-meal entries.
+- `exercises.json` — 1,443 searchable movements: the 1,324-record upstream metadata dataset merged with Timely Fit-only entries. Exercise metadata is kept lightweight with a short description, body part, target muscles, equipment, rest defaults and tracking metrics.
+- `supabase-config.js` — public project URL and publishable-key placeholders.
+- `supabase-schema.sql` — Supabase user profile, daily log and custom-food tables plus owner-only RLS policies.
+- `manifest.json`, `icon.svg`, `sw.js` — PWA install metadata, icon and offline shell cache.
+
+The seeded catalogues are intentionally useful starter libraries, not a complete or medically authoritative nutrition database. Cooked meal entries and several macros are estimates. Check serving size and nutrition values for your own food brands and recipes before relying on precision.
+
+## User experience
+
+- **Dashboard:** Daily / Weekly / Monthly toggle, left/right period navigation, target history for net calories, protein and water, calorie/macro analytics, meal distribution, workout stats and hydration trends. The monthly bar views group days into week-sized buckets to fit a phone screen.
+- **Timeline:** Keeps the horizontal date strip/calendar and meal-grouped timeline. The target-history card is not shown here.
+- **Food:** Search-first picker with three recently used items when the search is empty; per-entry macros are snapshots, so editing does not mutate the master catalogue.
+- **Recipes:** Open the global plus button while Diet is selected to access recipe creation. Ingredient rows use search and support grams/kilograms and millilitres/litres when the selected ingredient has those units.
+- **Workout:** Search-first exercise picker with up to three recent movements, compact media thumbnails, a demonstration/details modal, progressive-overload set planning, inline weight/reps, a rest timer, and a session-end calorie estimate when MET values are available. Supersets and circuits are not implemented in V1. Exercise detail descriptions are intentionally brief.
+- **Water:** One-tap amounts and custom amounts; every water event in the visible/expanded list can be edited or deleted.
+- **Local-first operation:** Master JSON is refreshed on startup when online and cached in IndexedDB; the app falls back to cache when offline. Daily logs and recipes remain local in IndexedDB with a localStorage fallback.
+
+## Authentication-first entry
+
+- The main app is hidden by default. A visitor must have a Supabase Auth session to view the timeline or dashboard.
+- The sign-in screen supports email/password, account creation, password-reset email, and Google OAuth.
+- Because the prototype is hosted as static files, HTML/JS assets themselves remain publicly downloadable. The sign-in gate protects the UI flow, while Supabase Row Level Security protects user rows; do not rely on hiding browser code as a security boundary.
+- Returning users can still use their locally cached timeline while offline if their browser has a persisted session; cloud refresh naturally waits until connectivity returns.
+
+## Supabase setup and Google authentication
+
+### 1. Configure the browser client
+
+1. Create a Supabase project.
+2. In the Supabase Dashboard, open **Connect** or **Settings → API Keys** and copy the **Project URL** and the **publishable key** (typically `sb_publishable_...`).
+3. Paste those two public values into `supabase-config.js`:
+
+   ```js
+   window.FORMA_SUPABASE_CONFIG = {
+     url: 'https://YOUR_PROJECT_REF.supabase.co',
+     publishableKey: 'sb_publishable_YOUR_KEY'
+   };
+   ```
+
+   The publishable key is expected to be visible in browser code. Supabase Auth identifies the signed-in user, and Row Level Security (RLS) restricts what that user can read and write.
+
+4. In **SQL Editor**, run the whole `supabase-schema.sql` once. It creates `user_profiles`, `daily_logs` and `user_custom_foods`, owner-only RLS policies, and database-clock `updated_at` triggers.
+5. In **Authentication → URL Configuration**, set the Site URL to the deployed app URL. Add the exact local and production app URLs to Additional Redirect URLs, for example `http://localhost:8000/**` and `https://YOUR_ACCOUNT.github.io/YOUR_REPO/**` (replace with your actual URLs). The Google button redirects back to the current app path, so that path must be allowed.
+
+### 2. Enable Google sign-in
+
+1. Open [Google Cloud Console](https://console.cloud.google.com/), choose or create a project, and open **Google Auth Platform**. Complete the app name, support email, audience, and consent-screen branding. For basic sign-in Timely Fit requests the standard identity/email/profile scopes; do not add extra scopes it does not need.
+2. Open **Clients → Create client → OAuth client ID → Web application**.
+3. Add your hosted app's origin under **Authorized JavaScript origins**, such as `https://YOUR_ACCOUNT.github.io`. For local testing, add `http://localhost:8000` (and remove or keep it restricted when finished).
+4. Under **Authorized redirect URIs**, add the callback URL shown on Supabase's **Authentication → Sign In / Providers → Google** page. It typically resembles `https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback`; use the exact URL supplied by Supabase.
+5. Create the OAuth client and copy the Google **Client ID** and **Client Secret** into the Supabase Google provider settings. Enable Google and save.
+6. Return to Timely Fit and test **Continue with Google**. Also test the OAuth redirect on your deployed HTTPS URL, not only localhost.
+
+**Security distinction:** there are two different credential types here. The Supabase Project URL + publishable key belong in `supabase-config.js`. The Google OAuth Client Secret belongs in the Supabase dashboard's Google provider configuration only. Do not put that Google Client Secret, a Supabase `sb_secret_...` key, or a legacy `service_role` key in this repository, browser JavaScript, HTML, or GitHub Pages. This static browser app does not need a Supabase secret key.
+
+Email/password accounts can be enabled in **Authentication → Sign In / Providers → Email**. If email confirmation is enabled, users must confirm from email before they can sign in. Configure the redirect/confirmation URLs and verify email delivery before launch.
+
+## Low-cost database architecture
+
+Timely Fit is local-first by design:
+
+- **Search requests: zero Supabase database reads.** `foods.json` and `exercises.json` are fetched and cached in IndexedDB. Typing `D`, `DE`, `DEA`, `DEAD` or `PA`, `PAN`, `PANEER` searches local data only; no query is sent for each keypress.
+- **Timeline, dates and charts: local reads.** Switching dates, ticking a set, correcting a water amount, or editing a food entry updates the local state and IndexedDB, not a cloud query.
+- **One compact cloud record per user/day.** Food entries, workout sessions and water events are stored together in one `daily_logs` JSONB payload per date. Derived daily macro totals are calculated in the app; the master food/exercise catalogues are never copied into Supabase.
+- **Small auxiliary tables.** A row stores targets/profile, and custom recipes are stored only when the user creates them.
+- **Batched writes only.** After the first explicit successful Sync now, dirty dates, changed recipes and changed profile data batch-sync every five minutes while pending. Finishing a workout requests a sync. Individual set completions and water taps never trigger their own writes. Errors leave edits local for retry.
+- **Incremental cloud reads.** The first load for an account fetches the account's saved timeline (paginated in 500-row chunks). Later loads request only daily-log rows whose `updated_at` is newer than the local pull cursor. The profile is one small row and the custom-recipe table is fetched as a small list; no query runs during live search.
+
+Supabase Free does **not** charge a direct fee for each SQL read/write operation in the way a per-document-read database product might. The important limits are storage, egress/network data, monthly active users, and shared database resources. Current published Free allowances include 500 MB database size per project, 5 GB egress, 1 GB file storage and 50,000 monthly active users. Free projects can pause after a period of low activity. Check the live [Supabase billing limits](https://supabase.com/docs/guides/platform/billing-on-supabase) before launch because quotas and plan terms can change.
+
+No architecture can guarantee that usage will stay inside the Free tier under every possible amount of traffic. This design minimizes predictable usage, but monitor the project **Usage** dashboard—especially database size and egress—and avoid turning on Realtime for timeline tables unless it is actually needed. On a personal or small beta app, local searching plus one daily row per date should keep database traffic modest. A large public user base can still exceed Free storage/egress quotas even without per-search requests.
+
+## Data and sync model
+
+- `daily_logs` uses `(user_id, date)` as a primary key and stores a date's full timeline payload as JSONB. Re-uploading the same date performs an upsert rather than creating duplicates.
+- `user_profiles` stores each user's targets and body weight. `user_custom_foods` stores user-owned recipe JSON.
+- Local logs are marked dirty in state and only sent in batch. No network write is triggered for each set checkbox or each glass of water.
+- Master catalogues stay as static JSON and in IndexedDB. They do not consume per-search cloud database reads.
+- The cloud adapter uses last-updated timestamps as a lightweight merge heuristic. This is adequate for a single-user prototype, but it is not a full conflict-resolution system for simultaneous edits on multiple devices. A production release should add explicit sync versions/conflict UI, account data separation on shared devices, account deletion workflows, observability, and automated multi-device tests.
+
+## Audit notes and known limitations
+
+- This is not yet migrated to React/Next.js. That migration is optional for the present static deployment, but should happen if code splitting, server routes, type safety, or a larger component ecosystem becomes important.
+- Food values and cooked estimates need source-based validation before release. The bundled master list contains 227 foods and 1,443 exercise entries (including 1,324 imported source records before exact-name reconciliation). Many imported exercises do not have an authoritative MET value; the app keeps these as null rather than inventing calorie factors.
+- Workout MET burn is an estimate. Formula used at session finish: mean MET across relevant logged movements × body weight × elapsed hours. The actual energy expenditure can differ materially.
+- The chart provides a strength snapshot from the highest logged working weight per exercise, not a validated 1RM calculation. Duration-only movements currently share the general set/reps UI and need a dedicated duration/distance editor before calling the app training-complete.
+- Automated end-to-end tests across iOS Safari/Android Chrome, authentication redirect flows, offline startup, IndexedDB eviction/recovery, cross-device conflicts and SQL policy isolation are still required before a production claim.
+
+## Recommended pre-launch checks
+
+1. Test each Supabase RLS policy using two separate accounts and verify one account cannot read or update the other’s rows.
+2. Test first-sync behavior on a clean browser, an existing local dataset, and a second account; avoid syncing private local history to the wrong account.
+3. Validate the highest-use macro values against trusted nutrition sources and include data source, version and last-reviewed metadata.
+4. Add automated tests for grams/kg/ml/L math, recipe yield division, date/month boundaries, Eat-Back calculations, workout duration and sync conflict handling.
+5. Add data export/import recovery and an account deletion flow before production use.
+
+
+## Expanded exercise catalogue and demonstration media
+
+- The exercise metadata was imported from [hasaneyldrm/exercises-dataset](https://github.com/hasaneyldrm/exercises-dataset). Upstream data includes exercise name, body part/category, equipment, target/synergist muscles and multilingual instruction text. Timely Fit keeps one concise English sentence in `description`; it does not expose the long step-by-step text in its exercise card.
+- The import preserves upstream IDs in `source_id`. Exact-name matches keep Timely Fit's earlier IDs to avoid breaking existing workout references. New IDs use the `ed_` prefix. `source_dataset`, `source_id`, source category, media paths and attribution remain available for provenance.
+- `image` and `gif_url` are preconfigured to relative paths under `exercise-media/`. **The GIF and thumbnail files are intentionally not included in this bundle.** The upstream repository's MIT licence covers its metadata/instruction text, but explicitly excludes Gym Visual media. Before using those image/GIF assets publicly, obtain the applicable media permission/licence. Once licensed files have been placed at the matching paths, set the corresponding record's `media_status` to `licensed`; the thumbnail and animated detail modal will load them. Until then, Timely Fit shows a placeholder and concise exercise details.
+- Imported exercises have `met_value: null` unless an exact-name match already had a known Timely Fit value. Session calorie calculations ignore missing MET values rather than fabricating precision. A future data-review phase can populate METs from a trusted activity reference.
+- `EXERCISE-DATA-LICENSE.md` records the metadata licence and media caveat. Retain this file when redistributing the exercise catalogue.
+
+## V3 notes
+
+- **Search:** exercise search matches the name first, then exercises that train the searched muscle (for example "chest" also lists pec work without "chest" in its name), then exercises that use it as a secondary muscle. Food search matches every word in any order.
+- **Exercise fields:** each exercise decides which fields it needs. Weighted exercises ask for sets, reps and kg. Body-weight exercises ask for sets and reps. Timed and cardio exercises ask for sets and minutes.
+- **Food images:** add an `"image"` path to any item in `foods.json` (for example `"image": "food-media/images/paneer.jpg"`). It then shows in the food list, the picker and the timeline. Items without an image keep their icon.
