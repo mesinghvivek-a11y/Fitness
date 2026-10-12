@@ -320,6 +320,7 @@ function render() {
   const dateStrip=document.querySelector('.date-strip');if(dateStrip)dateStrip.classList.toggle('hidden',state.selectedTab!=='timeline');
   renderDates();
   $('mainContent').innerHTML=state.selectedTab==='timeline'?renderTimeline():renderAnalytics();
+  upgradeNumberWheels($('mainContent'));
 }
 function renderDates() {
   const host=$('dateOptions'); if(!host)return;
@@ -380,41 +381,54 @@ function renderDiet(log,totals) {
     ${totals.fiberUnknownItems?`<div class="food-source-note">Fibre total includes only foods whose source reported fibre. ${totals.fiberUnknownItems} logged item${totals.fiberUnknownItems===1?' has':'s have'} no fibre data, so this figure is incomplete.</div>`:''}
     <div style="display:flex;justify-content:space-between;align-items:center;margin:13px 2px 0;color:#94a097;font-size:var(--fs-cap)"><span>✳ Estimates marked with * are approximate</span><button class="muted-link" data-action="open-food">＋ Log food</button></div>`;
 }
+function sessionHasLoggedWork(session) {
+  return (session?.exercises||[]).some(ex=>!!ex.finished||(ex.sets||[]).some(set=>!!set.completed));
+}
 function renderWorkout(log,totals) {
   const workout=log.workout_log;
   const completedSessions=(log.workout_history||[]).slice().reverse();
   const historyMarkup=completedSessions.map(session=>{
-    const performed=(session.exercises||[]).filter(ex=>ex.finished||(ex.sets||[]).some(st=>st.completed));
-    const exercises=performed.map(ex=>{
+    const sessionIndex=(log.workout_history||[]).indexOf(session);
+    const sessionExercises=session.exercises||[];
+    const hasWork=sessionHasLoggedWork(session);
+    const exercises=sessionExercises.map(ex=>{
       const reference=findExercise(ex.exercise_id)||ex;
-      const doneSets=(ex.sets||[]).filter(st=>st.completed);
-      const setSummary=doneSets.length?doneSets.map((st,i)=>`Set ${i+1}: ${fmt(st.weight,1)} kg × ${fmt(st.reps)}`).join(' · '):'Exercise completed';
+      const allSets=ex.sets||[];const doneSets=allSets.filter(st=>st.completed);
+      const setSummary=doneSets.length?doneSets.map((st,i)=>`Set ${i+1}: ${fmt(st.weight,1)} kg × ${fmt(st.reps)}`).join(' · '):(allSets.length?`${allSets.length} planned sets · none completed`:'No sets saved');
       const startedAt=n(ex.start_ms)||n(session.start_ms);
       const endedAt=Date.parse(ex.finished_at||'')||n(session.end_ms)||Date.parse(session.end_time||'');
-      const exDuration=startedAt&&endedAt&&endedAt>=startedAt?formatDurationHMS(endedAt-startedAt):'—';
-      return `<div class="completed-exercise-row"><div class="completed-exercise-media">${renderExerciseThumbnail(reference,'history')}</div><div class="completed-exercise-copy"><div class="completed-exercise-title"><strong>${safe(ex.name)}</strong><button type="button" class="history-edit-button" data-action="edit-history-exercise" data-session-index="${(log.workout_history||[]).indexOf(session)}" data-ex-index="${(session.exercises||[]).indexOf(ex)}" aria-label="Edit ${safe(ex.name)}">Edit</button></div><span>${safe(ex.primary_muscle||ex.target||'Full body')} · ${safe(ex.equipment||'Bodyweight')}</span><small>${setSummary}</small></div><div class="completed-exercise-duration"><b>${exDuration}</b><span>duration</span></div><span class="completed-check" aria-label="Completed">✓</span></div>`;
+      const exDuration=ex.start_ms&&endedAt&&endedAt>=startedAt?formatDurationHMS(endedAt-startedAt):'—';
+      const status=ex.finished?'COMPLETED':doneSets.length?'IN PROGRESS':'NOT STARTED';
+      return `<div class="completed-exercise-row ${doneSets.length||ex.finished?'':'planned-session-exercise'}"><div class="completed-exercise-media">${renderExerciseThumbnail(reference,'history')}</div><div class="completed-exercise-copy"><div class="completed-exercise-title"><strong>${safe(ex.name)}</strong><button type="button" class="history-edit-button" data-action="edit-history-exercise" data-session-index="${sessionIndex}" data-ex-index="${sessionExercises.indexOf(ex)}" aria-label="Edit ${safe(ex.name)}">Edit</button></div><span>${safe(ex.primary_muscle||ex.target||'Full body')} · ${safe(ex.equipment||'Bodyweight')} · ${status}</span><small>${setSummary}</small></div><div class="completed-exercise-duration"><b>${exDuration}</b><span>duration</span></div><span class="completed-check ${doneSets.length||ex.finished?'':'not-done'}" aria-label="${doneSets.length||ex.finished?'Completed':'Not completed'}">${doneSets.length||ex.finished?'✓':'·'}</span></div>`;
     }).join('');
     const sessionStart=n(session.start_ms)||Date.parse(session.start_time||'');
     const sessionEnd=n(session.end_ms)||Date.parse(session.end_time||'');
     const durationMs=sessionStart&&sessionEnd&&sessionEnd>=sessionStart?sessionEnd-sessionStart:n(session.duration_minutes)*60000;
-    return `<article class="completed-session-card"><div class="completed-session-heading"><div><span class="completed-kicker">WORKOUT SAVED</span><h3>Training session</h3><span class="completed-session-meta">${session.end_time?new Date(session.end_time).toLocaleDateString('en-IN',{day:'numeric',month:'short'})+' · '+timeLabel(session.end_time):'Completed'}</span></div><div class="completed-session-total"><b>${formatDurationHMS(durationMs)}</b><span>TOTAL DURATION</span></div></div><div class="completed-session-stats"><span>${performed.length} exercises</span><span>${performed.reduce((sum,ex)=>sum+(ex.sets||[]).filter(st=>st.completed).length,0)} sets completed</span><strong>${fmt(session.total_calories_burned)} kcal</strong></div><div class="completed-exercise-list">${exercises||'<div class="empty-chart">No completed exercise details were saved for this session.</div>'}</div></article>`;
+    const completedExerciseCount=sessionExercises.filter(ex=>ex.finished||(ex.sets||[]).some(st=>st.completed)).length;
+    const completedSetCount=sessionExercises.reduce((sum,ex)=>sum+(ex.sets||[]).filter(st=>st.completed).length,0);
+    const cleanupButton=!hasWork?`<button type="button" class="delete-empty-session" data-action="delete-empty-session" data-scope="history" data-session-index="${sessionIndex}">Delete unused session</button>`:'';
+    const dateLabel=session.end_time?new Date(session.end_time).toLocaleDateString('en-IN',{day:'numeric',month:'short'})+' · '+timeLabel(session.end_time):session.start_time?new Date(session.start_time).toLocaleDateString('en-IN',{day:'numeric',month:'short'})+' · Planned':'Saved session';
+    return `<article class="completed-session-card ${hasWork?'':'empty-session-card'}"><div class="completed-session-heading"><div><span class="completed-kicker">${hasWork?'TRAINING SESSION':'UNUSED SESSION'}</span><h3>Training session</h3><span class="completed-session-meta">${safe(dateLabel)} · ${sessionExercises.length} exercise${sessionExercises.length===1?'':'s'}</span></div><div class="completed-session-heading-actions"><div class="completed-session-total"><b>${formatDurationHMS(durationMs)}</b><span>TOTAL DURATION</span></div>${cleanupButton}</div></div><div class="completed-session-stats"><span>${completedExerciseCount}/${sessionExercises.length} exercises completed</span><span>${completedSetCount} sets completed</span><strong>${fmt(session.total_calories_burned)} kcal</strong></div><div class="completed-exercise-list">${exercises||'<div class="empty-chart">This session has no exercises. Delete it to keep your log tidy.</div>'}</div></article>`;
   }).join('');
-  const historySection=completedSessions.length?`<div class="section-title-row completed-today-heading"><h3>Completed today</h3><span class="meal-meta">${completedSessions.length} session${completedSessions.length===1?'':'s'}</span></div>${historyMarkup}`:'';
+  const historySection=completedSessions.length?`<div class="section-title-row completed-today-heading"><h3>Training session history</h3><span class="meal-meta">${completedSessions.length} session${completedSessions.length===1?'':'s'}</span></div>${historyMarkup}`:'';
   if(!workout) {
-    return `<section class="workout-hero"><div><div class="eyebrow">${completedSessions.length?'NICE WORK':'READY WHEN YOU ARE'}</div><h2>${completedSessions.length?'Session in the books.':'Build your session.'}</h2><p>${completedSessions.length?'Your completed exercises and set details stay in today’s log.':'Log sets. Track progress. Keep it moving.'}</p></div><button class="primary-button" data-action="add-exercise">＋ EXERCISE</button></section>
-      ${historySection||`<section class="workout-empty"><div class="empty-graphic">🏋️</div><h3>Nothing logged yet</h3><p>Add an exercise to set your reps, starting weight and progression. Your rest timer will take it from there.</p><button class="primary-button" data-action="add-exercise">＋ Add first exercise</button></section>`}`;
+    const hasHistoryWork=completedSessions.some(sessionHasLoggedWork);
+    return `<section class="workout-hero"><div><div class="eyebrow">${hasHistoryWork?'NICE WORK':'READY WHEN YOU ARE'}</div><h2>${hasHistoryWork?'Your sessions, in one place.':'Build your session.'}</h2><p>${hasHistoryWork?'Each training session keeps all its exercises and sets together.':'Add multiple exercises to one training session, then finish once to save them together.'}</p></div><button class="primary-button" data-action="add-exercise">＋ EXERCISE</button></section>
+      ${historySection||`<section class="workout-empty"><div class="empty-graphic">🏋️</div><h3>Nothing logged yet</h3><p>Add multiple exercises to build one training session. Your exercises and set details will be saved together when you finish.</p><button class="primary-button" data-action="add-exercise">＋ Add first exercise</button></section>`}`;
   }
   const isStarted=!!workout.start_ms&&!workout.ended;
+  const hasExercises=(workout.exercises||[]).length>0;
   const exerciseCards=(workout.exercises||[]).map((ex,index)=>renderExerciseCard(ex,index,workout)).join('');
   const doneSets=(workout.exercises||[]).reduce((sum,ex)=>sum+ex.sets.filter(s=>s.completed).length,0);
   const allSets=(workout.exercises||[]).reduce((sum,ex)=>sum+ex.sets.length,0);
-  return `<section class="workout-hero ${isStarted?'session-active':''}"><div class="workout-hero-copy"><div class="eyebrow">${isStarted?'SESSION IN PROGRESS':'SESSION BUILDER'}</div><h2>${isStarted?'Stay in your groove.':'Your training plan.'}</h2>${isStarted?`<div class="session-live-clock" aria-live="off"><span class="live-clock-dot"></span><strong id="session-clock" data-start-ms="${workout.start_ms}">${formatDurationHMS(Date.now()-workout.start_ms)}</strong><span>elapsed</span></div><p>${doneSets}/${allSets} sets complete</p>`:'<p>Add exercises, then press start.</p>'}</div><button class="primary-button ${isStarted?'lime':''}" data-action="${isStarted?'finish-session':'start-session'}">${isStarted?'⏹ FINISH':'▶ START SESSION'}</button></section>
-    <div class="section-title-row"><h3>Exercises <span style="color:#9aa69a;font-weight:500">(${workout.exercises.length})</span></h3><button class="muted-link" data-action="add-exercise">＋ Add exercise</button></div>
-    ${exerciseCards}
-    <div class="session-summary"><div><strong>${doneSets}/${allSets}</strong><span>SETS DONE</span></div><div><strong>${calcVolume(workout)}</strong><span>VOLUME · KG</span></div><div><strong>${fmt(totals.burned)}</strong><span>KCAL BURNED TODAY</span></div></div>
-    ${isStarted?`<button class="finish-button" data-action="finish-session">⏹ FINISH SESSION & CALCULATE CALORIES</button>`:''}
+  const heroAction=hasExercises?`<button class="primary-button ${isStarted?'lime':''}" data-action="${isStarted?'finish-session':'start-session'}">${isStarted?'⏹ FINISH SESSION':'▶ START SESSION'}</button>`:`<button class="primary-button" data-action="add-exercise">＋ ADD EXERCISE</button>`;
+  const emptyDraftAction=!hasExercises?`<button type="button" class="delete-empty-session active-empty-session-delete" data-action="delete-empty-session" data-scope="active">Delete empty session</button>`:'';
+  return `<section class="workout-hero ${isStarted?'session-active':''}"><div class="workout-hero-copy"><div class="eyebrow">${isStarted?'SESSION IN PROGRESS':'SESSION BUILDER'}</div><h2>${isStarted?'Stay in your groove.':'Your training session.'}</h2>${isStarted?`<div class="session-live-clock" aria-live="off"><span class="live-clock-dot"></span><strong id="session-clock" data-start-ms="${workout.start_ms}">${formatDurationHMS(Date.now()-workout.start_ms)}</strong><span>elapsed</span></div><p>${doneSets}/${allSets} sets complete · ${workout.exercises.length} exercises in this session</p>`:`<p>${hasExercises?'All exercises below will be saved together when you finish the session.':'Add one or more exercises to start a session.'}</p>`}</div>${heroAction}</section>
+    ${emptyDraftAction}
+    ${hasExercises?`<div class="section-title-row"><h3>Exercises <span style="color:#9aa69a;font-weight:500">(${workout.exercises.length})</span></h3><button class="muted-link" data-action="add-exercise">＋ Add exercise</button></div>${exerciseCards}<div class="session-summary"><div><strong>${doneSets}/${allSets}</strong><span>SETS DONE</span></div><div><strong>${calcVolume(workout)}</strong><span>VOLUME · KG</span></div><div><strong>${fmt(totals.burned)}</strong><span>KCAL BURNED TODAY</span></div></div>`:`<section class="workout-empty"><div class="empty-graphic">🏋️</div><h3>This session is empty</h3><p>Delete it if you opened a session by mistake, or add exercises to keep building.</p><button class="primary-button" data-action="add-exercise">＋ Add exercise</button></section>`}
+    ${isStarted&&hasExercises?`<button class="finish-button" data-action="finish-session">⏹ FINISH SESSION & CALCULATE CALORIES</button>`:''}
     ${historySection}
-    <div style="font-size:var(--fs-cap);color:#98a499;text-align:center;margin:13px 0 0;line-height:1.5">Session calories use available MET values × body weight × elapsed hours. Imported exercises without a verified MET value are not assigned a fabricated value.</div>`;
+    <div style="font-size:var(--fs-cap);color:#98a499;text-align:center;margin:13px 0 0;line-height:1.5">Every completed training session contains its exercises and set records together. Session calories use available MET values × body weight × elapsed hours; missing MET values are not guessed.</div>`;
 }
 function durationLabel(ms) { const mins=Math.max(0,Math.floor(ms/60000)); return mins>=60?`${Math.floor(mins/60)}h ${mins%60}m`:`${mins} min`; }
 function formatDurationHMS(ms) { const sec=Math.max(0,Math.floor(n(ms)/1000));return `${String(Math.floor(sec/3600)).padStart(2,'0')}:${String(Math.floor((sec%3600)/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}`; }
@@ -581,26 +595,36 @@ function showModal(html) {
   upgradeNumberWheels($('modalRoot'));
 }
 function numericWheelEligible(input) {
-  if(!input || input.type!=='number')return false;
+  if(!input || input.type!=='number' || input.disabled)return false;
   const id=input.id||'';
-  return ['foodAmount','recipeYield','targetSets','targetReps','startingWeight','weightIncrement','editRest','customIngredientDefault','customWaterAmount','editWaterAmount'].includes(id)
+  return ['foodAmount','editAmount','recipeYield','targetSets','targetReps','startingWeight','weightIncrement','editRest','customIngredientDefault','customWaterAmount','editWaterAmount'].includes(id)
     || /^editSet(?:Weight|Reps)\d+$/.test(id)
     || input.dataset.role==='recipe-amount'
+    || input.dataset.role==='set-weight'
+    || input.dataset.role==='set-reps'
+    || input.classList.contains('set-input')
     || input.closest('.recipe-ingredient')!==null;
 }
 function wheelStep(input) {
-  const parsed=Number(input.step);return Number.isFinite(parsed)&&parsed>0?parsed:1;
+  if(['foodAmount','editAmount'].includes(input?.id))return String(input.closest('.food-log-details-row')?.querySelector('#foodUnit')?.value||$('editUnit')?.value||'g')==='g'?1:(Number(input.step)>0?Number(input.step):0.1);
+  if(input?.dataset.role==='recipe-amount'){
+    const unit=input.closest('.recipe-ingredient')?.querySelector('[data-role="recipe-unit"]')?.value||'g';
+    if(unit==='g')return 1;
+  }
+  const parsed=Number(input?.step);return Number.isFinite(parsed)&&parsed>0?parsed:1;
 }
 function wheelBounds(input) {
   let min=input.min!==''&&Number.isFinite(Number(input.min))?Number(input.min):0;
   let max=input.max!==''&&Number.isFinite(Number(input.max))?Number(input.max):10000;
-  if(input.id==='foodAmount'||input.dataset.role==='recipe-amount'){min=0.1;max=5000;}
+  if(input.id==='foodAmount'||input.id==='editAmount'||input.dataset.role==='recipe-amount'){min=wheelStep(input)===1?1:0.1;max=5000;}
   if(input.id==='recipeYield'){min=1;max=100;}
   if(input.id==='targetSets'){min=1;max=20;}
   if(input.id==='targetReps'){min=1;max=100;}
   if(input.id==='startingWeight'){min=0;max=500;}
   if(input.id==='weightIncrement'){min=0;max=50;}
   if(input.id==='editRest'){min=0;max=1800;}
+  if(input.dataset.role==='set-reps'){min=0;max=1000;}
+  if(input.dataset.role==='set-weight'){min=0;max=1000;}
   return {min,max};
 }
 function wheelDigits(step) {const text=String(step);return text.includes('.')?Math.min(3,text.split('.')[1].length):0;}
@@ -618,25 +642,40 @@ function upgradeNumberWheels(root=document) {
     const wheel=document.createElement('div');wheel.className='number-wheel';wheel.tabIndex=0;wheel.setAttribute('role','spinbutton');wheel.setAttribute('aria-label',input.getAttribute('aria-label')||document.querySelector(`label[for="${CSS.escape(input.id)}"]`)?.textContent?.trim()||'Adjust value');
     wheel.innerHTML='<div class="number-wheel-list"></div><div class="number-wheel-focus" aria-hidden="true"></div>';
     slot.appendChild(wheel);
+    const centerIndex=7;
     const updateValue=(next,dispatch=true)=>{
       const {min,max}=wheelBounds(input),step=wheelStep(input),digits=wheelDigits(step);
       next=clamp(round(next,digits),min,max);input.value=String(next);
       wheel.setAttribute('aria-valuemin',String(min));wheel.setAttribute('aria-valuemax',String(max));wheel.setAttribute('aria-valuenow',String(next));wheel.setAttribute('aria-valuetext',wheelDisplay(next,step));
-      const list=wheel.querySelector('.number-wheel-list');list.innerHTML=Array.from({length:7},(_,i)=>{const offset=i-3,val=clamp(round(next+offset*step,digits),min,max);return `<div class="number-wheel-item ${offset===0?'is-current':''}" data-offset="${offset}" data-value="${val}"><span>${wheelDisplay(val,step)}</span></div>`;}).join('');
-      const rowHeight=parseFloat(getComputedStyle(wheel.querySelector('.number-wheel-item')).height)||36;wheel.dataset.recentering='1';wheel.scrollTop=2*rowHeight;requestAnimationFrame(()=>{delete wheel.dataset.recentering;});
+      const list=wheel.querySelector('.number-wheel-list');list.innerHTML=Array.from({length:15},(_,i)=>{const offset=i-centerIndex,val=clamp(round(next+offset*step,digits),min,max);return `<div class="number-wheel-item ${offset===0?'is-current':''}" data-offset="${offset}" data-distance="${offset}" data-value="${val}"><span>${wheelDisplay(val,step)}</span></div>`;}).join('');
+      const rowHeight=parseFloat(getComputedStyle(wheel.querySelector('.number-wheel-item')).height)||36;const targetTop=(centerIndex-1)*rowHeight;wheel.dataset.recentering='1';wheel.dataset.programmaticTop=String(targetTop);wheel.scrollTop=targetTop;requestAnimationFrame(()=>{delete wheel.dataset.recentering;});
       if(dispatch){input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));}
     };
     input._wheelRefresh=()=>updateValue(n(input.value),false);
     input._wheelSet=(value,dispatch=true)=>updateValue(value,dispatch);
     updateValue(n(input.value),false);
+    const updateWheelVisual=()=>{
+      const row=wheel.querySelector('.number-wheel-item');if(!row)return;
+      const rowHeight=parseFloat(getComputedStyle(row).height)||36;
+      const visibleCenterIndex=Math.round(wheel.scrollTop/rowHeight)+1;
+      [...wheel.querySelectorAll('.number-wheel-item')].forEach((item,index)=>{
+        const distance=index-visibleCenterIndex;item.dataset.distance=String(distance);item.classList.toggle('is-current',distance===0);
+      });
+    };
     const finishScroll=()=>{
       if(wheel.dataset.recentering==='1')return;
-      const rowHeight=parseFloat(getComputedStyle(wheel.querySelector('.number-wheel-item')).height)||36,centerItem=Math.round(wheel.scrollTop/rowHeight)+1,delta=centerItem-3;
+      const rowHeight=parseFloat(getComputedStyle(wheel.querySelector('.number-wheel-item')).height)||36;
+      const visibleCenterIndex=Math.round(wheel.scrollTop/rowHeight)+1;
+      const delta=visibleCenterIndex-centerIndex;
       if(delta)updateValue(n(input.value)+delta*wheelStep(input),true);else updateValue(n(input.value),false);
     };
     wheel.addEventListener('scroll',()=>{
       if(wheel.dataset.recentering==='1')return;
-      clearTimeout(numberWheelTimers.get(wheel));numberWheelTimers.set(wheel,setTimeout(finishScroll,90));
+      const expectedTop=Number(wheel.dataset.programmaticTop);
+      if(wheel.dataset.programmaticTop!==undefined&&Number.isFinite(expectedTop)&&Math.abs(wheel.scrollTop-expectedTop)<1){delete wheel.dataset.programmaticTop;return;}
+      delete wheel.dataset.programmaticTop;
+      updateWheelVisual();
+      clearTimeout(numberWheelTimers.get(wheel));numberWheelTimers.set(wheel,setTimeout(finishScroll,150));
     },{passive:true});
     wheel.addEventListener('click',event=>{const item=event.target.closest('.number-wheel-item');if(item)updateValue(n(input.value)+n(item.dataset.offset)*wheelStep(input),true);});
     wheel.addEventListener('keydown',event=>{
@@ -648,11 +687,22 @@ function upgradeNumberWheels(root=document) {
       else return;
       event.preventDefault();updateValue(n(input.value)+delta,true);
     });
-    const lab=document.querySelector(`label[for="${CSS.escape(input.id)}"]`);
+    const lab=input.id?document.querySelector(`label[for="${CSS.escape(input.id)}"]`):null;
     if(lab)lab.addEventListener('click',()=>wheel.focus({preventScroll:true}));
   }
 }
 function refreshNumberWheel(input) {if(input?._wheelRefresh)input._wheelRefresh();}
+function configureFoodAmountInput(input,unit,convert=false,previousUnit=null) {
+  if(!input)return;
+  const nextUnit=String(unit||'g');
+  let value=n(input.value)||1;
+  if(convert&&previousUnit&&((previousUnit==='g'&&nextUnit==='kg')||(previousUnit==='kg'&&nextUnit==='g')||(previousUnit==='ml'&&nextUnit==='L')||(previousUnit==='L'&&nextUnit==='ml'))){
+    value=value*unitScale(previousUnit)/unitScale(nextUnit);
+  }
+  if(nextUnit==='g') {input.step='1';input.min='1';value=Math.max(1,Math.round(value));}
+  else {input.step='0.1';input.min='0.1';value=Math.max(.1,round(value,3));}
+  input.value=String(value);refreshNumberWheel(input);
+}
 
 function closeModal() {
   stopBarcodeScanner();
@@ -686,8 +736,12 @@ function openFoodModal(meal='breakfast', preselect=null, allowRecipeCreation=fal
     <div id="foodSelectionPanel" class="food-selection-panel" hidden>
       <div id="selectedFoodDetail"></div>
       <div class="food-detail-heading"><strong>Log details</strong><span>Adjust the amount before adding</span></div>
-      <div class="field-grid food-log-grid"><div class="field"><label for="foodAmount">QUANTITY / SERVINGS</label><input id="foodAmount" type="number" min="0.01" step="0.1" value="100" /></div><div class="field"><label for="foodUnit">UNIT</label><select id="foodUnit"><option value="g">g</option></select></div></div>
-      <div class="field-grid food-log-grid"><div class="field"><label for="foodMeal">MEAL</label><select id="foodMeal">${MEALS.map(m=>`<option value="${m.key}" ${m.key===activeFoodMeal?'selected':''}>${m.label}</option>`).join('')}</select></div><div class="field"><label for="foodTime">TIME</label><input id="foodTime" type="time" value="${defaultTime}" /></div></div>
+      <div class="food-log-details-row" aria-label="Food log details">
+        <div class="field"><label for="foodAmount">QUANTITY</label><input id="foodAmount" type="number" min="1" step="1" value="100" inputmode="decimal" /></div>
+        <div class="field"><label for="foodUnit">UNIT</label><select id="foodUnit"><option value="g">g</option></select></div>
+        <div class="field"><label for="foodMeal">MEAL</label><select id="foodMeal">${MEALS.map(m=>`<option value="${m.key}" ${m.key===activeFoodMeal?'selected':''}>${m.label}</option>`).join('')}</select></div>
+        <div class="field"><label for="foodTime">TIME</label><input id="foodTime" type="time" value="${defaultTime}" /></div>
+      </div>
       <div class="form-note">Nutrition is scaled from the source basis. Unknown nutrients remain unreported. Check package labels where accuracy matters.</div>
       <div class="modal-actions"><button class="cancel" data-action="clear-food-selection">Back to search</button><button class="save lime" data-action="confirm-add-food">＋ Add to timeline</button></div>
     </div>
@@ -883,19 +937,20 @@ function stopBarcodeScanner() {
 
 function selectFoodInPicker(foodId) {
   const food=findFood(foodId);if(!food)return;activeFoodSelection=foodId;
-  const amount=$('foodAmount');if(amount){amount.value=defaultFoodAmount(food);refreshNumberWheel(amount);}
-  const unitSelect=$('foodUnit');if(unitSelect){unitSelect.innerHTML=foodUnits(food).map(u=>`<option value="${safe(u)}">${safe(u)}</option>`).join('');unitSelect.value=foodAmountUnit(food);}
+  const amount=$('foodAmount');
+  const unitSelect=$('foodUnit');if(unitSelect){unitSelect.innerHTML=foodUnits(food).map(u=>`<option value="${safe(u)}">${safe(u)}</option>`).join('');unitSelect.value=foodAmountUnit(food);unitSelect.dataset.previousUnit=unitSelect.value;}
+  if(amount){amount.value=defaultFoodAmount(food);configureFoodAmountInput(amount,unitSelect?.value||foodAmountUnit(food),false);}
   const panel=$('foodSelectionPanel');if(panel)panel.hidden=false;
   const detail=$('selectedFoodDetail');if(detail){const macros=foodMacros(food,defaultFoodAmount(food),foodAmountUnit(food));detail.innerHTML=`<div class="selected-food"><span class="result-icon">${nutritionEmoji(food)}</span><div style="flex:1;min-width:0"><strong class="selected-food-name">${safe(food.name)}</strong><small>${fmt(macros.calories)} kcal · P ${fmt(macros.protein,1)}g · C ${fmt(macros.carbs,1)}g · F ${fmt(macros.fat,1)}g</small><small class="food-source-caption">Source: ${safe(foodSourceLabel(food))}${!foodFiberKnown(food)?' · Fibre data unavailable':''}${food.data_quality?.includes('partial')?' · nutrition is incomplete':''}</small></div><span class="food-selected-badge">SELECTED</span></div>`;}
   const search=$('foodSearch');if(search&&search.value.trim())renderFoodResults(search.value);else renderFoodResults('');
   updateSelectedFoodPreview();
 }
 function updateSelectedFoodPreview() {
-  const food=findFood(activeFoodSelection);if(!food)return;const amount=Math.max(.01,n($('foodAmount')?.value)||defaultFoodAmount(food));const unit=$('foodUnit')?.value||foodAmountUnit(food);const macros=foodMacros(food,amount,unit);const small=$('selectedFoodDetail')?.querySelector('small');if(small)small.textContent=`${fmt(macros.calories)} kcal · P ${fmt(macros.protein,1)}g · C ${fmt(macros.carbs,1)}g · F ${fmt(macros.fat,1)}g`;
+  const food=findFood(activeFoodSelection);if(!food)return;const unit=$('foodUnit')?.value||foodAmountUnit(food);const rawAmount=n($('foodAmount')?.value)||defaultFoodAmount(food);const amount=unit==='g'?Math.max(1,Math.round(rawAmount)):Math.max(.1,round(rawAmount,3));const macros=foodMacros(food,amount,unit);const small=$('selectedFoodDetail')?.querySelector('small');if(small)small.textContent=`${fmt(macros.calories)} kcal · P ${fmt(macros.protein,1)}g · C ${fmt(macros.carbs,1)}g · F ${fmt(macros.fat,1)}g`;
 }
 function addSelectedFood() {
   const food=findFood(activeFoodSelection);if(!food){toast('Search and select a food first.',true);return;}
-  const amount=Math.max(.01,n($('foodAmount')?.value)||defaultFoodAmount(food));const unit=$('foodUnit')?.value||foodAmountUnit(food);const meal=$('foodMeal')?.value||activeFoodMeal;
+  const unit=$('foodUnit')?.value||foodAmountUnit(food);const rawAmount=n($('foodAmount')?.value)||defaultFoodAmount(food);const amount=unit==='g'?Math.max(1,Math.round(rawAmount)):Math.max(.1,round(rawAmount,3));const meal=$('foodMeal')?.value||activeFoodMeal;
   const macros=foodMacros(food,amount,unit);const timeValue=$('foodTime')?.value||'';const logDateTime=timeValue?new Date(`${state.activeDate}T${timeValue}:00`):new Date();const loggedAt=Number.isNaN(logDateTime.getTime())?new Date().toISOString():logDateTime.toISOString();const item={entry_id:uid('log'),food_id:food.id,name:food.name,type:food.type,category:foodCategory(food),data_source:foodSourceLabel(food),fiber_data_available:foodFiberKnown(food),amount,unit,amount_label:amountLabel(food,amount,unit),macros:{...macros},logged_at:loggedAt,tags:[...(food.tags||[])]};
   currentLog().diet_log[meal].push(item);state.recentFoodIds=recentIds(state.recentFoodIds,food.id);state.selectedDomain='diet';state.selectedTab='timeline';scheduleSave();closeModal();render();toast(`${food.name} added to ${meal}.`);
 }
@@ -904,18 +959,24 @@ function findFoodEntry(entryId) {
 }
 function openEditFood(entryId) {
   const result=findFoodEntry(entryId);if(!result)return;editFoodEntryId=entryId;const item=result.item;const macros=item.macros||{};
-  showModal(`${modalHead('EDIT ENTRY','Tune this portion','Changes apply only to this logged item, not the master database.')}
-    <div class="selected-food"><span class="result-icon">${nutritionEmoji(item)}</span><div><strong>${safe(item.name)}</strong><small>Logged in ${result.meal}</small></div></div>
-    <div class="field-grid"><div class="field"><label for="editAmount">AMOUNT</label><input id="editAmount" type="number" min="0.1" step="0.1" value="${safe(item.amount??1)}" /></div><div class="field"><label for="editUnit">UNIT LABEL</label><select id="editUnit">${[...new Set([...(foodUnits(findFood(item.food_id)||item)),item.unit||'g'])].map(u=>`<option value="${safe(u)}" ${(item.unit||'g')===u?'selected':''}>${safe(u)}</option>`).join('')}</select></div></div>
+  showModal(`${modalHead('EDIT ENTRY','Tune this portion','Update the quantity, unit or meal for this logged item.')}
+    <div class="selected-food"><span class="result-icon">${nutritionEmoji(item)}</span><div><strong>${safe(item.name)}</strong><small>Currently logged in ${result.meal}</small></div></div>
+    <div class="field-grid"><div class="field"><label for="editAmount">AMOUNT</label><input id="editAmount" type="number" min="1" step="1" value="${safe(item.amount??1)}" inputmode="decimal" /></div><div class="field"><label for="editUnit">UNIT LABEL</label><select id="editUnit">${[...new Set([...(foodUnits(findFood(item.food_id)||item)),item.unit||'g'])].map(u=>`<option value="${safe(u)}" ${(item.unit||'g')===u?'selected':''}>${safe(u)}</option>`).join('')}</select></div></div>
+    <div class="field"><label for="editMeal">MEAL CATEGORY</label><select id="editMeal">${MEALS.map(m=>`<option value="${m.key}" ${m.key===result.meal?'selected':''}>${m.label}</option>`).join('')}</select></div>
     <div class="divider-label">Macros for this entry</div><div class="macro-edit-grid">${[['calories','KCAL'],['protein','PROTEIN G'],['carbs','CARBS G'],['fat','FAT G']].map(([key,label])=>`<div class="field"><label for="macro_${key}">${label}</label><input id="macro_${key}" type="number" min="0" step="0.1" value="${safe(macros[key]??0)}" /></div>`).join('')}</div>
     <div class="field" style="margin-top:12px"><label for="macro_fiber">FIBER G</label><input id="macro_fiber" type="number" min="0" step="0.1" value="${safe(macros.fiber??0)}" /></div>
     <div class="modal-actions"><button class="cancel" data-action="close-modal">Cancel</button><button class="save lime" data-action="save-food-edit">Save entry</button></div>`);
+  const editUnit=$('editUnit');if(editUnit)editUnit.dataset.previousUnit=editUnit.value;configureFoodAmountInput($('editAmount'),editUnit?.value||item.unit||'g',false);
 }
 function saveFoodEdit() {
   const result=findFoodEntry(editFoodEntryId);if(!result)return;const item=result.item;
-  const amount=Math.max(.1,n($('editAmount')?.value)||1);item.amount=amount;item.unit=$('editUnit')?.value||item.unit;item.amount_label=amountLabel(findFood(item.food_id)||item,amount,item.unit);
+  const unit=$('editUnit')?.value||item.unit||'g';
+  const rawAmount=n($('editAmount')?.value)||1;const amount=unit==='g'?Math.max(1,Math.round(rawAmount)):Math.max(.1,round(rawAmount,3));
+  item.amount=amount;item.unit=unit;item.amount_label=amountLabel(findFood(item.food_id)||item,amount,unit);
   item.macros={calories:round(n($('macro_calories')?.value),2),protein:round(n($('macro_protein')?.value),2),carbs:round(n($('macro_carbs')?.value),2),fat:round(n($('macro_fat')?.value),2),fiber:round(n($('macro_fiber')?.value),2)};
-  item.edited=true; scheduleSave(); closeModal(); render(); toast('Entry updated. Master food unchanged.');
+  const nextMeal=$('editMeal')?.value||result.meal;
+  if(nextMeal!==result.meal){const source=currentLog().diet_log[result.meal];const index=source.findIndex(entry=>entry.entry_id===editFoodEntryId);if(index>=0)source.splice(index,1);currentLog().diet_log[nextMeal].push(item);}
+  item.edited=true; scheduleSave(); closeModal(); render(); toast(nextMeal!==result.meal?`Entry moved to ${nextMeal}.`:'Entry updated. Master food unchanged.');
 }
 function removeFoodEntry(entryId) {
   const log=activeLog();for(const meal of MEALS){const i=log.diet_log[meal.key].findIndex(x=>x.entry_id===entryId);if(i>=0){log.diet_log[meal.key].splice(i,1);scheduleSave();render();toast('Food entry removed.');return;}}
@@ -965,7 +1026,7 @@ function renderRecipeIngredients() {
   host.innerHTML=recipeIngredients.map((ingredient,index)=>{
     const food=findFood(ingredient.foodId);const units=food?foodUnits(food):['g','kg','ml','L'];const unit=ingredient.unit||foodAmountUnit(food)||'g';
     const query=ingredient.query||(food?food.name:'');
-    return `<div class="recipe-ingredient"><div class="recipe-picker"><input class="recipe-search" data-role="recipe-search" data-index="${index}" placeholder="Search ingredient…" value="${safe(query)}" autocomplete="off" aria-label="Search ingredient ${index+1}"/><div class="recipe-selected">${food?`<span>${safe(food.name)}</span><small>${safe(food.type==='raw_ingredient'?'Ingredient':'Estimate')} selected</small>`:'<small>Search and select an ingredient</small>'}</div><div class="recipe-results-mini" id="recipe-results-${index}"></div></div><input type="number" min="0.01" step="0.1" value="${safe(ingredient.amount)}" data-role="recipe-amount" data-index="${index}" aria-label="Ingredient amount"/><select data-role="recipe-unit" data-index="${index}" aria-label="Ingredient unit">${units.map(u=>`<option value="${safe(u)}" ${unit===u?'selected':''}>${safe(u)}</option>`).join('')}</select><button data-action="recipe-remove-ingredient" data-index="${index}" aria-label="Remove ingredient">×</button></div>`;
+    return `<div class="recipe-ingredient"><div class="recipe-picker"><input class="recipe-search" data-role="recipe-search" data-index="${index}" placeholder="Search ingredient…" value="${safe(query)}" autocomplete="off" aria-label="Search ingredient ${index+1}"/><div class="recipe-selected">${food?`<span>${safe(food.name)}</span><small>${safe(food.type==='raw_ingredient'?'Ingredient':'Estimate')} selected</small>`:'<small>Search and select an ingredient</small>'}</div><div class="recipe-results-mini" id="recipe-results-${index}"></div></div><input type="number" min="${unit==='g'?'1':'0.1'}" step="${unit==='g'?'1':'0.1'}" value="${safe(unit==='g'?Math.max(1,Math.round(n(ingredient.amount))):ingredient.amount)}" data-role="recipe-amount" data-index="${index}" aria-label="Ingredient amount"/><select data-role="recipe-unit" data-index="${index}" aria-label="Ingredient unit">${units.map(u=>`<option value="${safe(u)}" ${unit===u?'selected':''}>${safe(u)}</option>`).join('')}</select><button data-action="recipe-remove-ingredient" data-index="${index}" aria-label="Remove ingredient">×</button></div>`;
   }).join('');
   upgradeNumberWheels(host);
   recipeIngredients.forEach((ing,index)=>{if(ing.query&&(!findFood(ing.foodId)||ing.query.toLowerCase()!==findFood(ing.foodId).name.toLowerCase()))renderRecipeSearchResults(index,ing.query);});
@@ -978,7 +1039,7 @@ function renderRecipeSearchResults(index,query) {
   host.innerHTML=results.map(({food})=>`<button class="recipe-result-option" data-action="recipe-select-ingredient" data-index="${index}" data-id="${safe(food.id)}"><strong>${safe(food.name)}</strong><span>${safe(foodAmountUnit(food))} · ${fmt(foodMacros(food,defaultFoodAmount(food),foodAmountUnit(food)).calories)} kcal default</span></button>`).join('')||'<small class="recipe-no-result">No ingredient matched. Try another search.</small>';
 }
 function selectRecipeIngredient(index,foodId) {
-  const food=findFood(foodId);if(!food||!recipeIngredients[index])return;recipeIngredients[index].foodId=foodId;recipeIngredients[index].query=food.name;recipeIngredients[index].unit=foodAmountUnit(food);recipeIngredients[index].amount=defaultFoodAmount(food);renderRecipeIngredients();
+  const food=findFood(foodId);if(!food||!recipeIngredients[index])return;recipeIngredients[index].foodId=foodId;recipeIngredients[index].query=food.name;recipeIngredients[index].unit=foodAmountUnit(food);recipeIngredients[index].amount=recipeIngredients[index].unit==='g'?Math.max(1,Math.round(defaultFoodAmount(food))):defaultFoodAmount(food);renderRecipeIngredients();
 }
 function updateRecipePreview() {
   const host=$('recipePreview');if(!host)return;let total={calories:0,protein:0,carbs:0,fat:0,fiber:0};let selected=0;let fibreMissing=0;
@@ -988,7 +1049,7 @@ function updateRecipePreview() {
 function saveRecipe() {
   const name=$('recipeName')?.value.trim();if(!name){toast('Give your recipe a name first.',true);return;}
   const yieldCount=Math.max(1,Math.round(n($('recipeYield')?.value)||1));let total={calories:0,protein:0,carbs:0,fat:0,fiber:0};const components=[];
-  for(const ing of recipeIngredients){const food=findFood(ing.foodId);if(!food){toast('Search and select every ingredient.',true);return;}const amount=Math.max(.01,n(ing.amount));const unit=ing.unit||foodAmountUnit(food);const m=foodMacros(food,amount,unit);for(const key of Object.keys(total))total[key]+=m[key]||0;components.push({food_id:food.id,name:food.name,amount,unit,macros:m,...(food.data_source==='Open Food Facts'?{food_snapshot:{...food}}:{})});}
+  for(const ing of recipeIngredients){const food=findFood(ing.foodId);if(!food){toast('Search and select every ingredient.',true);return;}const unit=ing.unit||foodAmountUnit(food);const amount=unit==='g'?Math.max(1,Math.round(n(ing.amount))):Math.max(.1,n(ing.amount));const m=foodMacros(food,amount,unit);for(const key of Object.keys(total))total[key]+=m[key]||0;components.push({food_id:food.id,name:food.name,amount,unit,macros:m,...(food.data_source==='Open Food Facts'?{food_snapshot:{...food}}:{})});}
   if(components.length<2){toast('A recipe needs at least two ingredients. Add one more ingredient to continue.',true);return;}
   const containsNonVegetarian=components.some(c=>foodCategory(findFood(c.food_id))==='Meat & Eggs'||/\b(egg|eggs|meat|chicken|fish|pork|beef|lamb|poultry|shrimp|prawn|tuna|salmon|mutton|seafood|bacon|ham|turkey|duck)\b/i.test(c.name));
   const item={id:uid('recipe'),name,type:'custom_recipe',serving_unit:'serving',default_serving_size:1,macros_per_serving:Object.fromEntries(Object.entries(total).map(([k,v])=>[k,round(v/yieldCount,2)])),fiber_data_available:components.every(c=>findFood(c.food_id)&&foodFiberKnown(findFood(c.food_id))),tags:['custom','recipe',...(containsNonVegetarian?[]:['vegetarian'])],recipe_ingredients:components,yield:yieldCount,created_at:new Date().toISOString(),updated_at:new Date().toISOString()};
@@ -1030,9 +1091,12 @@ function openWorkoutModal() {
     <div class="exercise-results-heading"><strong>Exercise library</strong><span>${fmt(masterExercises.length)} movements</span></div>
     <div id="exerciseResults" class="search-results exercise-picker-results"></div>
     <div class="selected-food selected-exercise-card" id="selectedExerciseDetail"><span class="result-icon">🏋️</span><div><strong class="selected-exercise-name">Choose an exercise</strong><small class="selected-exercise-sub">Select a result to set your training target.</small></div></div>
-    <div class="field-grid workout-wheel-grid"><div class="field"><label for="targetSets">TARGET SETS</label><input type="number" id="targetSets" min="1" max="20" step="1" value="3" aria-label="Target sets"/></div><div class="field"><label for="targetReps">REPS PER SET</label><input type="number" id="targetReps" min="1" max="100" step="1" value="10" aria-label="Reps per set"/></div></div>
-    <div class="field"><label for="startingWeight">STARTING WEIGHT (KG)</label><input type="number" id="startingWeight" min="0" max="500" step="2.5" value="40" aria-label="Starting weight in kilograms"/></div>
-    <div class="setting-section progressive-setting"><div class="switch-row"><div class="switch-copy"><strong>Progressive overload</strong><span>Increase the planned weight with each set.</span></div><label class="switch"><input type="checkbox" id="progressiveToggle" checked><span class="switch-track"></span></label></div><div class="field" id="progressiveSettingsBox" style="margin:0"><label for="weightIncrement">INCREMENT PER SET (KG)</label><input type="number" id="weightIncrement" min="0" step="0.5" value="5"/></div></div>
+    <div class="exercise-setup-row" aria-label="Exercise targets">
+      <div class="field setup-number-field"><label for="targetSets">TARGET SETS</label><div class="exercise-number-control"><button type="button" data-action="adjust-workout-input" data-target="targetSets" data-delta="-1" aria-label="Decrease target sets">−</button><input type="number" id="targetSets" min="1" max="20" step="1" value="3" aria-label="Target sets"/><button type="button" data-action="adjust-workout-input" data-target="targetSets" data-delta="1" aria-label="Increase target sets">＋</button></div></div>
+      <div class="field setup-number-field"><label for="targetReps">REPS / SET</label><div class="exercise-number-control"><button type="button" data-action="adjust-workout-input" data-target="targetReps" data-delta="-1" aria-label="Decrease reps per set">−</button><input type="number" id="targetReps" min="1" max="100" step="1" value="10" aria-label="Reps per set"/><button type="button" data-action="adjust-workout-input" data-target="targetReps" data-delta="1" aria-label="Increase reps per set">＋</button></div></div>
+      <div class="field setup-number-field" id="startingWeightField"><label for="startingWeight">START KG</label><div class="exercise-number-control"><button type="button" data-action="adjust-workout-input" data-target="startingWeight" data-delta="-2.5" aria-label="Decrease starting weight by 2.5 kilograms">−</button><input type="number" id="startingWeight" min="0" max="500" step="2.5" value="40" aria-label="Starting weight in kilograms"/><button type="button" data-action="adjust-workout-input" data-target="startingWeight" data-delta="2.5" aria-label="Increase starting weight by 2.5 kilograms">＋</button></div></div>
+    </div>
+    <div class="setting-section progressive-setting" id="progressiveSettingSection"><div class="switch-row"><div class="switch-copy"><strong>Progressive overload</strong><span>Increase the planned weight with each set.</span></div><label class="switch"><input type="checkbox" id="progressiveToggle" checked><span class="switch-track"></span></label></div><div class="field" id="progressiveSettingsBox" style="margin:0"><label for="weightIncrement">INCREMENT PER SET (KG)</label><input type="number" id="weightIncrement" min="0" step="0.5" value="5"/></div></div>
     <div id="setPreview" class="form-note">Set 1: 40 kg · Set 2: 45 kg · Set 3: 50 kg</div>
     <div class="modal-actions"><button class="cancel" data-action="close-modal">Cancel</button><button class="save lime" data-action="save-exercise">Add to session →</button></div>`);
   renderExerciseFilters();renderExerciseResults('');updateExerciseDetail();updateSetPreview();
@@ -1058,11 +1122,25 @@ function exerciseResultButton(ex) {
   return `<div class="exercise-search-row ${selected?'selected':''}">${renderExerciseThumbnail(ex,'picker')}<button type="button" class="exercise-result-main ${selected?'selected':''}" data-action="select-exercise" data-id="${safe(ex.id)}"><span class="result-copy"><strong>${safe(ex.name)}</strong><span>${safe(primary)} · ${safe(body)} · ${safe(ex.equipment||'Bodyweight')}</span></span></button><span class="exercise-rest-pill">${n(ex.default_rest_sec)}s</span></div>`;
 }
 
+function exerciseIsBodyweight(ex) {
+  const equipment=String(ex?.equipment||'').toLowerCase();
+  return /body\s?weight|body only|calisthenics|no equipment|unweighted/.test(equipment);
+}
+function updateExerciseWeightVisibility(ex) {
+  const bodyweight=exerciseIsBodyweight(ex);
+  const field=$('startingWeightField'),progressive=$('progressiveSettingSection'),weight=$('startingWeight'),toggle=$('progressiveToggle'),setupRow=document.querySelector('.exercise-setup-row');
+  if(setupRow)setupRow.classList.toggle('bodyweight-mode',bodyweight);
+  if(field)field.hidden=bodyweight;
+  if(progressive)progressive.hidden=bodyweight;
+  if(bodyweight){if(weight){weight.value='0';refreshNumberWheel(weight);}if(toggle)toggle.checked=false;}
+  else if(weight&&n(weight.value)===0){weight.value='40';refreshNumberWheel(weight);}
+}
 function updateExerciseDetail() {
   const ex=findExercise(activeExerciseSelection);if(!ex)return;
   const host=$('selectedExerciseDetail');
   if(host)host.innerHTML=`${renderExerciseThumbnail(ex,'selected')}<div><strong class="selected-exercise-name">${safe(ex.name)}</strong><small class="selected-exercise-sub">${safe(ex.primary_muscle||ex.target||'Full body')} · ${safe(ex.equipment||'Bodyweight')} · ${n(ex.default_rest_sec)}s default rest</small><small class="selected-exercise-description">${safe(exerciseShortDescription(ex))}</small></div>`;
-  if(ex.tracking_metrics?.includes('duration')&&!ex.tracking_metrics.includes('weight')){if($('targetReps')){$('targetReps').value=20;refreshNumberWheel($('targetReps'));}if($('startingWeight')){$('startingWeight').value=0;refreshNumberWheel($('startingWeight'));}}
+  updateExerciseWeightVisibility(ex);
+  if(ex.tracking_metrics?.includes('duration')&&!ex.tracking_metrics.includes('weight')){if($('targetReps')){$('targetReps').value=20;refreshNumberWheel($('targetReps'));}}
   updateSetPreview();
 }
 function openExerciseDetail(id) {
@@ -1136,15 +1214,15 @@ function deleteExerciseEntry(button) {
   editExerciseIndex=null;editExerciseLocation=null;scheduleSave();closeModal();render();toast(`${name} deleted from the log.`);
 }
 function updateSetPreview() {
-  const host=$('setPreview');if(!host)return;const sets=clamp(Math.round(n($('targetSets')?.value)||3),1,20);const start=Math.max(0,n($('startingWeight')?.value)||0);const inc=$('progressiveToggle')?.checked?Math.max(0,n($('weightIncrement')?.value)||0):0;const reps=Math.max(1,Math.round(n($('targetReps')?.value)||10));
-  host.innerHTML=Array.from({length:sets},(_,i)=>`Set ${i+1}: <strong>${fmt(start+i*inc,1)} kg × ${reps}</strong>`).join(' &nbsp;·&nbsp; ');
+  const host=$('setPreview');if(!host)return;const sets=clamp(Math.round(n($('targetSets')?.value)||3),1,20);const start=Math.max(0,n($('startingWeight')?.value)||0);const inc=$('progressiveToggle')?.checked?Math.max(0,n($('weightIncrement')?.value)||0):0;const reps=Math.max(1,Math.round(n($('targetReps')?.value)||10));const bodyweight=exerciseIsBodyweight(findExercise(activeExerciseSelection));
+  host.innerHTML=Array.from({length:sets},(_,i)=>bodyweight?`Set ${i+1}: <strong>${reps} reps / min</strong>`:`Set ${i+1}: <strong>${fmt(start+i*inc,1)} kg × ${reps}</strong>`).join(' &nbsp;·&nbsp; ');
 }
 function ensureWorkout() {
   const log=activeLog();if(!log.workout_log)log.workout_log={session_id:uid('ws'),start_time:null,end_time:null,start_ms:null,end_ms:null,total_calories_burned:0,exercises:[],status:'planned'};return log.workout_log;
 }
 function saveExerciseSetup() {
   const ex=findExercise(activeExerciseSelection);if(!ex){toast('Choose an exercise.',true);return;}
-  const count=clamp(Math.round(n($('targetSets')?.value)||3),1,20);const reps=Math.max(1,Math.round(n($('targetReps')?.value)||10));const start=Math.max(0,n($('startingWeight')?.value)||0);const increment=$('progressiveToggle')?.checked?Math.max(0,n($('weightIncrement')?.value)||0):0;
+  const count=clamp(Math.round(n($('targetSets')?.value)||3),1,20);const reps=Math.max(1,Math.round(n($('targetReps')?.value)||10));const bodyweight=exerciseIsBodyweight(ex);const start=bodyweight?0:Math.max(0,n($('startingWeight')?.value)||0);const increment=!bodyweight&&$('progressiveToggle')?.checked?Math.max(0,n($('weightIncrement')?.value)||0):0;
   const workout=ensureWorkout();const sets=Array.from({length:count},(_,i)=>({set_num:i+1,weight:round(start+i*increment,2),reps,completed:false}));
   state.recentExerciseIds=recentIds(state.recentExerciseIds,ex.id);
   workout.exercises.push({exercise_id:ex.id,name:ex.name,image:ex.image||null,gif_url:ex.gif_url||null,media_status:ex.media_status||null,primary_muscle:ex.primary_muscle,target:ex.target,body_part:ex.body_part,secondary_muscles:ex.secondary_muscles||[],equipment:ex.equipment,met_value:ex.met_value,default_rest_sec:ex.default_rest_sec,tracking_metrics:ex.tracking_metrics||['weight','reps'],sets,started:false,finished:false,rest_until:null,last_completed_set:null,created_at:new Date().toISOString()});
@@ -1178,8 +1256,22 @@ function startRestTicker() {
 function adjustRest(index,delta) { const ex=activeLog().workout_log?.exercises?.[index];if(!ex?.rest_until)return;ex.rest_until=Math.max(Date.now(),ex.rest_until+n(delta)*1000);scheduleSave();render();startRestTicker(); }
 function addSet(index) { const ex=activeLog().workout_log?.exercises?.[index];if(!ex||ex.finished)return;const last=ex.sets[ex.sets.length-1]||{weight:0,reps:10};ex.sets.push({set_num:ex.sets.length+1,weight:n(last.weight),reps:n(last.reps),completed:false});scheduleSave();render(); }
 function finishExercise(index) { const ex=activeLog().workout_log?.exercises?.[index];if(!ex)return;ex.finished=true;ex.started=false;ex.finished_at=new Date().toISOString();ex.rest_until=null;scheduleSave();render();toast(`${ex.name} finished.`); }
+function deleteEmptyWorkoutSession(scope,sessionIndex=null) {
+  const log=activeLog();
+  if(scope==='active'){
+    const session=log.workout_log;if(!session)return;
+    if(sessionHasLoggedWork(session)){toast('This session contains logged work and cannot be removed as empty.',true);return;}
+    if(!window.confirm('Delete this empty training session?'))return;
+    log.workout_log=null;scheduleSave();render();toast('Empty session removed.');return;
+  }
+  const session=log.workout_history?.[sessionIndex];if(!session)return;
+  if(sessionHasLoggedWork(session)){toast('This session contains logged work and cannot be removed as empty.',true);return;}
+  if(!window.confirm('Delete this unused training session?'))return;
+  log.workout_history.splice(sessionIndex,1);scheduleSave();render();toast('Unused session removed.');
+}
 function finishSession() {
   const log=activeLog();const workout=log.workout_log;if(!workout)return;
+  if(!(workout.exercises||[]).length){toast('Add at least one exercise before finishing this session.',true);return;}
   if(!workout.start_ms){toast('Start the session before finishing it.',true);return;}
   const end=Date.now();const hours=Math.max(0,(end-workout.start_ms)/3600000);const activeExercises=(workout.exercises||[]).filter(ex=>ex.started||ex.finished||ex.sets.some(s=>s.completed));const vals=activeExercises.map(ex=>Number(ex.met_value));const hasCompleteMET=activeExercises.length>0&&vals.every(value=>Number.isFinite(value)&&value>0);
   const averageMET=hasCompleteMET?vals.reduce((a,b)=>a+b,0)/vals.length:0;const burned=hasCompleteMET?round(averageMET*n(state.profile.weightKg)*hours):0;
@@ -1465,7 +1557,7 @@ document.addEventListener('click', async (event)=>{
     case 'open-universal-add': universalAddMode='ingredient';renderUniversalAddModal();break;
     case 'set-universal-add-mode': universalAddMode=button.dataset.mode==='recipe'?'recipe':'ingredient';renderUniversalAddModal();break;
     case 'continue-universal-add': if(universalAddMode==='recipe'){recipeIngredients=[];recipeReturnMeal=activeFoodMeal;openRecipeModal();}else openCustomIngredientModal();break;
-    case 'adjust-workout-input': {const input=$(button.dataset.target);if(input){const delta=n(button.dataset.delta);let value=n(input.value)+delta;if(input.id==='targetSets')value=clamp(Math.round(value),1,20);else if(input.id==='startingWeight')value=Math.max(0,round(value,1));input.value=String(value);updateSetPreview();}break;}
+    case 'adjust-workout-input': {const input=$(button.dataset.target);if(input){const delta=n(button.dataset.delta);let value=n(input.value)+delta;if(input.id==='targetSets')value=clamp(Math.round(value),1,20);else if(input.id==='targetReps')value=clamp(Math.round(value),1,100);else if(input.id==='startingWeight')value=clamp(round(value,1),0,500);if(input._wheelSet)input._wheelSet(value,true);else{input.value=String(value);input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));}updateSetPreview();}break;}
     case 'select-food': selectFoodInPicker(button.dataset.id);break;
     case 'toggle-food-kind': { const kind=button.dataset.kind;if(kind==='ingredients'||kind==='recipes'){foodKindFilters[kind]=!foodKindFilters[kind];button.classList.toggle('active',foodKindFilters[kind]);button.setAttribute('aria-pressed',String(foodKindFilters[kind]));renderFoodResults($('foodSearch')?.value||'');}break; }
     case 'clear-food-selection': { activeFoodSelection=null;const panel=$('foodSelectionPanel');if(panel)panel.hidden=true;renderFoodResults($('foodSearch')?.value||'');break; }
@@ -1504,6 +1596,7 @@ document.addEventListener('click', async (event)=>{
     case 'add-set': addSet(n(button.dataset.exIndex));break;
     case 'finish-exercise': finishExercise(n(button.dataset.exIndex));break;
     case 'finish-session': finishSession();break;
+    case 'delete-empty-session': deleteEmptyWorkoutSession(button.dataset.scope||'history',button.dataset.sessionIndex===undefined?null:n(button.dataset.sessionIndex));break;
     case 'adjust-rest': adjustRest(n(button.dataset.exIndex),n(button.dataset.seconds));break;
     case 'add-water': addWater(button.dataset.amount);break;
     case 'save-custom-water': saveCustomWater();break;
@@ -1535,7 +1628,7 @@ document.addEventListener('input',(event)=>{
   const target=event.target;
   if(target.id==='foodSearch'){renderFoodResults(target.value);scheduleOnlineFoodSearch(target.value);return;}
   if(target.id==='foodAmount'){updateSelectedFoodPreview();return;}
-  if(target.id==='foodUnit'){updateSelectedFoodPreview();return;}
+  if(target.id==='foodUnit'){configureFoodAmountInput($('foodAmount'),target.value,true,target.dataset.previousUnit||'g');target.dataset.previousUnit=target.value;updateSelectedFoodPreview();return;}
   if(target.dataset.role==='recipe-search'){const i=n(target.dataset.index);const ing=recipeIngredients[i];if(ing){ing.query=target.value;if(findFood(ing.foodId)?.name.toLowerCase()!==target.value.trim().toLowerCase())ing.foodId='';renderRecipeSearchResults(i,target.value);updateRecipePreview();}return;}
   if(target.id==='exerciseSearch'){renderExerciseResults(target.value);return;}
   if(['targetSets','targetReps','startingWeight','weightIncrement'].includes(target.id)||target.id==='progressiveToggle'){updateSetPreview();if(target.id==='progressiveToggle'){const box=$('progressiveSettingsBox');if(box)box.hidden=!target.checked;}return;}
@@ -1546,11 +1639,13 @@ document.addEventListener('change',(event)=>{
   if(target.id==='datePicker'&&target.value){state.activeDate=target.value;currentLog();render();persistState();return;}
   if(target.id==='darkModeToggle'){state.preferences=state.preferences||{};state.preferences.darkMode=!!target.checked;applyTheme();scheduleSave(false);return;}
   if(target.id==='foodMeal'){activeFoodMeal=target.value||'breakfast';return;}
+  if(target.id==='foodUnit'){configureFoodAmountInput($('foodAmount'),target.value,true,target.dataset.previousUnit||'g');target.dataset.previousUnit=target.value;updateSelectedFoodPreview();return;}
+  if(target.id==='editUnit'){configureFoodAmountInput($('editAmount'),target.value,true,target.dataset.previousUnit||'g');target.dataset.previousUnit=target.value;return;}
   if(target.id==='foodCategoryFilter'){renderFoodResults($('foodSearch')?.value||'');return;}
   if(target.id==='recipeYield'){updateRecipePreview();return;}
   if(target.id==='progressiveToggle'){const box=$('progressiveSettingsBox');if(box)box.hidden=!target.checked;updateSetPreview();return;}
-  if(target.dataset.role==='recipe-unit'){const i=n(target.dataset.index);if(recipeIngredients[i]){recipeIngredients[i].unit=target.value;updateRecipePreview();}return;}
-  if(target.dataset.role==='recipe-amount'){const i=n(target.dataset.index);if(recipeIngredients[i]){recipeIngredients[i].amount=Math.max(.01,n(target.value));updateRecipePreview();}return;}
+  if(target.dataset.role==='recipe-unit'){const i=n(target.dataset.index);if(recipeIngredients[i]){const amountField=target.closest('.recipe-ingredient')?.querySelector('[data-role="recipe-amount"]');const previousUnit=recipeIngredients[i].unit||'g';recipeIngredients[i].unit=target.value;if(amountField){configureFoodAmountInput(amountField,target.value,true,previousUnit);recipeIngredients[i].amount=n(amountField.value);}updateRecipePreview();}return;}
+  if(target.dataset.role==='recipe-amount'){const i=n(target.dataset.index);if(recipeIngredients[i]){const unit=recipeIngredients[i].unit||'g';recipeIngredients[i].amount=unit==='g'?Math.max(1,Math.round(n(target.value))):Math.max(.1,n(target.value));updateRecipePreview();}return;}
   if(target.dataset.role==='set-weight'||target.dataset.role==='set-reps'){
     const ex=activeLog().workout_log?.exercises?.[n(target.dataset.exIndex)];const set=ex?.sets?.[n(target.dataset.setIndex)];if(!set)return;
     if(target.dataset.role==='set-weight')set.weight=Math.max(0,n(target.value));else set.reps=Math.max(0,Math.round(n(target.value)));

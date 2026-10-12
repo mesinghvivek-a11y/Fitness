@@ -505,3 +505,58 @@ body.theme-dark .auth-fields input{background:#050505;color:#f5f7f5;border-color
 body.theme-dark .water-log-info strong,body.theme-dark .water-log-amount{color:#eff7f1}body.theme-dark .water-log-icon{background:#081317}
 body.theme-dark .number-wheel-focus{background:#17200f;border-color:#516b2c}
 @media(max-width:390px){.number-wheel-slot,.number-wheel{height:96px}.number-wheel-item{height:32px}.number-wheel-focus{top:32px;height:32px}.recipe-ingredient .number-wheel-slot{height:72px}.recipe-ingredient .number-wheel{height:72px}.recipe-ingredient .number-wheel-item{height:24px}.recipe-ingredient .number-wheel-focus{top:24px;height:24px}}
+
+/* v4: compact touch controls, responsive one-line food details, and unused-session cleanup. */
+.exercise-setup-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0 14px;align-items:start}
+.exercise-setup-row.bodyweight-mode{grid-template-columns:repeat(2,minmax(0,1fr))}
+.setup-number-field{min-width:0;margin:0!important}
+.setup-number-field>label{display:block;white-space:nowrap;font-size:9px!important;letter-spacing:.35px;margin:0 0 7px!important}
+.exercise-number-control{display:grid;grid-template-columns:27px minmax(0,1fr) 27px;gap:3px;align-items:center;min-width:0}
+.exercise-number-control>button{width:27px;height:31px;min-width:0;border-radius:9px;background:var(--green-soft);color:var(--ink);border:1px solid var(--line);font-weight:900;font-size:16px;display:grid;place-items:center;padding:0;touch-action:manipulation}
+.exercise-number-control>button:active{transform:scale(.94);background:var(--green)}
+.exercise-number-control .number-wheel-slot{height:60px;min-width:0;width:100%}
+.exercise-number-control .number-wheel{height:60px;border-radius:10px}
+.exercise-number-control .number-wheel-item{height:20px;font-size:12px}
+.exercise-number-control .number-wheel-item.is-current{font-size:14px}
+.exercise-number-control .number-wheel-focus{top:20px;height:20px;left:2px;right:2px;border-radius:6px}
+.food-log-details-row{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.7fr) minmax(0,1.08fr) minmax(0,1fr);gap:7px;min-width:0;align-items:start;margin:0 0 8px}
+.food-log-details-row .field{min-width:0;margin:0 0 4px}
+.food-log-details-row .field label{font-size:9px;letter-spacing:.25px;white-space:nowrap}
+.food-log-details-row .field input,.food-log-details-row .field select{width:100%;min-width:0;height:42px;padding:0 7px;font-size:12px;border-radius:10px}
+.number-wheel{scroll-behavior:auto;scroll-snap-type:y mandatory;overscroll-behavior-y:contain;scrollbar-width:none;will-change:scroll-position}
+.number-wheel-item{opacity:.16;transform:scale(.94);transition:opacity .08s linear,transform .08s linear;color:var(--muted-2)}
+.number-wheel-item[data-distance="-2"],.number-wheel-item[data-distance="2"]{opacity:.3;transform:scale(.96)}
+.number-wheel-item[data-distance="-1"],.number-wheel-item[data-distance="1"]{opacity:.58;transform:scale(.98)}
+.number-wheel-item.is-current{opacity:1;transform:scale(1);font-weight:950;color:var(--ink)}
+.exercise-card .set-row .number-wheel-slot{height:66px;min-width:0}
+.exercise-card .set-row .number-wheel{height:66px}
+.exercise-card .set-row .number-wheel-item{height:22px;font-size:11px}
+.exercise-card .set-row .number-wheel-item.is-current{font-size:12px}
+.exercise-card .set-row .number-wheel-focus{top:22px;height:22px;left:3px;right:3px}
+.completed-session-heading-actions{display:flex;flex-direction:column;align-items:flex-end;gap:7px;min-width:0}
+.delete-empty-session{display:inline-flex;align-items:center;justify-content:center;min-height:33px;padding:7px 10px;border-radius:10px;background:#fff0ed;color:#b84e39;border:1px solid #f4cfc7;font-size:10px;font-weight:850;white-space:nowrap}
+.active-empty-session-delete{display:flex;margin:10px 0 8px auto}
+.empty-session-card{border-style:dashed}
+.empty-session-card .completed-session-heading{background:#fbf5f2}
+.planned-session-exercise{opacity:.82}
+.completed-check.not-done{background:#f0f2ee;color:#a2aaa0}
+body.theme-dark .exercise-number-control>button{background:#111!important;border-color:#292929;color:#f4f7f4}
+body.theme-dark .exercise-number-control>button:active{background:#c8ff62!important;color:#10140b}
+body.theme-dark .delete-empty-session{background:#27110e;color:#ffb9a8;border-color:#4a2923}
+body.theme-dark .empty-session-card .completed-session-heading{background:#100c0b}
+body.theme-dark .completed-check.not-done{background:#161616;color:#656c66}
+@media(max-width:390px){
+  .exercise-setup-row{gap:5px;margin-top:10px}
+  .setup-number-field>label{font-size:8px!important;letter-spacing:0}
+  .exercise-number-control{grid-template-columns:22px minmax(0,1fr) 22px;gap:2px}
+  .exercise-number-control>button{width:22px;height:30px;border-radius:7px;font-size:14px}
+  .exercise-number-control .number-wheel-slot,.exercise-number-control .number-wheel{height:54px}
+  .exercise-number-control .number-wheel-item{height:18px;font-size:10px}
+  .exercise-number-control .number-wheel-item.is-current{font-size:12px}
+  .exercise-number-control .number-wheel-focus{top:18px;height:18px}
+  .food-log-details-row{grid-template-columns:repeat(4,minmax(80px,1fr));overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;padding-bottom:5px}
+  .food-log-details-row .field input,.food-log-details-row .field select{font-size:11px}
+  .completed-session-heading{align-items:flex-start}
+  .completed-session-heading-actions{max-width:48%}
+  .delete-empty-session{white-space:normal;text-align:center}
+}
