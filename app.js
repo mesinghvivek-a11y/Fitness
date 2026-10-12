@@ -289,7 +289,7 @@ function renderDates() {
   host.innerHTML=dates.map(key=>{
     const d=parseDateKey(key); const day=d.toLocaleDateString('en-IN',{weekday:'short'}).toUpperCase();
     const active=key===state.activeDate; const istoday=key===today;
-    return `<button class="date-pill ${active?'active':''} ${istoday?'today':''}" data-action="choose-date" data-date="${key}"><span class="date-day">${active?'SELECTED':istoday?'TODAY':day}</span><strong>${d.toLocaleDateString('en-IN',{month:'short',day:'numeric'})}</strong></button>`;
+    return `<button class="date-pill ${active?'active':''} ${istoday?'today':''}" data-action="choose-date" data-date="${key}"><span class="date-day">${istoday?'TODAY':day}</span><strong>${d.toLocaleDateString('en-IN',{month:'short',day:'numeric'})}</strong></button>`;
   }).join('');
 }
 function renderTimeline() {
@@ -335,18 +335,18 @@ function renderDiet(log,totals) {
   return `<div class="section-title-row" style="margin-top:2px"><h3>Today’s plate</h3><span class="meal-meta">${itemsCount(log)} items logged</span></div>
     ${meals}
     <div class="nutri-summary">
-      <div class="micro-card"><div class="micro-label">CARBS</div><div class="micro-value">${fmt(totals.carbs,1)}<span style="font-size:10px">g</span></div><div class="micro-unit">of daily intake</div></div>
-      <div class="micro-card"><div class="micro-label">FAT</div><div class="micro-value">${fmt(totals.fat,1)}<span style="font-size:10px">g</span></div><div class="micro-unit">of daily intake</div></div>
-      <div class="micro-card"><div class="micro-label">FIBER</div><div class="micro-value">${fmt(totals.fiber,1)}<span style="font-size:10px">g</span></div><div class="micro-unit">of daily intake</div></div>
+      <div class="micro-card"><div class="micro-label">CARBS</div><div class="micro-value">${fmt(totals.carbs,1)}<span style="font-size:var(--fs-cap)">g</span></div><div class="micro-unit">of daily intake</div></div>
+      <div class="micro-card"><div class="micro-label">FAT</div><div class="micro-value">${fmt(totals.fat,1)}<span style="font-size:var(--fs-cap)">g</span></div><div class="micro-unit">of daily intake</div></div>
+      <div class="micro-card"><div class="micro-label">FIBER</div><div class="micro-value">${fmt(totals.fiber,1)}<span style="font-size:var(--fs-cap)">g</span></div><div class="micro-unit">of daily intake</div></div>
     </div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin:13px 2px 0;color:#94a097;font-size:9px"><span>✳ Estimates marked with * are approximate</span><button class="muted-link" data-action="open-food">＋ Log food</button></div>`;
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:13px 2px 0;color:#94a097;font-size:var(--fs-cap)"><span>✳ Estimates marked with * are approximate</span><button class="muted-link" data-action="open-food">＋ Log food</button></div>`;
 }
 function renderWorkout(log,totals) {
   const workout=log.workout_log;
   const history=(log.workout_history||[]).reduce((sum,s)=>sum+s.exercises.length,0);
   if(!workout) {
     const completed=(log.workout_history||[]).slice().reverse();
-    const historyMarkup=completed.map(session=>`<article class="exercise-card"><div class="exercise-card-header"><div class="exercise-icon">✅</div><div class="exercise-main"><div class="exercise-name">Session complete</div><div class="exercise-meta">${session.end_time?timeLabel(session.end_time):'Finished'} · ${fmt(session.duration_minutes||0,1)} min</div></div><span class="exercise-state done">SAVED</span></div><div class="exercise-start-row"><div class="exercise-stats">${(session.exercises||[]).length} exercises · ${(session.exercises||[]).reduce((sum,ex)=>sum+ex.sets.filter(st=>st.completed).length,0)} sets completed</div><strong style="font-size:11px;color:#637b50">${fmt(session.total_calories_burned)} kcal</strong></div><div style="font-size:10px;color:#8d9a90;margin-top:8px">${(session.exercises||[]).map(ex=>safe(ex.name)).join(' · ')}</div></article>`).join('');
+    const historyMarkup=completed.map(session=>`<article class="exercise-card"><div class="exercise-card-header"><div class="exercise-icon">✅</div><div class="exercise-main"><div class="exercise-name">Session complete</div><div class="exercise-meta">${session.end_time?timeLabel(session.end_time):'Finished'} · ${fmt(session.duration_minutes||0,1)} min</div></div><span class="exercise-state done">SAVED</span></div><div class="exercise-start-row"><div class="exercise-stats">${(session.exercises||[]).length} exercises · ${(session.exercises||[]).reduce((sum,ex)=>sum+ex.sets.filter(st=>st.completed).length,0)} sets completed</div><strong style="font-size:var(--fs-sm);color:#637b50">${fmt(session.total_calories_burned)} kcal</strong></div><div style="font-size:var(--fs-cap);color:#8d9a90;margin-top:8px">${(session.exercises||[]).map(ex=>safe(ex.name)).join(' · ')}</div></article>`).join('');
     return `<section class="workout-hero"><div><div class="eyebrow">${completed.length?'NICE WORK':'READY WHEN YOU ARE'}</div><h2>${completed.length?'Session in the books.':'Build your session.'}</h2><p>${completed.length?'Make today’s effort your next baseline.':'Log sets. Track progress. Keep it moving.'}</p></div><button class="primary-button" data-action="add-exercise">＋ EXERCISE</button></section>
       ${completed.length?`<div class="section-title-row"><h3>Completed today</h3><span class="meal-meta">${completed.length} session${completed.length===1?'':'s'}</span></div>${historyMarkup}`:`<section class="workout-empty"><div class="empty-graphic">🏋️</div><h3>Nothing logged yet</h3><p>Add an exercise to set your reps, starting weight and progression. Your rest timer will take it from there.</p><button class="primary-button" data-action="add-exercise">＋ Add first exercise</button></section>`}`;
   }
@@ -360,7 +360,7 @@ function renderWorkout(log,totals) {
     ${exerciseCards}
     <div class="session-summary"><div><strong>${doneSets}/${allSets}</strong><span>SETS DONE</span></div><div><strong>${calcVolume(workout)}</strong><span>VOLUME · KG</span></div><div><strong>${fmt(totals.burned)}</strong><span>KCAL BURNED TODAY</span></div></div>
     ${isStarted?`<button class="finish-button" data-action="finish-session">⏹ FINISH SESSION & CALCULATE CALORIES</button>`:''}
-    <div style="font-size:9px;color:#98a499;text-align:center;margin:13px 0 0;line-height:1.5">Session calories use available MET values × body weight × elapsed hours. Imported exercises without a verified MET value are not assigned a fabricated value.</div>`;
+    <div style="font-size:var(--fs-cap);color:#98a499;text-align:center;margin:13px 0 0;line-height:1.5">Session calories use available MET values × body weight × elapsed hours. Imported exercises without a verified MET value are not assigned a fabricated value.</div>`;
 }
 function durationLabel(ms) { const mins=Math.max(0,Math.floor(ms/60000)); return mins>=60?`${Math.floor(mins/60)}h ${mins%60}m`:`${mins} min`; }
 function calcVolume(workout) { return fmt((workout.exercises||[]).reduce((sum,ex)=>sum+ex.sets.reduce((s,set)=>s+n(set.weight)*n(set.reps)*(set.completed?1:0),0),0)); }
@@ -383,11 +383,11 @@ function renderWater(log,totals) {
   const sorted=[...(log.water_log||[])].sort((a,b)=>String(b.timestamp).localeCompare(String(a.timestamp)));
   const visible=expandedWaterLog?sorted:sorted.slice(0,3);
   const waterRows=visible.map(item=>`<div class="water-log-row"><div class="water-log-icon">💧</div><div class="water-log-info"><strong>${fmt(item.amount_ml)} ml</strong><span>${timeLabel(item.timestamp)} · ${new Date(item.timestamp).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</span></div><strong class="water-log-amount">+${fmt(item.amount_ml)} ml</strong><div class="water-entry-actions"><button class="mini-icon" data-action="edit-water" data-id="${safe(item.entry_id||item.timestamp)}" aria-label="Edit water entry">✎</button><button class="mini-icon" data-action="delete-water" data-id="${safe(item.entry_id||item.timestamp)}" aria-label="Delete water entry">×</button></div></div>`).join('');
-  return `${quick}<section class="water-hero"><div class="water-hero-top"><div><div class="eyebrow">YOUR HYDRATION GOAL</div><h2>Stay in flow.</h2><p>${percentage>=100?'Goal reached. Keep listening to your body.':`${fmt(Math.max(0,state.profile.waterTarget-totals.water))} ml to go today`}</p></div><button class="water-big-number" data-action="toggle-water-log" aria-label="Manage water entries">${fmt(totals.water)}<span> ml</span></button></div><div class="water-progress"><div style="width:${percentage}%"></div></div><div style="display:flex;justify-content:space-between;margin-top:8px;position:relative;z-index:1;color:#6694a2;font-size:9px"><span>${fmt(percentage)}% completed</span><span>Goal ${fmt(state.profile.waterTarget)} ml</span></div></section>
+  return `${quick}<section class="water-hero"><div class="water-hero-top"><div><div class="eyebrow">YOUR HYDRATION GOAL</div><h2>Stay in flow.</h2><p>${percentage>=100?'Goal reached. Keep listening to your body.':`${fmt(Math.max(0,state.profile.waterTarget-totals.water))} ml to go today`}</p></div><button class="water-big-number" data-action="toggle-water-log" aria-label="Manage water entries">${fmt(totals.water)}<span> ml</span></button></div><div class="water-progress"><div style="width:${percentage}%"></div></div><div style="display:flex;justify-content:space-between;margin-top:8px;position:relative;z-index:1;color:#6694a2;font-size:var(--fs-cap)"><span>${fmt(percentage)}% completed</span><span>Goal ${fmt(state.profile.waterTarget)} ml</span></div></section>
     <div class="section-title-row"><h3>Water timeline</h3><button class="muted-link" data-action="toggle-water-log">${expandedWaterLog?'Show recent':'Manage all entries'}</button></div>
     <div class="water-log-list">${waterRows||'<div class="empty-state"><div class="empty-icon">💦</div>Your first glass is one tap away.</div>'}</div>
     ${!expandedWaterLog&&sorted.length>3?`<button class="outline-button" style="width:100%;margin-top:8px" data-action="toggle-water-log">View all ${sorted.length} entries</button>`:''}
-    <div style="font-size:9px;color:#98a499;text-align:center;margin:17px 0 0">Water entries are editable and deletable. Changes remain local until sync.</div>`;
+    <div style="font-size:var(--fs-cap);color:#98a499;text-align:center;margin:17px 0 0">Water entries are editable and deletable. Changes remain local until sync.</div>`;
 }
 function periodDates() {
   if(analyticsPeriod==='daily') return [state.activeDate];
@@ -567,7 +567,7 @@ function selectFoodInPicker(foodId) {
   const food=findFood(foodId);if(!food)return;activeFoodSelection=foodId;
   const amount=$('foodAmount');if(amount)amount.value=defaultFoodAmount(food);
   const unitSelect=$('foodUnit');if(unitSelect){unitSelect.innerHTML=foodUnits(food).map(u=>`<option value="${safe(u)}">${safe(u)}</option>`).join('');unitSelect.value=foodAmountUnit(food);}
-  const detail=$('selectedFoodDetail');if(detail){const macros=foodMacros(food,defaultFoodAmount(food),foodAmountUnit(food));detail.innerHTML=`<div class="selected-food"><span class="result-icon">${nutritionEmoji(food)}</span><div style="flex:1"><strong class="selected-food-name">${safe(food.name)}</strong><small>${fmt(macros.calories)} kcal · P ${fmt(macros.protein,1)}g · C ${fmt(macros.carbs,1)}g · F ${fmt(macros.fat,1)}g</small></div><span style="font-size:9px;font-weight:800;color:#65864b">SELECTED</span></div>`;}
+  const detail=$('selectedFoodDetail');if(detail){const macros=foodMacros(food,defaultFoodAmount(food),foodAmountUnit(food));detail.innerHTML=`<div class="selected-food"><span class="result-icon">${nutritionEmoji(food)}</span><div style="flex:1"><strong class="selected-food-name">${safe(food.name)}</strong><small>${fmt(macros.calories)} kcal · P ${fmt(macros.protein,1)}g · C ${fmt(macros.carbs,1)}g · F ${fmt(macros.fat,1)}g</small></div><span style="font-size:var(--fs-cap);font-weight:800;color:#65864b">SELECTED</span></div>`;}
   const search=$('foodSearch');if(search&&search.value.trim())renderFoodResults(search.value);else renderFoodResults('');
   updateSelectedFoodPreview();
 }
