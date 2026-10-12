@@ -4,11 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-title" content="Timely Fit" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="theme-color" content="#101b17" />
   <meta name="description" content="A local-first fitness, nutrition and hydration tracker." />
-  <title>Timely Fit — Daily health, in rhythm</title>
+  <title>Forma — Daily health, in rhythm</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="styles.css" />
@@ -18,18 +17,19 @@
     <div class="auth-card">
       <div class="auth-brand">
         <div class="brand-mark"><span></span><span></span><span></span></div>
-        <div><div class="brand-name">Timely Fit<span class="brand-period">.</span></div></div>
+        <div><div class="brand-name">forma<span class="brand-period">.</span></div><div class="brand-caption">YOUR DAILY RHYTHM</div></div>
       </div>
       <div class="auth-intro">
-        <h1 id="authHeading">Welcome to Timely Fit</h1>
-        <p>Sign in to sync your logs across devices.</p>
+        <div class="eyebrow">YOUR PERSONAL HEALTH SPACE</div>
+        <h1 id="authHeading">Welcome to Forma</h1>
+        <p>Sign in to access your timeline, targets and synced history. Your account keeps your logs private.</p>
       </div>
       <div id="authSetupNotice" class="auth-notice hidden" role="status">
-        <strong>Sign-in is not set up yet</strong>
-        <span>Add your Supabase URL and publishable key to <code>supabase-config.js</code>.</span>
+        <strong>Authentication needs setup</strong>
+        <span>Add your Supabase project URL and publishable key to <code>supabase-config.js</code>. Never put a secret or service-role key in this browser app.</span>
       </div>
       <button type="button" class="auth-google-btn" data-action="auth-google"><span class="google-g">G</span>Continue with Google</button>
-      <div class="auth-divider"><span>or</span></div>
+      <div class="auth-divider"><span>or continue with email</span></div>
       <div class="auth-fields">
         <label class="field"><span>EMAIL</span><input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com" required /></label>
         <label class="field"><span>PASSWORD</span><input id="authPassword" type="password" autocomplete="current-password" minlength="8" placeholder="At least 8 characters" required /></label>
@@ -39,13 +39,14 @@
         <button type="button" class="auth-secondary" data-action="auth-signup">Create account</button>
       </div>
       <button type="button" class="auth-link" data-action="auth-reset">Forgot password?</button>
+      <p class="auth-footnote">By continuing, you agree to use this account for your own fitness and nutrition records. Forma will not load the main app until you are signed in.</p>
     </div>
   </section>
   <div class="app-shell hidden" id="appShell">
     <header class="app-header">
       <div class="brand-lockup">
         <div class="brand-mark"><span></span><span></span><span></span></div>
-        <div><div class="brand-name">Timely Fit<span class="brand-period">.</span></div></div>
+        <div><div class="brand-name">forma<span class="brand-period">.</span></div><div class="brand-caption">YOUR DAILY RHYTHM</div></div>
       </div>
       <div class="header-actions">
         <div class="sync-status" id="syncStatus"><span class="sync-dot"></span><span>Saved locally</span></div>

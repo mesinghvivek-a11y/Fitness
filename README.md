@@ -1,6 +1,6 @@
-# Timely Fit — offline-first fitness, nutrition and hydration PWA
+# Forma — offline-first fitness, nutrition and hydration PWA
 
-Timely Fit is a lightweight mobile-first Progressive Web App for meal logging, recipe macro calculation, progressive-overload workouts, hydration events, and date-range dashboard analytics. The current version uses plain HTML/CSS/JavaScript instead of a React/Next.js build, so it can be hosted as static files while the core experience is validated.
+Forma is a lightweight mobile-first Progressive Web App for meal logging, recipe macro calculation, progressive-overload workouts, hydration events, and date-range dashboard analytics. The current version uses plain HTML/CSS/JavaScript instead of a React/Next.js build, so it can be hosted as static files while the core experience is validated.
 
 ## Run locally
 
@@ -16,7 +16,7 @@ Open `http://localhost:8000`. For phone tests on your LAN, use your computer's l
 
 - `index.html`, `styles.css`, `app.js` — app shell, responsive UI, app logic and analytics.
 - `foods.json` — 227 seeded food, liquid ingredient and cooked-meal entries.
-- `exercises.json` — 1,443 searchable movements: the 1,324-record upstream metadata dataset merged with Timely Fit-only entries. Exercise metadata is kept lightweight with a short description, body part, target muscles, equipment, rest defaults and tracking metrics.
+- `exercises.json` — 1,443 searchable movements: the 1,324-record upstream metadata dataset merged with Forma-only entries. Exercise metadata is kept lightweight with a short description, body part, target muscles, equipment, rest defaults and tracking metrics.
 - `supabase-config.js` — public project URL and publishable-key placeholders.
 - `supabase-schema.sql` — Supabase user profile, daily log and custom-food tables plus owner-only RLS policies.
 - `manifest.json`, `icon.svg`, `sw.js` — PWA install metadata, icon and offline shell cache.
@@ -62,12 +62,12 @@ The seeded catalogues are intentionally useful starter libraries, not a complete
 
 ### 2. Enable Google sign-in
 
-1. Open [Google Cloud Console](https://console.cloud.google.com/), choose or create a project, and open **Google Auth Platform**. Complete the app name, support email, audience, and consent-screen branding. For basic sign-in Timely Fit requests the standard identity/email/profile scopes; do not add extra scopes it does not need.
+1. Open [Google Cloud Console](https://console.cloud.google.com/), choose or create a project, and open **Google Auth Platform**. Complete the app name, support email, audience, and consent-screen branding. For basic sign-in Forma requests the standard identity/email/profile scopes; do not add extra scopes it does not need.
 2. Open **Clients → Create client → OAuth client ID → Web application**.
 3. Add your hosted app's origin under **Authorized JavaScript origins**, such as `https://YOUR_ACCOUNT.github.io`. For local testing, add `http://localhost:8000` (and remove or keep it restricted when finished).
 4. Under **Authorized redirect URIs**, add the callback URL shown on Supabase's **Authentication → Sign In / Providers → Google** page. It typically resembles `https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback`; use the exact URL supplied by Supabase.
 5. Create the OAuth client and copy the Google **Client ID** and **Client Secret** into the Supabase Google provider settings. Enable Google and save.
-6. Return to Timely Fit and test **Continue with Google**. Also test the OAuth redirect on your deployed HTTPS URL, not only localhost.
+6. Return to Forma and test **Continue with Google**. Also test the OAuth redirect on your deployed HTTPS URL, not only localhost.
 
 **Security distinction:** there are two different credential types here. The Supabase Project URL + publishable key belong in `supabase-config.js`. The Google OAuth Client Secret belongs in the Supabase dashboard's Google provider configuration only. Do not put that Google Client Secret, a Supabase `sb_secret_...` key, or a legacy `service_role` key in this repository, browser JavaScript, HTML, or GitHub Pages. This static browser app does not need a Supabase secret key.
 
@@ -75,7 +75,7 @@ Email/password accounts can be enabled in **Authentication → Sign In / Provide
 
 ## Low-cost database architecture
 
-Timely Fit is local-first by design:
+Forma is local-first by design:
 
 - **Search requests: zero Supabase database reads.** `foods.json` and `exercises.json` are fetched and cached in IndexedDB. Typing `D`, `DE`, `DEA`, `DEAD` or `PA`, `PAN`, `PANEER` searches local data only; no query is sent for each keypress.
 - **Timeline, dates and charts: local reads.** Switching dates, ticking a set, correcting a water amount, or editing a food entry updates the local state and IndexedDB, not a cloud query.
@@ -115,14 +115,8 @@ No architecture can guarantee that usage will stay inside the Free tier under ev
 
 ## Expanded exercise catalogue and demonstration media
 
-- The exercise metadata was imported from [hasaneyldrm/exercises-dataset](https://github.com/hasaneyldrm/exercises-dataset). Upstream data includes exercise name, body part/category, equipment, target/synergist muscles and multilingual instruction text. Timely Fit keeps one concise English sentence in `description`; it does not expose the long step-by-step text in its exercise card.
-- The import preserves upstream IDs in `source_id`. Exact-name matches keep Timely Fit's earlier IDs to avoid breaking existing workout references. New IDs use the `ed_` prefix. `source_dataset`, `source_id`, source category, media paths and attribution remain available for provenance.
-- `image` and `gif_url` are preconfigured to relative paths under `exercise-media/`. **The GIF and thumbnail files are intentionally not included in this bundle.** The upstream repository's MIT licence covers its metadata/instruction text, but explicitly excludes Gym Visual media. Before using those image/GIF assets publicly, obtain the applicable media permission/licence. Once licensed files have been placed at the matching paths, set the corresponding record's `media_status` to `licensed`; the thumbnail and animated detail modal will load them. Until then, Timely Fit shows a placeholder and concise exercise details.
-- Imported exercises have `met_value: null` unless an exact-name match already had a known Timely Fit value. Session calorie calculations ignore missing MET values rather than fabricating precision. A future data-review phase can populate METs from a trusted activity reference.
+- The exercise metadata was imported from [hasaneyldrm/exercises-dataset](https://github.com/hasaneyldrm/exercises-dataset). Upstream data includes exercise name, body part/category, equipment, target/synergist muscles and multilingual instruction text. Forma keeps one concise English sentence in `description`; it does not expose the long step-by-step text in its exercise card.
+- The import preserves upstream IDs in `source_id`. Exact-name matches keep Forma's earlier IDs to avoid breaking existing workout references. New IDs use the `ed_` prefix. `source_dataset`, `source_id`, source category, media paths and attribution remain available for provenance.
+- `image` and `gif_url` are preconfigured to relative paths under `exercise-media/`. **The GIF and thumbnail files are intentionally not included in this bundle.** The upstream repository's MIT licence covers its metadata/instruction text, but explicitly excludes Gym Visual media. Before using those image/GIF assets publicly, obtain the applicable media permission/licence. Once licensed files have been placed at the matching paths, set the corresponding record's `media_status` to `licensed`; the thumbnail and animated detail modal will load them. Until then, Forma shows a placeholder and concise exercise details.
+- Imported exercises have `met_value: null` unless an exact-name match already had a known Forma value. Session calorie calculations ignore missing MET values rather than fabricating precision. A future data-review phase can populate METs from a trusted activity reference.
 - `EXERCISE-DATA-LICENSE.md` records the metadata licence and media caveat. Retain this file when redistributing the exercise catalogue.
-
-## V3 notes
-
-- **Search:** exercise search matches the name first, then exercises that train the searched muscle (for example "chest" also lists pec work without "chest" in its name), then exercises that use it as a secondary muscle. Food search matches every word in any order.
-- **Exercise fields:** each exercise decides which fields it needs. Weighted exercises ask for sets, reps and kg. Body-weight exercises ask for sets and reps. Timed and cardio exercises ask for sets and minutes.
-- **Food images:** add an `"image"` path to any item in `foods.json` (for example `"image": "food-media/images/paneer.jpg"`). It then shows in the food list, the picker and the timeline. Items without an image keep their icon.
