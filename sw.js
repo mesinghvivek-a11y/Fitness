@@ -1,4 +1,4 @@
-const CACHE_NAME = 'timely-fit-shell-v6-session-cleanup-food-meal-wheel-touch';
+const CACHE_NAME = 'timely-fit-shell-v5-0';
 const SUPABASE_SDK_URL = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
 const SHELL = ['./', './index.html', './styles.css', './app.js', './manifest.json', './icon.svg', './foods.json', './exercises.json', './supabase-config.js', './viewport-lock.js'];
 self.addEventListener('install', event => {
@@ -36,6 +36,8 @@ self.addEventListener('fetch', event => {
     }).catch(() => caches.match(event.request)));
     return;
   }
+  // Exercise GIFs are large and many; always load them from the network so they never fill the phone's storage.
+  if (requestURL.pathname.includes('/exercise-media/videos/')) return;
   event.respondWith(caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
     if (response.ok) {
       const copy = response.clone();

@@ -1,20 +1,13 @@
 {
   "id": "/",
-  "name": "Timely Fit \u2014 Fitness, Food & Hydration",
+  "name": "Timely Fit — Fitness, Food & Water",
   "short_name": "Timely Fit",
-  "description": "A local-first fitness, nutrition and hydration tracker.",
+  "description": "A local-first daily health tracker.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#f6f7f2",
   "theme_color": "#101b17",
-  "icons": [
-    {
-      "src": "icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    }
-  ]
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
 }

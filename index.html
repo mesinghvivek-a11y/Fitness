@@ -2,35 +2,72 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
+  <script>try{var t=localStorage.getItem("timelyfit_theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Timely Fit" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="theme-color" content="#101b17" />
-  <meta name="description" content="Timely Fit is a local-first fitness, nutrition and hydration tracker." />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#f4f6f1" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0b100d" media="(prefers-color-scheme: dark)" />
+  <meta name="description" content="A local-first fitness, nutrition and hydration tracker." />
   <title>Timely Fit — Daily health, in rhythm</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <section id="authGate" class="auth-gate" aria-labelledby="authHeading">
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m20 6-11 11-5-5"/></symbol>
+    <symbol id="i-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/></symbol>
+    <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+    <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+    <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1.5 14h5M9.5 8h5M17.5 16h5"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="17" rx="3.5"/><path d="M16 2.5v4M8 2.5v4M3 10h18"/></symbol>
+    <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.8v14.4a1 1 0 0 0 1.5.9l11.2-7.2a1 1 0 0 0 0-1.8L8.5 3.9A1 1 0 0 0 7 4.8Z"/></symbol>
+    <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2.5"/></symbol>
+    <symbol id="i-timer" viewBox="0 0 24 24"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.5 1.5M9.5 2.5h5"/></symbol>
+    <symbol id="i-droplet" viewBox="0 0 24 24"><path d="M12 2.8S5.5 9.8 5.5 14.5a6.5 6.5 0 0 0 13 0C18.5 9.8 12 2.8 12 2.8Z"/></symbol>
+    <symbol id="i-cup" viewBox="0 0 24 24"><path d="M6 3h12l-1.3 16.2a2 2 0 0 1-2 1.8H9.3a2 2 0 0 1-2-1.8L6 3ZM6.6 10h10.8"/></symbol>
+    <symbol id="i-dumbbell" viewBox="0 0 24 24"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/></symbol>
+    <symbol id="i-utensils" viewBox="0 0 24 24"><path d="M4 3v7a2.5 2.5 0 0 0 5 0V3M6.5 3v18M19 21V3c-2.7 1-4.2 4-4.2 7.2 0 2 1.2 3 4.2 3"/></symbol>
+    <symbol id="i-layout" viewBox="0 0 24 24"><rect x="3" y="3" width="7.5" height="10" rx="2"/><rect x="13.5" y="3" width="7.5" height="5.5" rx="2"/><rect x="13.5" y="11.5" width="7.5" height="9.5" rx="2"/><rect x="3" y="16" width="7.5" height="5" rx="2"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/></symbol>
+    <symbol id="i-sunrise" viewBox="0 0 24 24"><path d="M12 3v4M4.9 7.9l2.6 2.6M19.1 7.9l-2.6 2.6M2 18h3M19 18h3M22 21.5H2M16.5 18a4.5 4.5 0 0 0-9 0"/></symbol>
+    <symbol id="i-bowl" viewBox="0 0 24 24"><path d="M3 11h18a9 9 0 0 1-18 0ZM8.5 21h7M8 7c0-1.6 1.2-2.7 2.6-3M13 7.5c0-1.5.9-2.5 2.2-3"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.5 13.8A8.5 8.5 0 1 1 10.2 3.5a6.6 6.6 0 0 0 10.3 10.3Z"/></symbol>
+    <symbol id="i-apple" viewBox="0 0 24 24"><path d="M12 7.5C10.5 5.6 8 5.6 6.4 7.2 4 9.6 4.6 15 7 18.2c1.3 1.6 2.8 2.2 5 1 2.2 1.2 3.7.6 5-1 2.4-3.2 3-8.6.6-11-1.6-1.6-4.1-1.6-5.6.3ZM12 7.5c0-2 1-3.5 3-4.5"/></symbol>
+    <symbol id="i-sync" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16M3 12a9 9 0 0 1 15.5-6.2L21 8M21 3v5h-5M3 21v-5h5"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12M7 10.5l5 5 5-5M4 21h16"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="12" cy="19" r="1.3"/></symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 8v8M11 8v8M15 8v8M18 8v8"/></symbol>
+    <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z"/></symbol>
+    <symbol id="i-swap" viewBox="0 0 24 24"><path d="M7 4 3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></symbol>
+    <symbol id="i-list-x" viewBox="0 0 24 24"><path d="M3 6h12M3 12h8M3 18h12M16 14l5 5M21 14l-5 5"/></symbol>
+  </defs></svg>
+    <section id="authGate" class="auth-gate" aria-labelledby="authHeading">
     <div class="auth-card">
       <div class="auth-brand">
         <div class="brand-mark"><span></span><span></span><span></span></div>
-        <div><div class="brand-name">Timely Fit<span class="brand-period">.</span></div><div class="brand-caption">YOUR DAILY RHYTHM</div></div>
+        <div><div class="brand-name">Timely Fit<span class="brand-period">.</span></div></div>
       </div>
       <div class="auth-intro">
-        <div class="eyebrow">YOUR PERSONAL HEALTH SPACE</div>
         <h1 id="authHeading">Welcome to Timely Fit</h1>
-        <p>Sign in to access your timeline, targets and synced history. Your account keeps your logs private.</p>
+        <p>Sign in to sync your logs across devices.</p>
       </div>
       <div id="authSetupNotice" class="auth-notice hidden" role="status">
-        <strong>Authentication needs setup</strong>
-        <span>Add your Supabase project URL and publishable key to <code>supabase-config.js</code>. Never put a secret or service-role key in this browser app.</span>
+        <strong>Sign-in is not set up yet</strong>
+        <span>Add your Supabase URL and publishable key to <code>supabase-config.js</code>.</span>
       </div>
-      <button type="button" class="auth-local-btn hidden" data-action="local-only">Continue on this device <span>Local storage · no cloud sync</span></button>
       <button type="button" class="auth-google-btn" data-action="auth-google"><span class="google-g">G</span>Continue with Google</button>
-      <div class="auth-divider"><span>or continue with email</span></div>
+      <div class="auth-divider"><span>or</span></div>
       <div class="auth-fields">
         <label class="field"><span>EMAIL</span><input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com" required /></label>
         <label class="field"><span>PASSWORD</span><input id="authPassword" type="password" autocomplete="current-password" minlength="8" placeholder="At least 8 characters" required /></label>
@@ -40,40 +77,39 @@
         <button type="button" class="auth-secondary" data-action="auth-signup">Create account</button>
       </div>
       <button type="button" class="auth-link" data-action="auth-reset">Forgot password?</button>
-      <p class="auth-footnote">Use an account for cloud sync across devices, or choose “Continue on this device” when Supabase is not configured. Local-only data stays in this browser and is not synced.</p>
     </div>
   </section>
   <div class="app-shell hidden" id="appShell">
     <header class="app-header">
       <div class="brand-lockup">
         <div class="brand-mark"><span></span><span></span><span></span></div>
-        <div><div class="brand-name">Timely Fit<span class="brand-period">.</span></div><div class="brand-caption">YOUR DAILY RHYTHM</div></div>
+        <div><div class="brand-name">Timely Fit<span class="brand-period">.</span></div></div>
       </div>
       <div class="header-actions">
         <div class="sync-status" id="syncStatus"><span class="sync-dot"></span><span>Saved locally</span></div>
-        <button class="icon-button" id="settingsButton" aria-label="Open settings" title="Targets & settings">⚙</button>
+        <button class="icon-button" id="settingsButton" aria-label="Open settings" title="Targets & settings"><svg class="i" aria-hidden="true"><use href="#i-sliders"/></svg></button>
       </div>
     </header>
 
     <div class="domain-tabs" role="tablist" aria-label="Tracking domain">
-      <button class="domain-tab active" data-action="domain" data-value="diet" data-domain="diet"><span class="domain-emoji">🍎</span><span>Diet</span></button>
-      <button class="domain-tab" data-action="domain" data-value="workout" data-domain="workout"><span class="domain-emoji">🏋️</span><span>Workout</span></button>
-      <button class="domain-tab" data-action="domain" data-value="water" data-domain="water"><span class="domain-emoji">💧</span><span>Hydration</span></button>
+      <button class="domain-tab active" data-action="domain" data-value="diet" data-domain="diet"><span class="domain-emoji"><svg class="i" aria-hidden="true"><use href="#i-utensils"/></svg></span><span>Diet</span></button>
+      <button class="domain-tab" data-action="domain" data-value="workout" data-domain="workout"><span class="domain-emoji"><svg class="i" aria-hidden="true"><use href="#i-dumbbell"/></svg></span><span>Workout</span></button>
+      <button class="domain-tab" data-action="domain" data-value="water" data-domain="water"><span class="domain-emoji"><svg class="i" aria-hidden="true"><use href="#i-droplet"/></svg></span><span>Water</span></button>
     </div>
 
     <section class="date-strip" aria-label="Choose date">
-      <button class="date-arrow" id="prevDate" aria-label="Previous day">‹</button>
+      <button class="date-arrow" id="prevDate" aria-label="Previous day"><svg class="i" aria-hidden="true"><use href="#i-chevron-left"/></svg></button>
       <div class="date-options" id="dateOptions"></div>
-      <button class="date-arrow" id="nextDate" aria-label="Next day">›</button>
-      <label class="calendar-button" aria-label="Pick a date">▦<input type="date" id="datePicker" /></label>
+      <button class="date-arrow" id="nextDate" aria-label="Next day"><svg class="i" aria-hidden="true"><use href="#i-chevron-right"/></svg></button>
+      <label class="calendar-button" aria-label="Pick a date"><svg class="i" aria-hidden="true"><use href="#i-calendar"/></svg><input type="date" id="datePicker" /></label>
     </section>
 
     <main id="mainContent" class="main-content" aria-live="polite"></main>
 
     <nav class="bottom-nav" aria-label="Main navigation">
-      <button class="bottom-tab" data-action="tab" data-tab="dashboard"><span class="bottom-icon">▥</span><span>Dashboard</span></button>
-      <button class="center-add" id="globalAdd" aria-label="Add entry"><span>＋</span></button>
-      <button class="bottom-tab active" data-action="tab" data-tab="timeline"><span class="bottom-icon">◷</span><span>Timeline</span></button>
+      <button class="bottom-tab" data-action="tab" data-tab="dashboard"><span class="bottom-icon"><svg class="i" aria-hidden="true"><use href="#i-layout"/></svg></span><span>Dashboard</span></button>
+      <button class="center-add" id="globalAdd" aria-label="Add entry"><span><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></span></button>
+      <button class="bottom-tab active" data-action="tab" data-tab="timeline"><span class="bottom-icon"><svg class="i" aria-hidden="true"><use href="#i-clock"/></svg></span><span>Timeline</span></button>
     </nav>
     <div class="safe-area"></div>
   </div>
