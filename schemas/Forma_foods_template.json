@@ -1,0 +1,155 @@
+[
+  {
+    "id": "example_food_oats",
+    "name": "Rolled Oats (Dry) — TEMPLATE EXAMPLE",
+    "type": "raw_ingredient",
+    "serving_unit": "g",
+    "default_serving_size": 40,
+    "macros_per_100g": {
+      "calories": 389,
+      "protein": 16.9,
+      "carbs": 66.3,
+      "fat": 6.9,
+      "fiber": 10.6
+    },
+    "tags": [
+      "grains-cereals",
+      "breakfast",
+      "example"
+    ],
+    "category": "Grains & Cereals",
+    "data_source": "TEMPLATE EXAMPLE — replace with your verified source",
+    "data_quality": "Example values for showing the file structure only",
+    "nutrient_fields_available": [
+      "calories",
+      "protein",
+      "carbs",
+      "fat",
+      "fiber"
+    ],
+    "fiber_data_available": true
+  },
+  {
+    "id": "example_food_skimmed_milk",
+    "name": "Milk (Skimmed) — TEMPLATE EXAMPLE",
+    "type": "raw_ingredient",
+    "serving_unit": "ml",
+    "default_serving_size": 200,
+    "macros_per_100ml": {
+      "calories": 34,
+      "protein": 3.4,
+      "carbs": 5,
+      "fat": 0.1,
+      "fiber": 0
+    },
+    "tags": [
+      "vegetarian",
+      "dairy-liquid",
+      "example"
+    ],
+    "category": "Dairy",
+    "data_source": "TEMPLATE EXAMPLE — replace with your verified source",
+    "data_quality": "Example values for showing the file structure only",
+    "nutrient_fields_available": [
+      "calories",
+      "protein",
+      "carbs",
+      "fat",
+      "fiber"
+    ],
+    "fiber_data_available": true
+  },
+  {
+    "id": "example_food_cooked_rice",
+    "name": "Rice (Cooked) — TEMPLATE EXAMPLE",
+    "type": "standard_estimate",
+    "serving_unit": "g",
+    "default_serving_size": 150,
+    "macros_per_serving": {
+      "calories": 195,
+      "protein": 4,
+      "carbs": 42.5,
+      "fat": 0.4,
+      "fiber": 0.6
+    },
+    "tags": [
+      "vegetarian",
+      "cooked",
+      "estimate",
+      "example"
+    ],
+    "category": "Grains & Cereals",
+    "data_source": "TEMPLATE EXAMPLE — replace with your verified source",
+    "data_quality": "Example values for showing the file structure only",
+    "nutrient_fields_available": [
+      "calories",
+      "protein",
+      "carbs",
+      "fat",
+      "fiber"
+    ],
+    "fiber_data_available": true
+  },
+  {
+    "id": "example_recipe_oats_milk",
+    "name": "Oats with Milk — TEMPLATE EXAMPLE",
+    "type": "custom_recipe",
+    "serving_unit": "serving",
+    "default_serving_size": 1,
+    "macros_per_serving": {
+      "calories": 223.6,
+      "protein": 13.56,
+      "carbs": 36.52,
+      "fat": 2.96,
+      "fiber": 4.24
+    },
+    "tags": [
+      "custom",
+      "recipe",
+      "vegetarian",
+      "example"
+    ],
+    "category": "Recipes",
+    "data_source": "TEMPLATE EXAMPLE — calculated from example ingredients",
+    "data_quality": "TEMPLATE EXAMPLE — replace or verify all nutrient and ingredient values",
+    "nutrient_fields_available": [
+      "calories",
+      "protein",
+      "carbs",
+      "fat",
+      "fiber"
+    ],
+    "fiber_data_available": true,
+    "recipe_ingredients": [
+      {
+        "food_id": "example_food_oats",
+        "name": "Rolled Oats (Dry) — TEMPLATE EXAMPLE",
+        "amount": 40,
+        "unit": "g",
+        "macros": {
+          "calories": 155.6,
+          "protein": 6.76,
+          "carbs": 26.52,
+          "fat": 2.76,
+          "fiber": 4.24
+        }
+      },
+      {
+        "food_id": "example_food_skimmed_milk",
+        "name": "Milk (Skimmed) — TEMPLATE EXAMPLE",
+        "amount": 200,
+        "unit": "ml",
+        "macros": {
+          "calories": 68,
+          "protein": 6.8,
+          "carbs": 10,
+          "fat": 0.2,
+          "fiber": 0
+        }
+      }
+    ],
+    "yield": 1,
+    "created_at": "2026-10-12T00:00:00.000Z",
+    "updated_at": "2026-10-12T00:00:00.000Z"
+  }
+]

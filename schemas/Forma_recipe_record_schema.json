@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://forma.example/schemas/recipe-record.schema.json",
+  "title": "Forma Runtime Recipe Record Example",
+  "description": "Validates a single Forma custom_recipe runtime record. It can be included as an entry in the top-level foods.json array for preloaded recipes, or be saved in a user’s custom recipe state.",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "type",
+    "serving_unit",
+    "default_serving_size",
+    "macros_per_serving",
+    "tags",
+    "recipe_ingredients",
+    "yield",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "type": {
+      "const": "custom_recipe"
+    },
+    "serving_unit": {
+      "const": "serving"
+    },
+    "default_serving_size": {
+      "type": "number",
+      "const": 1
+    },
+    "macros_per_serving": {
+      "$ref": "#/$defs/macros"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "category": {
+      "type": "string"
+    },
+    "data_source": {
+      "type": "string"
+    },
+    "data_quality": {
+      "type": "string"
+    },
+    "nutrient_fields_available": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "calories",
+          "protein",
+          "carbs",
+          "fat",
+          "fiber"
+        ]
+      }
+    },
+    "fiber_data_available": {
+      "type": "boolean"
+    },
+    "recipe_ingredients": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "food_id",
+          "name",
+          "amount",
+          "unit",
+          "macros"
+        ],
+        "properties": {
+          "food_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "unit": {
+            "type": "string"
+          },
+          "macros": {
+            "$ref": "#/$defs/macros"
+          },
+          "food_snapshot": {
+            "type": "object"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "yield": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "nutrient": {
+      "type": "number",
+      "minimum": 0
+    },
+    "macros": {
+      "type": "object",
+      "required": [
+        "calories",
+        "protein",
+        "carbs",
+        "fat"
+      ],
+      "properties": {
+        "calories": {
+          "$ref": "#/$defs/nutrient"
+        },
+        "protein": {
+          "$ref": "#/$defs/nutrient"
+        },
+        "carbs": {
+          "$ref": "#/$defs/nutrient"
+        },
+        "fat": {
+          "$ref": "#/$defs/nutrient"
+        },
+        "fiber": {
+          "$ref": "#/$defs/nutrient"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
