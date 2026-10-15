@@ -152,3 +152,12 @@ No architecture can guarantee that usage will stay inside the Free tier under ev
 - All other fields (category, primary_muscle, description, MET, tracking metrics, media fields) are kept as they were, so saved workouts, search and analytics keep working.
 - Medicine-ball exercises stay in weight mode even though they now sit under Functional Accessories.
 - The service-worker cache is bumped to `timely-fit-shell-v5-1` so installed apps pick up the new catalogue.
+
+## v5.2 exercise generator and muscle workload
+
+- **Add exercise window:** the plus button and every "Add exercise" button now open the generator (`exercise-generator.js`). Tap muscles on the body model (front/back, swipe or toggle), pick equipment, choose how many exercises, and press Generate. Selected muscles glow; muscles trained in the last 48 hours are tinted red/amber (the 48-hour rule can be turned off in the ⋯ menu).
+- **Generate transition:** the body model enlarges, rotates to the side holding the selected muscles, and is scanned for about three seconds (tap to skip), then the plan appears.
+- **Plan:** 4 x 12 by default (timed exercises 1 x 10 min). Each row expands to adjust weight, sets and reps, lock, swap, favourite or hide. "Add to workout" puts the plan into the current session, where sets are logged as before. The old name search is still available from the ⋯ menu.
+- **Weights and variety come from your real logs:** last weight is suggested again, +2.5 kg after a fully completed exercise, about +5% after "Easy", unchanged after "Hard", 5% lighter after an unfinished one, and a 10% deload after four increases in a row. Favourites and hidden exercises are stored in your profile (`genFav`, `genHide`) and sync with your account. Finished exercises in an active session show a How did it feel? row (`feel` on the exercise).
+- **Dashboard:** Workout > Muscle workload shows the same body model coloured by sets per muscle for the selected period (light blue to green to amber to red). Tap a muscle for its sets; assisting muscles count half a set.
+- **Files:** `body-model.js` (front/back muscle paths, MIT, see `BODY-MODEL-LICENSE.md`), `exercise-generator.js`, styles at the end of `styles.css`. Cache name `timely-fit-shell-v5-2`.

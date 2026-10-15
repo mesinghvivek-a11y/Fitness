@@ -1,6 +1,6 @@
-const CACHE_NAME = 'timely-fit-shell-v5-1';
+const CACHE_NAME = 'timely-fit-shell-v5-2';
 const SUPABASE_SDK_URL = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
-const SHELL = ['./', './index.html', './styles.css', './app.js', './manifest.json', './icon.svg', './foods.json', './exercises.json', './supabase-config.js', './viewport-lock.js'];
+const SHELL = ['./', './index.html', './styles.css', './app.js', './manifest.json', './icon.svg', './foods.json', './exercises.json', './body-model.js', './exercise-generator.js', './supabase-config.js', './viewport-lock.js'];
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);

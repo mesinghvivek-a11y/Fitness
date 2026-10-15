@@ -459,8 +459,9 @@ function renderExerciseCard(ex,index,workout) {
   const reference=findExercise(ex.exercise_id)||ex;
   return `<article class="exercise-card"><div class="exercise-card-header">${renderExerciseThumbnail(reference,'timeline')}<div class="exercise-main"><div class="exercise-name">${safe(ex.name)}</div><div class="exercise-meta">${safe(ex.primary_muscle||'Full body')} · ${safe(ex.equipment||'Bodyweight')}</div></div><span class="exercise-state ${done?'done':''}">${done?'DONE':`${completedSets}/${ex.sets.length}`}</span><button type="button" class="mini-icon" data-action="edit-exercise" data-ex-index="${index}" aria-label="Edit ${safe(ex.name)}">${icon('pencil')}</button></div>
     <div class="exercise-start-row"><div class="exercise-stats">${ex.sets.length} sets${withWeight&&totalVolume?` · ${fmt(totalVolume)} kg`:''}</div><button class="exercise-start ${started?'running':''}" data-action="${started?'toggle-exercise':'start-exercise'}" data-ex-index="${index}" ${done?'disabled':''}>${done?`${icon('check')} Complete`:started?`${icon('chevron-down')} Sets open`:`${icon('play')} Start`}</button></div>
-    ${started?`<div class="sets-panel"><div class="sets-header ${withWeight?'':'no-weight'}"><span>SET</span>${withWeight?'<span>KG</span>':''}<span>${repsLabel}</span><span></span></div>${sets}<div class="set-actions"><button class="outline-button full" data-action="add-set" data-ex-index="${index}">${icon('plus')} Add set</button><button class="outline-button full" data-action="finish-exercise" data-ex-index="${index}">Finish exercise</button></div>${ex.rest_until&&ex.last_completed_set!=null?`<div class="rest-timer"><div class="rest-timer-text">${icon('timer')} <span>Rest</span> <span class="rest-clock" id="rest-clock" data-until="${ex.rest_until}">--:--</span></div><div class="timer-adjust"><button data-action="adjust-rest" data-ex-index="${index}" data-seconds="-30">−30s</button><button data-action="adjust-rest" data-ex-index="${index}" data-seconds="30">+30s</button></div></div>`:''}</div>`:''}</article>`;
+    ${done?renderFeelRow(ex,index):''}${started?`<div class="sets-panel"><div class="sets-header ${withWeight?'':'no-weight'}"><span>SET</span>${withWeight?'<span>KG</span>':''}<span>${repsLabel}</span><span></span></div>${sets}<div class="set-actions"><button class="outline-button full" data-action="add-set" data-ex-index="${index}">${icon('plus')} Add set</button><button class="outline-button full" data-action="finish-exercise" data-ex-index="${index}">Finish exercise</button></div>${ex.rest_until&&ex.last_completed_set!=null?`<div class="rest-timer"><div class="rest-timer-text">${icon('timer')} <span>Rest</span> <span class="rest-clock" id="rest-clock" data-until="${ex.rest_until}">--:--</span></div><div class="timer-adjust"><button data-action="adjust-rest" data-ex-index="${index}" data-seconds="-30">−30s</button><button data-action="adjust-rest" data-ex-index="${index}" data-seconds="30">+30s</button></div></div>`:''}</div>`:''}</article>`;
 }
+function renderFeelRow(ex,index) { return `<div class="feel-row"><span>How did it feel?</span>${[['easy','Easy'],['ok','Right'],['hard','Hard']].map(([v,l])=>`<button type="button" class="feel-chip ${(ex.feel||'ok')===v?'on':''}" data-action="set-feel" data-ex-index="${index}" data-value="${v}">${l}</button>`).join('')}</div>`; }
 function exerciseEmoji(muscle='') { const x=String(muscle).toLowerCase(); if(x.includes('chest'))return '🏋️';if(x.includes('back'))return '🧗';if(x.includes('leg')||x.includes('hamstring')||x.includes('glute'))return '🦵';if(x.includes('arm')||x.includes('bicep')||x.includes('tricep'))return '💪';if(x.includes('core'))return '🧘';if(x.includes('shoulder'))return '🏋️';if(x.includes('full'))return '🏃';return '🏋️'; }
 function renderWater(log,totals) {
   const goal=targetsFor(state.activeDate).waterTarget;const percentage=pct(totals.water,goal);
@@ -583,11 +584,10 @@ function renderWorkoutAnalytics() {
   let line='';
   if(lineValues.length){const coords=lineValues.map((x,i)=>`${10+i*(180/Math.max(1,lineValues.length-1))},${105-(x[1]/maxPeak*80)}`).join(' ');line=`<svg viewBox="0 0 200 120" width="100%" height="130" role="img" aria-label="Highest completed weight by exercise"><path d="M10 105 H190" stroke="var(--grid)" stroke-width="1" fill="none"/><polyline points="${coords}" fill="none" stroke="var(--chart-line)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>${lineValues.map((x,i)=>`<circle cx="${10+i*(180/Math.max(1,lineValues.length-1))}" cy="${105-(x[1]/maxPeak*80)}" r="3.2" fill="var(--lime)" stroke="var(--surface)" stroke-width="1.5"/>`).join('')}</svg><div class="legend-list">${lineValues.map(x=>`<div class="legend-row"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${safe(x[0])}</span><strong>${fmt(x[1],1)} kg</strong></div>`).join('')}</div>`;} else line=`<div class="empty-chart">Top weights appear after you complete sets.</div>`;
   const insights=workoutInsight(totalSets,totalVolume,allWorkouts.length);
-  return `<div class="analysis-card"><div class="analysis-card-head"><div><div class="analysis-card-title">Muscle group distribution</div></div></div>${donut}</div>
+  return `${typeof genHeatCard==='function'?genHeatCard(entries):`<div class="analysis-card"><div class="analysis-card-head"><div><div class="analysis-card-title">Body-part heatmap</div></div></div>${renderWorkoutHeatmap(entries)}</div>`}<div class="analysis-card"><div class="analysis-card-head"><div><div class="analysis-card-title">Muscle group distribution</div></div></div>${donut}</div>
     <div class="analysis-card"><div class="analysis-card-head"><div><div class="analysis-card-title">Strength snapshot</div></div><span class="card-badge">${lineValues.length} movements</span></div>${line}</div>
     <div class="analysis-card"><div class="analysis-card-head"><div><div class="analysis-card-title">Total volume load</div></div><span class="card-badge">${fmt(totalVolume)} kg</span></div>${totalVolume?`<div class="volume-bars">${volumeTrend.map((item,i)=>`<div><div class="vbar" style="height:${Math.max(3,pct(item.value,Math.max(1,...volumeTrend.map(x=>x.value))))}%"></div><small>${safe(item.label)}</small></div>`).join('')}</div>`:`<div class="empty-chart">Log weighted sets to see volume.</div>`}</div>
-    <div class="analysis-card"><div class="analysis-card-head"><div><div class="analysis-card-title">Body-part heatmap</div></div></div>${renderWorkoutHeatmap(entries)}</div>
-    <div class="analysis-card"><div class="analysis-card-head"><div><div class="analysis-card-title">Training summary</div></div></div><div class="nutri-summary" style="margin:0"><div class="micro-card"><div class="micro-label">SESSIONS</div><div class="micro-value">${allWorkouts.length}</div><div class="micro-unit">logged</div></div><div class="micro-card"><div class="micro-label">SETS</div><div class="micro-value">${totalSets}</div><div class="micro-unit">completed</div></div><div class="micro-card"><div class="micro-label">BURN</div><div class="micro-value">${fmt(totalBurn)}</div><div class="micro-unit">kcal estimate</div></div></div></div>${insights}`;
+        <div class="analysis-card"><div class="analysis-card-head"><div><div class="analysis-card-title">Training summary</div></div></div><div class="nutri-summary" style="margin:0"><div class="micro-card"><div class="micro-label">SESSIONS</div><div class="micro-value">${allWorkouts.length}</div><div class="micro-unit">logged</div></div><div class="micro-card"><div class="micro-label">SETS</div><div class="micro-value">${totalSets}</div><div class="micro-unit">completed</div></div><div class="micro-card"><div class="micro-label">BURN</div><div class="micro-value">${fmt(totalBurn)}</div><div class="micro-unit">kcal estimate</div></div></div></div>${insights}`;
 }
 function workoutInsight(sets,volume,sessions) { let title='Build the base';let body='Add a workout and log completed sets to build a useful training history.';if(sets>=12){title='Strong training consistency';body=`You've completed ${sets} sets and logged ${fmt(volume)} kg of volume in this period. Compare like-for-like exercises across weeks rather than chasing every session.`;}else if(sets>0){title='Every completed set counts';body=`${sets} sets are in the log so far. Aim to record the actual reps and load you complete; a reliable baseline makes progressive overload more meaningful.`;}return `<section class="insight-card"><div class="insight-title">${title}</div><div class="insight-body">${body}</div><div class="insight-foot">Not medical advice</div></section>`; }
 function renderWaterAnalytics() {
@@ -602,10 +602,11 @@ function renderWaterAnalytics() {
 // Modal shell and diet logging
 function showModal(html,size='') { $('modalRoot').innerHTML=`<div class="modal-backdrop" data-action="backdrop-close"><section class="modal-sheet ${size}" role="dialog" aria-modal="true">${html}</section></div>`; }
 function closeModal() {
+  if(typeof genCleanup==='function')genCleanup();
   stopScanner();$('modalRoot').innerHTML=''; activeFoodSelection=null; editFoodEntryId=null; activeRecipeIngredient=null; foodMenuEntryId=null; sessionMenuId=null; editSessionId=null;
   const returnState=exerciseDetailReturnState; exerciseDetailReturnState=null;
   if(returnState){
-    openWorkoutModal();activeExerciseSelection=returnState.id;
+    openExerciseSearchModal();activeExerciseSelection=returnState.id;
     const input=$('exerciseSearch');if(input){input.value=returnState.query;renderExerciseResults(returnState.query);updateExerciseDetail();}
     return;
   }
@@ -859,11 +860,13 @@ function saveRecipe() {
 
 
 // Workout progression & execution
-function openWorkoutModal() {
+function openWorkoutModal() { if(typeof genOpen==='function')genOpen(); else openExerciseSearchModal(); }
+function openExerciseSearchModal() {
   activeExerciseSelection=null;
   showModal(`${sheetHead('Add exercise')}
     <div id="exStep1">
       <div class="search-box"><span class="search-icon">${icon('search')}</span><input id="exerciseSearch" type="search" placeholder="Search name or muscle" autocomplete="off" enterkeyhint="search" /></div>
+      <button type="button" class="outline-button wide template-link" data-action="open-generator">✨ Generate a workout</button>
       <div class="chip-row" role="group" aria-label="Quick search">${['Chest','Back','Shoulders','Arms','Legs','Core','Cardio','Bodyweight'].map(label=>`<button type="button" class="chip" data-action="ex-chip" data-q="${label}">${label}</button>`).join('')}</div>
       ${(state.profile.workoutTemplates||[]).length?`<button type="button" class="outline-button wide template-link" data-action="open-templates">${icon('bookmark')} Start from a template</button>`:''}
       <div id="exerciseResults" class="pick-list"></div>
@@ -1419,6 +1422,8 @@ document.addEventListener('click', async (event)=>{
     case 'recipe-remove-ingredient': recipeIngredients.splice(n(button.dataset.index),1);renderRecipeIngredients();break;
     case 'save-recipe': saveRecipe();break;
     case 'add-exercise': openWorkoutModal();break;
+    case 'open-generator': openWorkoutModal();break;
+    case 'set-feel': {const fx=activeLog().workout_log?.exercises?.[n(button.dataset.exIndex)];if(fx){fx.feel=button.dataset.value;scheduleSave();render();}break;}
     case 'select-exercise': activeExerciseSelection=button.dataset.id;updateExerciseDetail();break;
     case 'exercise-back': activeExerciseSelection=null;updateExerciseDetail();renderExerciseResults($('exerciseSearch')?.value||'');break;
     case 'ex-chip': { const input=$('exerciseSearch');if(input)input.value=button.dataset.q;document.querySelectorAll('[data-action="ex-chip"]').forEach(b=>b.classList.toggle('active',b===button));renderExerciseResults(button.dataset.q);break; }
