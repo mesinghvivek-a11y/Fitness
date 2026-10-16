@@ -161,3 +161,12 @@ No architecture can guarantee that usage will stay inside the Free tier under ev
 - **Weights and variety come from your real logs:** last weight is suggested again, +2.5 kg after a fully completed exercise, about +5% after "Easy", unchanged after "Hard", 5% lighter after an unfinished one, and a 10% deload after four increases in a row. Favourites and hidden exercises are stored in your profile (`genFav`, `genHide`) and sync with your account. Finished exercises in an active session show a How did it feel? row (`feel` on the exercise).
 - **Dashboard:** Workout > Muscle workload shows the same body model coloured by sets per muscle for the selected period (light blue to green to amber to red). Tap a muscle for its sets; assisting muscles count half a set.
 - **Files:** `body-model.js` (front/back muscle paths, MIT, see `BODY-MODEL-LICENSE.md`), `exercise-generator.js`, styles at the end of `styles.css`. Cache name `timely-fit-shell-v5-2`.
+
+## v5.3 changes
+
+- **Gender:** Settings > ⋯ (edit) > Gender (Male/Female) switches the body model everywhere (add-exercise picker and dashboard). Stored as `profile.gender`.
+- **Settings profile:** height, weight, age and gender are shown once; the ⋯ button opens the edit fields.
+- **Dashboard:** the period toggle and date range stay pinned under the Diet/Workout/Water tabs while the rest of the page scrolls.
+- **Add exercise:** Pick/Plan switch is centred at the top; ✨ Auto cycles through the next-best group of rested muscles (Push, Pull, Legs, Core, Arms, Shoulders & back), putting muscles not yet trained this week first; the body model supports +/- zoom, pinch, drag and swipe so small muscles are easy to hit; a Progressive switch on the plan adds weight on every set (per-exercise "Add per set" in the expanded row); expanding a row shows weight, sets, reps and actions in tidy tiles, tapping the thumbnail previews the animation, and opening one row closes the others.
+- **Timeline:** tapping an exercise row expands its sets and collapses any other open exercise (UI only, logged sets are kept).
+- Cache name `timely-fit-shell-v5-3`.

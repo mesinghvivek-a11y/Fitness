@@ -1,7 +1,7 @@
 /* Timely Fit PWA — offline-first, no runtime dependencies. */
 const DB_NAME = 'forma_local_v1';
 const DB_VERSION = 1;
-const DEFAULT_PROFILE = { name: '', heightCm: null, age: null, weightKg: 72.5, calorieTarget: 2200, proteinTarget: 130, waterTarget: 2500, eatBack: false, targetHistory: [], workoutTemplates: [] };
+const DEFAULT_PROFILE = { name: '', heightCm: null, age: null, gender: 'male', weightKg: 72.5, calorieTarget: 2200, proteinTarget: 130, waterTarget: 2500, eatBack: false, targetHistory: [], workoutTemplates: [] };
 const MEALS = [
   { key: 'breakfast', label: 'Breakfast', icon: 'sunrise', hint: 'Start your day' },
   { key: 'lunch', label: 'Lunch', icon: 'bowl', hint: 'Midday fuel' },
@@ -28,6 +28,7 @@ let onlineTimer = null;
 let scanStream = null, scanActive = false, scanReader = null;
 let activeExerciseSelection = null;
 let exerciseDetailReturnState = null;
+let openExIdx = -1; // only one timeline exercise is expanded at a time
 let recipeIngredients = [];
 let activeRecipeIngredient = null;
 let analyticsPeriod = 'weekly';
@@ -457,9 +458,9 @@ function renderExerciseCard(ex,index,workout) {
   const sets=ex.sets.map((set,sidx)=>`<div class="set-row ${withWeight?'':'no-weight'}"><div class="set-num">${sidx+1}</div>${withWeight?`<select class="set-input set-select" aria-label="Weight for set ${sidx+1}" data-role="set-weight" data-ex-index="${index}" data-set-index="${sidx}" ${done?'disabled':''}>${weightOptions(set.weight)}</select>`:''}<input class="set-input" type="number" inputmode="decimal" min="0" step="${mode==='time'?'0.5':'1'}" aria-label="${mode==='time'?'Minutes':'Reps'} for set ${sidx+1}" value="${safe(set.reps??12)}" data-role="set-reps" data-ex-index="${index}" data-set-index="${sidx}" ${done?'disabled':''}/><button class="set-complete ${set.completed?'checked':''}" data-action="complete-set" data-ex-index="${index}" data-set-index="${sidx}" ${done?'disabled':''} aria-label="Mark set ${sidx+1} complete">${set.completed?icon('check'):''}</button></div>`).join('');
   const restSec=n(ex.default_rest_sec||60);
   const reference=findExercise(ex.exercise_id)||ex;
-  return `<article class="exercise-card"><div class="exercise-card-header">${renderExerciseThumbnail(reference,'timeline')}<div class="exercise-main"><div class="exercise-name">${safe(ex.name)}</div><div class="exercise-meta">${safe(ex.primary_muscle||'Full body')} · ${safe(ex.equipment||'Bodyweight')}</div></div><span class="exercise-state ${done?'done':''}">${done?'DONE':`${completedSets}/${ex.sets.length}`}</span><button type="button" class="mini-icon" data-action="edit-exercise" data-ex-index="${index}" aria-label="Edit ${safe(ex.name)}">${icon('pencil')}</button></div>
-    <div class="exercise-start-row"><div class="exercise-stats">${ex.sets.length} sets${withWeight&&totalVolume?` · ${fmt(totalVolume)} kg`:''}</div><button class="exercise-start ${started?'running':''}" data-action="${started?'toggle-exercise':'start-exercise'}" data-ex-index="${index}" ${done?'disabled':''}>${done?`${icon('check')} Complete`:started?`${icon('chevron-down')} Sets open`:`${icon('play')} Start`}</button></div>
-    ${done?renderFeelRow(ex,index):''}${started?`<div class="sets-panel"><div class="sets-header ${withWeight?'':'no-weight'}"><span>SET</span>${withWeight?'<span>KG</span>':''}<span>${repsLabel}</span><span></span></div>${sets}<div class="set-actions"><button class="outline-button full" data-action="add-set" data-ex-index="${index}">${icon('plus')} Add set</button><button class="outline-button full" data-action="finish-exercise" data-ex-index="${index}">Finish exercise</button></div>${ex.rest_until&&ex.last_completed_set!=null?`<div class="rest-timer"><div class="rest-timer-text">${icon('timer')} <span>Rest</span> <span class="rest-clock" id="rest-clock" data-until="${ex.rest_until}">--:--</span></div><div class="timer-adjust"><button data-action="adjust-rest" data-ex-index="${index}" data-seconds="-30">−30s</button><button data-action="adjust-rest" data-ex-index="${index}" data-seconds="30">+30s</button></div></div>`:''}</div>`:''}</article>`;
+  return `<article class="exercise-card"><div class="exercise-card-header">${renderExerciseThumbnail(reference,'timeline')}<div class="exercise-main" data-action="toggle-exercise" data-ex-index="${index}"><div class="exercise-name">${safe(ex.name)}</div><div class="exercise-meta">${safe(ex.primary_muscle||'Full body')} · ${safe(ex.equipment||'Bodyweight')}</div></div><span class="exercise-state ${done?'done':''}" data-action="toggle-exercise" data-ex-index="${index}">${done?'DONE':`${completedSets}/${ex.sets.length}`}</span><button type="button" class="mini-icon" data-action="edit-exercise" data-ex-index="${index}" aria-label="Edit ${safe(ex.name)}">${icon('pencil')}</button></div>
+    <div class="exercise-start-row"><div class="exercise-stats">${ex.sets.length} sets${withWeight&&totalVolume?` · ${fmt(totalVolume)} kg`:''}</div><button class="exercise-start ${index===openExIdx?'running':''}" data-action="${started?'toggle-exercise':'start-exercise'}" data-ex-index="${index}" ${done?'disabled':''}>${done?`${icon('check')} Complete`:index===openExIdx?`${icon('chevron-down')} Hide sets`:started?`${icon('play')} Show sets`:`${icon('play')} Start`}</button></div>
+    ${done?renderFeelRow(ex,index):''}${index===openExIdx?`<div class="sets-panel"><div class="sets-header ${withWeight?'':'no-weight'}"><span>SET</span>${withWeight?'<span>KG</span>':''}<span>${repsLabel}</span><span></span></div>${sets}<div class="set-actions"><button class="outline-button full" data-action="add-set" data-ex-index="${index}">${icon('plus')} Add set</button><button class="outline-button full" data-action="finish-exercise" data-ex-index="${index}">Finish exercise</button></div>${ex.rest_until&&ex.last_completed_set!=null?`<div class="rest-timer"><div class="rest-timer-text">${icon('timer')} <span>Rest</span> <span class="rest-clock" id="rest-clock" data-until="${ex.rest_until}">--:--</span></div><div class="timer-adjust"><button data-action="adjust-rest" data-ex-index="${index}" data-seconds="-30">−30s</button><button data-action="adjust-rest" data-ex-index="${index}" data-seconds="30">+30s</button></div></div>`:''}</div>`:''}</article>`;
 }
 function renderFeelRow(ex,index) { return `<div class="feel-row"><span>How did it feel?</span>${[['easy','Easy'],['ok','Right'],['hard','Hard']].map(([v,l])=>`<button type="button" class="feel-chip ${(ex.feel||'ok')===v?'on':''}" data-action="set-feel" data-ex-index="${index}" data-value="${v}">${l}</button>`).join('')}</div>`; }
 function exerciseEmoji(muscle='') { const x=String(muscle).toLowerCase(); if(x.includes('chest'))return '🏋️';if(x.includes('back'))return '🧗';if(x.includes('leg')||x.includes('hamstring')||x.includes('glute'))return '🦵';if(x.includes('arm')||x.includes('bicep')||x.includes('tricep'))return '💪';if(x.includes('core'))return '🧘';if(x.includes('shoulder'))return '🏋️';if(x.includes('full'))return '🏃';return '🏋️'; }
@@ -534,7 +535,7 @@ function renderWorkoutHeatmap(entries) {
 function renderAnalytics() {
   const periods=`<div class="period-toggle" role="tablist" aria-label="Dashboard range">${[['daily','Daily'],['weekly','Weekly'],['monthly','Monthly']].map(([key,label])=>`<button class="${analyticsPeriod===key?'active':''}" data-action="set-period" data-value="${key}">${label}</button>`).join('')}</div>`;
   const content=state.selectedDomain==='diet'?renderDietAnalytics():state.selectedDomain==='workout'?renderWorkoutAnalytics():renderWaterAnalytics();
-  return `${renderDashboardTargets()}${periods}<div class="period-range"><button class="period-arrow" data-action="previous-period" aria-label="Previous ${analyticsPeriod} range">${icon('chevron-left')}</button><div class="period-range-copy"><strong>${safe(periodLabel())}</strong></div><button class="period-arrow" data-action="next-period" aria-label="Next ${analyticsPeriod} range">${icon('chevron-right')}</button></div>${content}`;
+  return `${renderDashboardTargets()}<div class="period-bar">${periods}<div class="period-range"><button class="period-arrow" data-action="previous-period" aria-label="Previous ${analyticsPeriod} range">${icon('chevron-left')}</button><div class="period-range-copy"><strong>${safe(periodLabel())}</strong></div><button class="period-arrow" data-action="next-period" aria-label="Next ${analyticsPeriod} range">${icon('chevron-right')}</button></div></div>${content}`;
 }
 function renderDietAnalytics() {
   const periods=logsForPeriod();const calGoal=periodGoal('calorieTarget',periods),protGoal=periodGoal('proteinTarget',periods);const eatBackAny=periods.some(x=>targetsFor(x.date).eatBack); const totals=periods.reduce((s,x)=>({calories:s.calories+x.totals.calories,protein:s.protein+x.totals.protein,carbs:s.carbs+x.totals.carbs,fat:s.fat+x.totals.fat,fiber:s.fiber+x.totals.fiber,burned:s.burned+x.totals.burned}),{calories:0,protein:0,carbs:0,fat:0,fiber:0,burned:0});
@@ -1089,7 +1090,7 @@ function startSession() {
 function startExercise(index) {
   const workout=activeLog().workout_log;if(!workout)return;const ex=workout.exercises[index];if(!ex||ex.finished)return;
   if(!workout.start_ms){workout.start_ms=Date.now();workout.start_time=new Date(workout.start_ms).toISOString();workout.status='active';}
-  ex.started=true;ex.start_ms=ex.start_ms||Date.now();scheduleSave();render();
+  ex.started=true;ex.start_ms=ex.start_ms||Date.now();openExIdx=index;scheduleSave();render();
 }
 function completeSet(exIndex,setIndex) {
   const workout=activeLog().workout_log;const ex=workout?.exercises?.[exIndex];const set=ex?.sets?.[setIndex];if(!set||ex.finished)return;
@@ -1109,7 +1110,7 @@ function startRestTicker() {
 }
 function adjustRest(index,delta) { const ex=activeLog().workout_log?.exercises?.[index];if(!ex?.rest_until)return;ex.rest_until=Math.max(Date.now(),ex.rest_until+n(delta)*1000);scheduleSave();render();startRestTicker(); }
 function addSet(index) { const ex=activeLog().workout_log?.exercises?.[index];if(!ex||ex.finished)return;const last=ex.sets[ex.sets.length-1]||{weight:0,reps:10};ex.sets.push({set_num:ex.sets.length+1,weight:n(last.weight),reps:n(last.reps),completed:false});scheduleSave();render(); }
-function finishExercise(index) { const ex=activeLog().workout_log?.exercises?.[index];if(!ex)return;ex.finished=true;ex.started=false;ex.finished_at=new Date().toISOString();ex.rest_until=null;scheduleSave();render();toast(`${ex.name} finished.`); }
+function finishExercise(index) { const ex=activeLog().workout_log?.exercises?.[index];if(!ex)return;if(openExIdx===index)openExIdx=-1;ex.finished=true;ex.started=false;ex.finished_at=new Date().toISOString();ex.rest_until=null;scheduleSave();render();toast(`${ex.name} finished.`); }
 function finishSession() {
   const log=activeLog();const workout=log.workout_log;if(!workout)return;
   if(!workout.start_ms){toast('Start the session before finishing it.',true);return;}
@@ -1146,10 +1147,11 @@ function openSettings() {
   const initial=(display.trim().charAt(0)||'?').toUpperCase();
   showModal(`${sheetHead('Settings')}
     <div class="switch-row theme-row"><div class="switch-copy"><strong>Dark mode</strong><small>Switch off for light mode</small></div><label class="switch"><input type="checkbox" id="themeToggle" ${effectiveTheme()==='dark'?'checked':''}><span class="switch-track"></span></label></div>
-    <section class="profile-card"><div class="avatar">${safe(initial)}</div><div class="profile-copy"><strong>${safe(display)}</strong><span>${safe(email||'Signed in')}</span></div></section>
-    <div class="profile-stats"><div><strong>${p.heightCm?fmt(p.heightCm):'–'}</strong><span>cm</span></div><div><strong>${fmt(p.weightKg,1)}</strong><span>kg</span></div><div><strong>${p.age?fmt(p.age):'–'}</strong><span>years</span></div></div>
-    <div class="setting-section"><div class="section-label">Personal information</div>
+    <section class="profile-card"><div class="avatar">${safe(initial)}</div><div class="profile-copy"><strong>${safe(display)}</strong><span>${safe(email||'Signed in')}</span></div><button type="button" class="icon-button profile-edit" data-action="toggle-profile-edit" aria-label="Edit personal information">${icon('more')}</button></section>
+    <div id="profileView" class="profile-stats four"><div><strong>${p.heightCm?fmt(p.heightCm):'–'}</strong><span>cm</span></div><div><strong>${fmt(p.weightKg,1)}</strong><span>kg</span></div><div><strong>${p.age?fmt(p.age):'–'}</strong><span>years</span></div><div><strong class="gender-val">${p.gender==='female'?'Female':'Male'}</strong><span>gender</span></div></div>
+    <div id="profileEdit" class="setting-section hidden"><div class="section-label">Edit personal information</div>
       <div class="field"><label for="profileName">NAME</label><input id="profileName" maxlength="40" autocomplete="name" placeholder="Your name" value="${safe(p.name||'')}" /></div>
+      <div class="field"><label>GENDER</label><div class="seg-two" role="radiogroup" aria-label="Gender"><label><input type="radio" name="profileGender" value="male" ${p.gender==='female'?'':'checked'}><span>Male</span></label><label><input type="radio" name="profileGender" value="female" ${p.gender==='female'?'checked':''}><span>Female</span></label></div></div>
       <div class="field-grid three"><div class="field"><label for="profileHeight">HEIGHT CM</label><input id="profileHeight" type="number" inputmode="decimal" min="80" max="260" step="1" value="${safe(p.heightCm??'')}" /></div><div class="field"><label for="profileWeight">WEIGHT KG</label><input id="profileWeight" type="number" inputmode="decimal" min="20" max="350" step="0.1" value="${safe(p.weightKg)}" /></div><div class="field"><label for="profileAge">AGE</label><input id="profileAge" type="number" inputmode="numeric" min="5" max="120" step="1" value="${safe(p.age??'')}" /></div></div>
     </div>
     <div class="setting-section"><div class="section-label">Daily targets</div>
@@ -1164,7 +1166,7 @@ function openSettings() {
 function saveSettings() {
   const p=state.profile;const today=toDateKey(new Date());
   const height=optNum('profileHeight'),age=optNum('profileAge');
-  const next={...p,name:String($('profileName')?.value||'').trim().slice(0,40),heightCm:height,age,weightKg:n($('profileWeight')?.value),calorieTarget:Math.round(n($('targetCalories')?.value)),proteinTarget:Math.round(n($('targetProtein')?.value)),waterTarget:Math.round(n($('targetWater')?.value)),eatBack:!!$('eatBackToggle')?.checked};
+  const next={...p,name:String($('profileName')?.value||'').trim().slice(0,40),heightCm:height,age,weightKg:n($('profileWeight')?.value),calorieTarget:Math.round(n($('targetCalories')?.value)),proteinTarget:Math.round(n($('targetProtein')?.value)),waterTarget:Math.round(n($('targetWater')?.value)),eatBack:!!$('eatBackToggle')?.checked,gender:(document.querySelector('input[name="profileGender"]:checked')?.value==='female'?'female':'male')};
   if(next.weightKg<20||next.calorieTarget<500||next.proteinTarget<1||next.waterTarget<250){toast('Check the target values and try again.',true);return;}
   if((height!==null&&(Number.isNaN(height)||height<80||height>260))||(age!==null&&(Number.isNaN(age)||age<5||age>120))){toast('Check your height and age and try again.',true);return;}
   const prev=targetsFor(today);
@@ -1405,9 +1407,9 @@ document.addEventListener('click', async (event)=>{
   if(action==='close-modal'){closeModal();return;}
   event.preventDefault();
   switch(action){
-    case 'domain': state.selectedDomain=button.dataset.value;expandedSessions.clear();render();persistState();break;
-    case 'tab': state.selectedTab=button.dataset.tab;expandedSessions.clear();render();persistState();break;
-    case 'choose-date': state.activeDate=button.dataset.date;expandedSessions.clear();expandedWaterLog=false;currentLog();render();persistState();break;
+    case 'domain': openExIdx=-1;state.selectedDomain=button.dataset.value;expandedSessions.clear();render();persistState();break;
+    case 'tab': openExIdx=-1;state.selectedTab=button.dataset.tab;expandedSessions.clear();render();persistState();break;
+    case 'choose-date': openExIdx=-1;state.activeDate=button.dataset.date;expandedSessions.clear();expandedWaterLog=false;currentLog();render();persistState();break;
     case 'open-settings': openSettings();break;
     case 'open-add': openCurrentAdd();break;
     case 'open-food': openFoodModal(button.dataset.meal||'breakfast');break;
@@ -1423,6 +1425,7 @@ document.addEventListener('click', async (event)=>{
     case 'save-recipe': saveRecipe();break;
     case 'add-exercise': openWorkoutModal();break;
     case 'open-generator': openWorkoutModal();break;
+    case 'toggle-profile-edit': $('profileView')?.classList.toggle('hidden');$('profileEdit')?.classList.toggle('hidden');break;
     case 'set-feel': {const fx=activeLog().workout_log?.exercises?.[n(button.dataset.exIndex)];if(fx){fx.feel=button.dataset.value;scheduleSave();render();}break;}
     case 'select-exercise': activeExerciseSelection=button.dataset.id;updateExerciseDetail();break;
     case 'exercise-back': activeExerciseSelection=null;updateExerciseDetail();renderExerciseResults($('exerciseSearch')?.value||'');break;
@@ -1463,7 +1466,7 @@ document.addEventListener('click', async (event)=>{
     case 'save-exercise': saveExerciseSetup();break;
     case 'start-session': startSession();break;
     case 'start-exercise': startExercise(n(button.dataset.exIndex));break;
-    case 'toggle-exercise': { const ex=activeLog().workout_log?.exercises?.[n(button.dataset.exIndex)];if(ex){ex.started=false;scheduleSave();render();} break; }
+    case 'toggle-exercise': { const i=n(button.dataset.exIndex);openExIdx=openExIdx===i?-1:i;render();break; }
     case 'complete-set': completeSet(n(button.dataset.exIndex),n(button.dataset.setIndex));break;
     case 'add-set': addSet(n(button.dataset.exIndex));break;
     case 'finish-exercise': finishExercise(n(button.dataset.exIndex));break;
