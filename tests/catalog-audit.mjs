@@ -24,21 +24,24 @@ for (const food of foods) {
   if (food.type === 'raw_ingredient') {
     const macros = food.macros_per_100g ?? food.macros_per_100ml;
     assert(!!macros, `Raw ingredient ${food.id}: missing per-100g/ml macros`);
-    for (const field of ['calories', 'protein', 'carbs', 'fat', 'fiber']) {
+    for (const field of ['calories', 'protein', 'carbs', 'fat']) {
       assert(Number.isFinite(macros?.[field]) && macros[field] >= 0, `Food ${food.id}: invalid ${field}`);
     }
+    if (food.fiber_data_available === true) assert(Number.isFinite(macros?.fiber) && macros.fiber >= 0, `Food ${food.id}: fibre marked available but missing`);
+    if (food.fiber_data_available === false) assert(macros?.fiber === undefined || (Number.isFinite(macros.fiber) && macros.fiber >= 0), `Food ${food.id}: invalid optional fibre value`);
     assert(['g', 'ml', 'scoop', 'piece', 'clove', 'tsp', 'tbsp', 'cup', 'slice', 'bunch', 'sprig', 'pinch', 'unit', 'small', 'medium', 'large', 'drop'].includes(food.serving_unit), `Food ${food.id}: unexpected serving_unit ${food.serving_unit}`);
   } else {
     const macros = food.macros_per_serving;
     assert(!!macros, `Estimate ${food.id}: missing per-serving macros`);
-    for (const field of ['calories', 'protein', 'carbs', 'fat', 'fiber']) assert(Number.isFinite(macros?.[field]) && macros[field] >= 0, `Food ${food.id}: invalid serving ${field}`);
+    for (const field of ['calories', 'protein', 'carbs', 'fat']) assert(Number.isFinite(macros?.[field]) && macros[field] >= 0, `Food ${food.id}: invalid serving ${field}`);
+    if (food.fiber_data_available === true) assert(Number.isFinite(macros?.fiber) && macros.fiber >= 0, `Food ${food.id}: fibre marked available but missing`);
   }
 }
 
 for (const exercise of exercises) {
   for (const field of ['name', 'category', 'primary_muscle', 'equipment', 'default_rest_sec', 'met_value', 'tracking_metrics']) assert(exercise[field] !== undefined, `Exercise ${exercise.id}: missing ${field}`);
   assert(Number.isFinite(exercise.default_rest_sec) && exercise.default_rest_sec >= 0, `Exercise ${exercise.id}: invalid rest time`);
-  assert(Number.isFinite(exercise.met_value) && exercise.met_value >= 0, `Exercise ${exercise.id}: invalid MET value`);
+  assert(exercise.met_value == null || (Number.isFinite(exercise.met_value) && exercise.met_value >= 0), `Exercise ${exercise.id}: invalid MET value`);
   assert(Array.isArray(exercise.tracking_metrics), `Exercise ${exercise.id}: tracking_metrics must be an array`);
 }
 
