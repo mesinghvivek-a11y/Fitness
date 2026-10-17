@@ -11,7 +11,7 @@ const EQL={"Cable Machine":"Cable","Plate-Loaded & Pin Machines":"Machines","Fun
 const eqLabel=q=>EQL[q]||q;
 const PRI={Barbell:0,"Smith Machine":1,Dumbbell:2,"Plate-Loaded & Pin Machines":3,Kettlebell:3,"Cable Machine":4};
 const PREF="timelyfit_gen_pref",ZMAX=3.2;
-const G={side:"front",view:"pick",count:6,selP:new Set(),selE:new Set(),list:[],H:[],pool:[],active:[],respect:true,prog:false,busy:false,timers:[],skip:false,heatSide:"front",zs:1,tx:0,ty:0,autoN:0,dragged:false};
+const G={mch:null,side:"front",view:"pick",count:6,selP:new Set(),selE:new Set(),list:[],H:[],pool:[],active:[],respect:true,prog:false,busy:false,timers:[],skip:false,heatSide:"front",zs:1,tx:0,ty:0,autoN:0,dragged:false};
 const gender=()=>(state.profile&&state.profile.gender==="female")?"female":"male";
 /* ---------- canonical muscle + movement pattern ---------- */
 function cmName(s){const t=String(s||"").toLowerCase();return /cardio/.test(t)?"Cardio":/full body/.test(t)?"Full Body":/pector|chest/.test(t)?"Chest":/delt|shoulder/.test(t)?"Shoulders":/^lat/.test(t)?"Lats":/upper back|rhomboid|levator|^back/.test(t)?"Upper Back":/trap/.test(t)?"Traps":/spine|lower back|posterior/.test(t)?"Lower Back":/bicep/.test(t)?"Biceps":/tricep/.test(t)?"Triceps":/forearm|grip/.test(t)?"Forearms":/abs|core|serratus|oblique|waist/.test(t)?"Abs & Core":/hamstring/.test(t)?"Hamstrings":/glute|hip/.test(t)?"Glutes":/adductor|abductor/.test(t)?"Hips":/calve|ankle/.test(t)?"Calves":/quad|leg/.test(t)?"Quads":/neck/.test(t)?"Neck":/arm/.test(t)?"Biceps":null}
@@ -65,16 +65,16 @@ function savePref(){try{localStorage.setItem(PREF,JSON.stringify({count:G.count,
 function open(){cleanup();G.H=hist();G.pool=masterExercises.filter(e=>meta(e).m);G.list=[];G.view="pick";G.side="front";G.selP=new Set();G.zs=1;G.tx=0;G.ty=0;G.autoN=0;loadPref();
  const eqs=new Set(G.pool.map(e=>e.equipment));G.selE=new Set([...G.selE].filter(q=>eqs.has(q)));
  const tpl=(state.profile.workoutTemplates||[]).length;
- showModal(`<div id="gRoot"><div class="modal-handle"></div><div class="gen-head"><button type="button" class="g-ic" data-g="menu" aria-label="More options">${icon("more")}</button><div class="g-seg"><button type="button" data-g="tab" data-v="pick" class="on">Pick</button><button type="button" data-g="tab" data-v="plan" id="gTabPlan" disabled>Plan</button></div><button type="button" class="close-modal" data-action="close-modal" aria-label="Close">${icon("x")}</button></div>
+ showModal(`<div id="gRoot"><div class="modal-handle"></div><div class="gen-head"><button type="button" class="g-ic" data-g="menu" aria-label="More options">${icon("more")}</button><div class="g-seg"><button type="button" data-g="tab" data-v="pick" class="on">Pick</button><button type="button" data-g="tab" data-v="plan" id="gTabPlan">Plan</button></div><button type="button" class="close-modal" data-action="close-modal" aria-label="Close">${icon("x")}</button></div>
  <div class="g-menu g-hide" id="gMenu"><label class="g-chk"><input type="checkbox" id="gRc" ${G.respect?"checked":""}> Respect 48h muscle recovery</label><button type="button" data-g="search">${icon("search")} Search exercises by name</button>${tpl?`<button type="button" data-action="open-templates">${icon("bookmark")} Templates</button>`:""}</div>
  <div class="gen-main"><section id="gPick"><div class="g-stage" id="gStage"><div class="bm-sd"><button type="button" data-g="side" data-v="front" class="on">Front</button><button type="button" data-g="side" data-v="back">Back</button></div>
  <div class="g-zoom"><button type="button" data-g="zin" aria-label="Zoom in">+</button><button type="button" data-g="zout" aria-label="Zoom out">−</button><button type="button" data-g="zreset" id="gZoomR" class="g-hide" aria-label="Reset zoom">⤢</button></div>
  <div class="bm-floor"></div><div class="bm-zoom" id="gZoom">${flipHtml("front","gFlip")}</div>
  <div class="g-run"><div class="g-eqtags" id="gTags"></div><div class="g-status" id="gSt"></div><div class="g-prog"><i id="gPr"></i></div></div></div>
  <div class="g-row g-ctrl" id="gSel"></div><div class="g-row g-ctrl" id="gEq"></div></section>
- <section id="gPlan" class="g-hide"><div class="g-sumrow"><div class="g-sum" id="gSum"></div><label class="g-tg" title="Add weight on every set"><span>Progressive</span><input type="checkbox" id="gProg" ${G.prog?"checked":""}><i></i></label></div><div id="gList"></div></section></div>
+ <section id="gPlan" class="g-hide"><div class="g-add"><div class="g-search"><svg class="i" aria-hidden="true"><use href="#i-search"/></svg><input id="gQ" type="search" placeholder="Search an exercise or machine" autocomplete="off" enterkeyhint="search"><button type="button" class="g-qx g-hide" id="gQx" data-g="qx" aria-label="Clear search">×</button></div><div class="g-row g-mrow" id="gMch"></div><div class="g-res g-hide" id="gRes"></div></div><div class="g-sumrow"><div class="g-sum" id="gSum"></div><label class="g-tg" title="Add weight on every set"><span>Progressive</span><input type="checkbox" id="gProg" ${G.prog?"checked":""}><i></i></label></div><div id="gList"></div></section></div>
  <div class="gen-bar" id="gBarPick"><div class="g-step"><button type="button" data-g="cnt" data-d="-1" aria-label="Fewer exercises">−</button><b id="gCn">6</b><button type="button" data-g="cnt" data-d="1" aria-label="More exercises">+</button></div><button type="button" class="g-go" id="gGo" data-g="go" disabled>Pick muscles &amp; equipment</button></div>
- <div class="gen-bar g-hide" id="gBarPlan"><button type="button" class="g-ghost" data-g="reroll">⟳ Reroll</button><button type="button" class="g-go" data-g="add" id="gAdd">Add to workout</button></div>
+ <div class="gen-bar g-hide" id="gBarPlan"><button type="button" class="g-ghost" id="gRr" data-g="reroll">⟳ Reroll</button><button type="button" class="g-go" data-g="add" id="gAdd">Add to workout</button></div>
  <div class="g-gif g-hide" id="gGif" data-g="gifx"></div><div class="g-toast" id="gToast"></div></div>`,"gen");
  eqBuild();paint()}
 function cleanup(){G.timers.forEach(clearTimeout);G.timers=[];G.busy=false}
@@ -84,7 +84,7 @@ function paint(){const r=recMap(),el=root();if(!el)return;
  $q("#gSel").innerHTML=`<button type="button" class="g-ch auto" data-g="auto">✨ Auto</button>`+MORDER.filter(m=>G.selP.has(m)).map(m=>`<button type="button" class="g-ch on${r[m]<1?" tired":""}" data-g="muscle" data-m="${safe(m)}">${safe(m)} ×</button>`).join("")+["Cardio","Full Body"].filter(m=>!G.selP.has(m)).map(m=>`<button type="button" class="g-ch" data-g="muscle" data-m="${safe(m)}">+ ${safe(m)}</button>`).join("")+(G.selP.size?"":`<span class="g-hint">Tap muscles on the body</span>`);
  const all=new Set(G.pool.map(e=>e.equipment)).size;$$q("#gEq .g-ch",el).forEach(b=>b.classList.toggle("on",b.dataset.q==="*"?G.selE.size===all:G.selE.has(b.dataset.q)));
  const ok=G.selP.size&&G.selE.size,g=$q("#gGo");g.disabled=!ok;g.textContent=ok?"Generate · "+G.count+" exercises":"Pick muscles & equipment";$q("#gCn").textContent=G.count;
- $q("#gTabPlan").disabled=!G.list.length;$q("#gTabPlan").dataset.n=G.list.length||""}
+ $q("#gTabPlan").dataset.n=G.list.length||""}
 function setView(v){G.view=v;const p=v==="pick";$q("#gPick").classList.toggle("g-hide",!p);$q("#gPlan").classList.toggle("g-hide",p);$q("#gBarPick").classList.toggle("g-hide",!p);$q("#gBarPlan").classList.toggle("g-hide",p);$$q('[data-g="tab"]').forEach(b=>b.classList.toggle("on",b.dataset.v===v))}
 function setSide(s){G.side=s;$q("#gFlip").classList.toggle("back",s==="back");$$q('.bm-sd [data-g="side"]').forEach(b=>b.classList.toggle("on",b.dataset.v===s))}
 /* zoom + pan so small muscles are easy to hit */
@@ -107,7 +107,7 @@ function auto(){const r=recMap(),L=r._last,ws=weekStartMs(),now=Date.now(),cand=
 function go(){if(G.busy)return;let use=[...G.selP],sk=[];if(G.respect){sk=use.filter(p=>rec(p)<1);use=use.filter(p=>rec(p)>=1)}
  if(!use.length){t("Those muscles are still recovering (48h). Try ✨ Auto.");return}
  G.active=use;const hid=setOf("genHide"),avail=G.pool.filter(e=>use.includes(meta(e).m)&&G.selE.has(e.equipment)&&!hid.has(e.id)).length;if(!avail){t("No exercises match that muscle and equipment.");return}
- G.list=generate(G.count,new Set).map(prep);chooseSide(use);savePref();zoomTo(1);transition(()=>{renderPlan();setView("plan");paint();if(sk.length)t("Skipped "+sk.join(", ")+" (recovering)");else if(avail<G.count)t("Only "+avail+" matches found")})}
+ const man=G.list.filter(l=>l.manual);G.list=[...man,...generate(G.count,new Set(man.map(m=>m.ex.id))).map(prep)];chooseSide(use);savePref();zoomTo(1);transition(()=>{renderPlan();setView("plan");paint();if(sk.length)t("Skipped "+sk.join(", ")+" (recovering)");else if(avail<G.count)t("Only "+avail+" matches found")})}
 function chooseSide(use){let f=0,b=0;use.forEach(m=>(M2R[m]||[]).forEach(s=>{if(FRONT_ONLY.includes(s))f++;else if(BACK_ONLY.includes(s))b++}));setSide(b>f?"back":"front")}
 function transition(done){const el=root();G.busy=true;G.skip=false;el.classList.add("gen-run");
  $q("#gTags").innerHTML=[...G.selE].map(q=>`<span>${safe(eqLabel(q))}</span>`).join("");
@@ -126,12 +126,25 @@ function rowHtml(i){const p=G.list[i],ex=p.ex,m=meta(ex).m,fav=setOf("genFav").h
  ${ramp?`<div class="g-ramp">${wts.map((w,k)=>`<span><small>Set ${k+1}</small>${fmt(w,1)}</span>`).join("")}</div>`:""}
  ${wk&&p.note?`<div class="g-note">${safe(p.note)}</div>`:""}${wu}
  <div class="g-ac"><button type="button" data-g="fav" data-i="${i}"><b>${fav?"★":"☆"}</b>Favorite</button><button type="button" data-g="lock" data-i="${i}"><b>${p.lock?"🔒":"🔓"}</b>${p.lock?"Locked":"Lock"}</button><button type="button" data-g="swap" data-i="${i}"><b>⟳</b>Swap</button><button type="button" data-g="hide" data-i="${i}"><b>⊘</b>Hide</button></div></div></div></div>`}
-function renderPlan(){const min=Math.round(G.list.reduce((a,p)=>a+(p.mode==="time"?p.reps:p.sets*(.7+n(p.ex.default_rest_sec||60)/60)),0));$q("#gSum").textContent=G.list.reduce((a,p)=>a+p.sets,0)+" sets · about "+min+" min";$q("#gList").innerHTML=G.list.map((_,i)=>rowHtml(i)).join("");$q("#gAdd").textContent="Add "+G.list.length+" to workout"}
+function renderPlan(){const sets=G.list.reduce((a,p)=>a+p.sets,0),min=Math.round(G.list.reduce((a,p)=>a+(p.mode==="time"?p.reps:p.sets*(.7+n(p.ex.default_rest_sec||60)/60)),0));
+ $q("#gSum").textContent=G.list.length?sets+" sets · about "+min+" min":"Nothing in your plan yet";
+ $q("#gList").innerHTML=G.list.length?G.list.map((_,i)=>rowHtml(i)).join(""):`<div class="g-empty">Add the exercises your trainer gave you: search by name or tap a muscle above. You can also generate a plan from the Pick tab.</div>`;
+ const a=$q("#gAdd");a.textContent=G.list.length?"Add "+G.list.length+" to workout":"Add to workout";a.disabled=!G.list.length;
+ const rr=$q("#gRr");if(rr)rr.disabled=!G.list.some(l=>!l.lock);
+ const mc=$q("#gMch");if(mc&&!mc.children.length)mc.innerHTML=MORDER.filter(m=>G.pool.some(e=>meta(e).m===m)).map(m=>`<button type="button" class="g-ch" data-g="mch" data-m="${safe(m)}">${safe(m)}</button>`).join("");
+ $$q("#gMch .g-ch").forEach(b=>b.classList.toggle("on",b.dataset.m===G.mch));$q("#gTabPlan").dataset.n=G.list.length||"";renderRes()}
+/* manual add: search by name or browse by muscle */
+function renderRes(){const box=$q("#gRes");if(!box)return;const q=($q("#gQ").value||"").trim();$q("#gQx").classList.toggle("g-hide",!q);
+ if(!q&&!G.mch){box.classList.add("g-hide");box.innerHTML="";return}
+ let list=q?searchExercises(q).map(x=>x.ex):G.pool.slice().sort((a,b)=>a.name.localeCompare(b.name));if(G.mch)list=list.filter(e=>meta(e).m===G.mch);
+ const total=list.length,inPlan=new Set(G.list.map(p=>p.ex.id));list=list.slice(0,40);box.classList.remove("g-hide");
+ box.innerHTML=list.length?list.map(e=>`<div class="g-rr"><button type="button" class="g-thbtn" data-g="gifr" data-id="${safe(e.id)}" aria-label="Preview ${safe(e.name)}">${thumb(e)}<b class="g-play">▶</b></button><div class="g-tx"><b>${safe(e.name)}</b><small>${safe(meta(e).m||"")} · ${safe(eqLabel(e.equipment))}</small></div>${inPlan.has(e.id)?`<span class="g-in">✓ Added</span>`:`<button type="button" class="g-plus" data-g="addx" data-id="${safe(e.id)}" aria-label="Add ${safe(e.name)}">+</button>`}</div>`).join("")+(total>40?`<div class="g-more-note">Showing 40 of ${total}. Type to narrow the list.</div>`:""):`<div class="g-more-note">No exercises found. Try another name or muscle.</div>`}
+function addManual(id){const ex=findExercise(id)||G.pool.find(e=>e.id===id);if(!ex||G.list.some(p=>p.ex.id===id))return;const p=prep(ex);p.lock=true;p.manual=true;G.list.push(p);renderPlan();t("Added · "+ex.name)}
 function refreshRow(i){const el=$q('#gList .g-ex[data-i="'+i+'"]');if(!el)return;const open=el.classList.contains("open");el.outerHTML=rowHtml(i);if(open)$q('#gList .g-ex[data-i="'+i+'"]').classList.add("open")}
 function swap(i){const e=G.list[i].ex,m=meta(e).m,pats=new Set(G.list.map(x=>meta(x.ex).pat)),u=usage(),fav=setOf("genFav"),hid=setOf("genHide");let c=G.pool.filter(x=>meta(x).m===m&&G.selE.has(x.equipment)&&!hid.has(x.id)&&!G.list.some(l=>l.ex.id===x.id));const f=c.filter(x=>!pats.has(meta(x).pat));if(f.length)c=f;
  if(!c.length){t("No other match for "+m);return false}G.list[i]=prep(wpick(c,x=>score(x,u,fav)));renderPlan();return true}
-function reroll(){const keep=G.list.filter(l=>l.lock);const fresh=generate(G.count-keep.length,new Set(keep.map(k=>k.ex.id))).map(prep);G.list=[...keep,...fresh];setView("pick");transition(()=>{renderPlan();setView("plan")})}
-function glance(i){const ex=G.list[i].ex,el=$q("#gGif"),has=exerciseHasLicensedMedia(ex);
+function reroll(){const keep=G.list.filter(l=>l.lock),cnt=G.list.length-keep.length;if(!cnt||!G.selE.size||!G.active.length){t("Nothing to reroll. Locked and manually added exercises stay.");return}const fresh=generate(cnt,new Set(keep.map(k=>k.ex.id))).map(prep);G.list=[...keep,...fresh];setView("pick");transition(()=>{renderPlan();setView("plan")})}
+function glance(ex){const el=$q("#gGif"),has=exerciseHasLicensedMedia(ex);
  el.innerHTML=`<div class="g-gif-card"><button type="button" class="g-gif-x" data-g="gifx" aria-label="Close preview">${icon("x")}</button>${has?`<img src="${safe(ex.gif_url)}" alt="${safe(ex.name)} movement animation" onerror="this.outerHTML='<div class=&quot;g-gif-ph&quot;>Animation could not be loaded</div>'">`:`<div class="g-gif-ph"><span>${exerciseEmoji(ex.primary_muscle||ex.target||"")}</span>No animation for this exercise yet</div>`}<strong>${safe(ex.name)}</strong><small>${safe(meta(ex).m)} · ${safe(eqLabel(ex.equipment))}</small></div>`;el.classList.remove("g-hide")}
 function addAll(){if(!G.list.length)return;const wk=ensureWorkout();
  G.list.forEach(p=>{const ex=p.ex,wts=setWeights(p);state.recentExerciseIds=recentIds(state.recentExerciseIds,ex.id);
@@ -148,7 +161,7 @@ document.addEventListener("click",ev=>{const el=root();
  const b=ev.target.closest("[data-g]");if(!b)return;const a=b.dataset.g,i=+b.dataset.i;
  if(a!=="menu"&&!ev.target.closest("#gMenu"))$q("#gMenu").classList.add("g-hide");
  switch(a){
- case"tab":if(!b.disabled)setView(b.dataset.v);break;
+ case"tab":if(b.dataset.v==="plan")renderPlan();setView(b.dataset.v);break;
  case"side":setSide(b.dataset.v);break;
  case"menu":$q("#gMenu").classList.toggle("g-hide");break;
  case"search":openExerciseSearchModal();break;
@@ -160,7 +173,11 @@ document.addEventListener("click",ev=>{const el=root();
  case"go":go();break;
  case"reroll":reroll();break;
  case"add":addAll();break;
- case"gif":glance(i);break;
+ case"gif":glance(G.list[i].ex);break;
+ case"gifr":glance(findExercise(b.dataset.id));break;
+ case"addx":addManual(b.dataset.id);break;
+ case"mch":G.mch=G.mch===b.dataset.m?null:b.dataset.m;renderPlan();break;
+ case"qx":$q("#gQ").value="";renderRes();break;
  case"gifx":$q("#gGif").classList.add("g-hide");break;
  case"row":{const row=$q('#gList .g-ex[data-i="'+i+'"]'),was=row.classList.contains("open");$$q("#gList .g-ex.open").forEach(x=>x.classList.remove("open"));if(!was){row.classList.add("open");setTimeout(()=>row.scrollIntoView({block:"nearest",behavior:"smooth"}),60)}break}
  case"adj":{const p=G.list[i],f=b.dataset.f,d=+b.dataset.d;if(f==="w")p.w=Math.max(0,round(p.w+d*2.5,2));else if(f==="inc")p.inc=Math.max(0,Math.min(10,round(p.inc+d*2.5,2)));else if(f==="sets")p.sets=Math.max(1,Math.min(10,p.sets+d));else p.reps=Math.max(1,Math.min(p.mode==="time"?120:50,p.reps+d));refreshRow(i);break}
@@ -169,6 +186,7 @@ document.addEventListener("click",ev=>{const el=root();
  case"swap":swap(i);break;
  case"hide":{const s=setOf("genHide");s.add(G.list[i].ex.id);saveSet("genHide",s);if(!swap(i)){G.list.splice(i,1);renderPlan();paint()}t("Hidden from future workouts");break}
  }});
+let qt;document.addEventListener("input",ev=>{if(ev.target.id==="gQ"){clearTimeout(qt);qt=setTimeout(renderRes,120)}});
 document.addEventListener("change",ev=>{if(ev.target.id==="gRc"){G.respect=ev.target.checked;savePref()}if(ev.target.id==="gProg"){G.prog=ev.target.checked;savePref();renderPlan()}});
 /* pinch / drag / swipe on the body model */
 const ptr=new Map();let pinch0=0,zs0=1;
