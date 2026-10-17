@@ -170,3 +170,9 @@ No architecture can guarantee that usage will stay inside the Free tier under ev
 - **Add exercise:** Pick/Plan switch is centred at the top; ✨ Auto cycles through the next-best group of rested muscles (Push, Pull, Legs, Core, Arms, Shoulders & back), putting muscles not yet trained this week first; the body model supports +/- zoom, pinch, drag and swipe so small muscles are easy to hit; a Progressive switch on the plan adds weight on every set (per-exercise "Add per set" in the expanded row); expanding a row shows weight, sets, reps and actions in tidy tiles, tapping the thumbnail previews the animation, and opening one row closes the others.
 - **Timeline:** tapping an exercise row expands its sets and collapses any other open exercise (UI only, logged sets are kept).
 - Cache name `timely-fit-shell-v5-3`.
+
+## v5.4 manual add on the Plan tab
+
+- The Plan tab is always available. Without a generated plan it shows a search bar plus a horizontally scrolling row of muscle names; typing a name or tapping a muscle lists matching exercises, and + adds one to the plan (use this when a trainer gives you specific exercises).
+- Manually added exercises are locked, so Reroll and a new Generate keep them. Tapping a result's thumbnail previews the movement.
+- "Add to workout" works with generated, manual, or mixed plans. Cache name `timely-fit-shell-v5-4`.
