@@ -28781,10 +28781,10 @@
     "serving_unit": "g",
     "default_serving_size": 100,
     "macros_per_100g": {
-      "calories": 45.35,
-      "protein": 4.43,
-      "carbs": 0.12,
-      "fat": 3.04
+      "calories": 68,
+      "protein": 5.51,
+      "carbs": 0.49,
+      "fat": 4.65
     },
     "tags": [
       "meat-eggs"
