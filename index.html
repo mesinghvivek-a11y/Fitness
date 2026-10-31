@@ -86,8 +86,7 @@
         <div><div class="brand-name">Timely Fit<span class="brand-period">.</span></div></div>
       </div>
       <div class="header-actions">
-        <div class="sync-status" id="syncStatus"><span class="sync-dot"></span><span>Saved locally</span></div>
-        <button class="icon-button" id="settingsButton" aria-label="Open settings" title="Targets & settings"><svg class="i" aria-hidden="true"><use href="#i-sliders"/></svg></button>
+        <button class="icon-button" id="settingsButton" data-sync="dirty" aria-label="Open settings" title="Targets & settings"><svg class="i" aria-hidden="true"><use href="#i-sliders"/></svg><span class="sr-only" id="syncStatus" aria-live="polite">Saved locally</span></button>
       </div>
     </header>
 
@@ -119,6 +118,7 @@
   <script id="supabaseSdk" async src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
   <script src="body-model.js"></script>
+  <script src="workout-engine.js"></script>
   <script src="exercise-generator.js"></script>
   <script src="app.js"></script>
 </body>
