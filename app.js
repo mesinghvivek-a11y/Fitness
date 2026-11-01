@@ -39,6 +39,95 @@ let suppressDirtyTracking = false;
 let saveQueue = Promise.resolve();
 let lastRestTick = null;
 
+/* ---------- Web Push Integration ---------- */
+let pushState = detectPush();
+let pushSub = null;
+let pushMessageId = null;
+
+const urlBase64ToUint8Array = (b64) => {
+  const pad = '='.repeat((4 - (b64.length % 4)) % 4);
+  const raw = atob((b64 + pad).replace(/-/g, '+').replace(/_/g, '/'));
+  return Uint8Array.from(raw, (c) => c.charCodeAt(0));
+};
+
+const isStandalone = () => navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+function detectPush() {
+  if (typeof window === 'undefined') return 'unsupported';
+  if (isIOS() && !isStandalone()) return 'needs-install';
+  if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return 'unsupported';
+  return Notification.permission;
+}
+
+async function authedPushFetch(path, body, method = 'POST') {
+  const token = (await supabaseClient?.auth?.getSession())?.data?.session?.access_token || '';
+  return fetch(path, {
+    method,
+    keepalive: true,
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify(body),
+  });
+}
+
+async function savePushSubscription(sub) {
+  pushSub = sub;
+  await authedPushFetch('/api/push-subscribe', { subscription: sub.toJSON() });
+}
+
+async function enablePush() {
+  pushState = detectPush();
+  if (pushState === 'unsupported' || pushState === 'needs-install' || pushState === 'denied') return pushState;
+
+  const permission = await Notification.requestPermission();
+  pushState = permission;
+  if (permission !== 'granted') return permission;
+
+  const reg = await navigator.serviceWorker.ready;
+  const vapidKey = window.FORMA_SUPABASE_CONFIG?.vapidPublicKey;
+  if (!vapidKey) return permission;
+
+  const sub = await reg.pushManager.getSubscription() ?? await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(vapidKey) });
+  await savePushSubscription(sub);
+  return 'granted';
+}
+
+if (pushState === 'granted' && 'serviceWorker' in navigator) {
+  navigator.serviceWorker.ready
+    .then((reg) => reg.pushManager.getSubscription())
+    .then((sub) => { if (sub) savePushSubscription(sub); })
+    .catch(() => {});
+
+  navigator.serviceWorker.addEventListener('message', (e) => {
+    if (e.data?.type === 'push-resubscribe') enablePush();
+  });
+}
+
+async function scheduleRestPush({ restSeconds, setNumber, exerciseName }) {
+  if (pushState !== 'granted' || !pushSub) return null;
+  const endsAt = Date.now() + restSeconds * 1000;
+  try {
+    const res = await authedPushFetch('/api/schedule-rest-push', {
+      subscription: pushSub.toJSON(),
+      endsAt,
+      setNumber,
+      exerciseName,
+      replaceMessageId: pushMessageId,
+    });
+    const json = await res.json();
+    pushMessageId = json.messageId || null;
+    return endsAt;
+  } catch { return null; }
+}
+
+async function cancelRestPush() {
+  if (!pushMessageId) return;
+  const id = pushMessageId;
+  pushMessageId = null;
+  await authedPushFetch('/api/cancel-rest-push', { messageId: id }).catch(() => {});
+}
+/* ------------------------------------------ */
+
 function freshState() {
   return {
     version: 1,
@@ -112,8 +201,7 @@ function activeLog() { return currentLog(state.activeDate); }
 function allFoods() { return [...masterFoods,...(state.customFoods||[])]; }
 function findFood(id) { return allFoods().find(food=>food.id===id)||onlineFoodCache[id]; }
 function findExercise(id) { return masterExercises.find(ex=>ex.id===id); }
-/* ---------- shared UI helpers ---------- */
-/* ---------- theme ---------- */
+
 function storedTheme() { try { const t=localStorage.getItem('timelyfit_theme'); return t==='light'||t==='dark'?t:null; } catch(_) { return null; } }
 function effectiveTheme() { return storedTheme()||(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'); }
 function applyTheme(theme) {
@@ -121,7 +209,7 @@ function applyTheme(theme) {
   const dark=effectiveTheme()==='dark';
   document.querySelectorAll('meta[name="theme-color"]').forEach(m=>{ m.removeAttribute('media'); m.setAttribute('content',dark?'#0a0f0c':'#f4f6f1'); });
 }
-/* ---------- targets that remember their history ---------- */
+
 function targetsFor(dateKey) {
   const p=state.profile;const history=Array.isArray(p.targetHistory)?p.targetHistory:[];
   let found=null;
@@ -134,7 +222,7 @@ function periodGoal(key,entries=logsForPeriod()) {
   return entries.reduce((sum,x)=>sum+n(targetsFor(x.date)[key]),0)/entries.length;
 }
 function optNum(id) { const raw=String($(id)?.value??'').trim(); if(raw==='')return null; const v=Number(raw); return Number.isFinite(v)?v:NaN; }
-/* ---------- weight selectors: 0 kg upward in 2.5 kg steps ---------- */
+
 function weightOptions(current,max=300) {
   const cur=n(current);const list=[];for(let w=0;w<=max;w+=2.5)list.push(w);
   if(!list.some(w=>Math.abs(w-cur)<1e-6)){list.push(cur);list.sort((x,y)=>x-y);}
@@ -157,7 +245,6 @@ function renderFoodThumb(food) {
   const img=food?.image?`<img src="${safe(food.image)}" alt="" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="thumb-fallback" hidden>${glyph}</span>`:`<span class="thumb-fallback">${glyph}</span>`;
   return `<span class="thumb">${img}</span>`;
 }
-/* Which fields an exercise needs: weight + reps, reps only (body-weight), or minutes (timed/cardio). */
 const WEIGHT_EQUIPMENT=/barbell|dumbbell|cable|machine|smith|kettlebell|weighted|assisted|sled|medicine|ez[ -]|plate|trap bar|hex|olympic|lever/i;
 function exerciseMode(ex) {
   const m=ex?.tracking_metrics||['weight','reps'];
@@ -170,7 +257,6 @@ function entryMode(ex) {
   if((ex.sets||[]).some(s=>n(s.weight)>0))return 'weight';
   return exerciseMode(findExercise(ex.exercise_id)||ex);
 }
-/* Muscle search: "chest" also finds pectoral work whose name never says chest. */
 const MUSCLE_SYNONYMS=[['chest','pectorals','pectoral','pecs','pec'],['lats','lat','latissimus','latissimus dorsi'],['traps','trapezius'],['delts','delt','deltoids','deltoid','shoulder','shoulders'],['abs','abdominals','abdominal','core'],['quads','quad','quadriceps'],['hamstrings','hamstring'],['glutes','glute','hips'],['calves','calf','soleus'],['biceps','bicep'],['triceps','tricep'],['forearms','forearm','grip','wrist','wrists'],['spine','erector','lower back'],['cardio','cardiovascular','cardiovascular system','conditioning']];
 const MUSCLE_REGIONS={back:['back','lats','traps','rhomboids','upper back','lower back','spine','posterior chain'],arm:['arms','biceps','triceps','forearms','upper arms','lower arms','brachialis'],arms:['arms','biceps','triceps','forearms','upper arms','lower arms','brachialis'],leg:['legs','quads','quadriceps','hamstrings','glutes','calves','adductors','abductors','upper legs','lower legs','soleus'],legs:['legs','quads','quadriceps','hamstrings','glutes','calves','adductors','abductors','upper legs','lower legs','soleus'],core:['abs','core','obliques','waist','abdominals'],abs:['abs','core','obliques','waist','abdominals']};
 function expandTerms(word) {
@@ -249,7 +335,6 @@ function foodMacros(food, amount, unit=foodAmountUnit(food)) {
   if (food.macros_per_100g) {
     let base=amountN*unitScale(u);
     if(food.serving_unit==='scoop' && u==='scoop') base=amountN*n(food.default_serving_size||30);
-    // Legacy entries that use ml with macros_per_100g are treated as per 100 ml.
     const result={};
     for(const key of ['calories','protein','carbs','fat','fiber']) result[key]=round(n(food.macros_per_100g[key])*base/100,2);
     return result;
@@ -282,7 +367,6 @@ function nutritionEmoji(food) {
   return food?.type==='custom_recipe'?'🍲':'🍽️';
 }
 
-// IndexedDB: master data is cached once; the active app state is persisted locally.
 function openDatabase() {
   return new Promise((resolve,reject)=>{
     if (!('indexedDB' in window)) return resolve(null);
@@ -344,9 +428,6 @@ function scheduleSave(markCurrentDate=true) {
   clearTimeout(saveTimer);
   saveTimer=setTimeout(()=>{ saveQueue=saveQueue.then(persistState).catch(console.error); },180);
 }
-/* Sync state is shown as the border of the settings button:
-   red = changes not synced yet (or a sync problem), neutral = everything synced, pulsing neutral = syncing.
-   `mode` is 'ok' | 'dirty' | 'error' | 'busy'; the text is kept for screen readers and the button tooltip. */
 function setSyncStatus(text,error=false,mode) {
   const syncMode=mode||(error?'error':syncing?'busy':'dirty');
   const button=$('settingsButton');
@@ -378,7 +459,7 @@ async function initialise() {
   state.recentFoodIds=Array.isArray(state.recentFoodIds)?state.recentFoodIds:[];
   state.recentExerciseIds=Array.isArray(state.recentExerciseIds)?state.recentExerciseIds:[];
   state.syncMeta={...freshState().syncMeta,...(state.syncMeta||{})};
-  state.activeDate=toDateKey(new Date()); // every launch opens on today, whatever day was open last time
+  state.activeDate=toDateKey(new Date()); 
   masterFoods=await readMaster('foods','foods.json');
   masterExercises=await readMaster('exercises','exercises.json');
   if(!masterFoods.length)masterFoods=offlineFoodsFallback();
@@ -402,8 +483,6 @@ function render() {
   renderDates();
   $('mainContent').innerHTML=state.selectedTab==='timeline'?renderTimeline():renderAnalytics();
 }
-/* Horizontally scrollable dates: 60 days back to 2 weeks ahead (wider when a far date is picked).
-   Pills are built once and only re-styled afterwards, so the scroll position survives other re-renders. */
 let dateStripKey='',dateStripCentered='';
 function renderDates() {
   const host=$('dateOptions'); if(!host)return;
@@ -419,11 +498,10 @@ function renderDates() {
     host.innerHTML=items.join('');dateStripKey=key;dateStripCentered='';
   }
   host.querySelectorAll('.date-pill').forEach(btn=>{const on=btn.dataset.date===active;btn.classList.toggle('active',on);if(on)btn.setAttribute('aria-current','date');else btn.removeAttribute('aria-current');});
-  if(dateStripCentered!==active&&host.clientWidth>0){   // skipped while the strip is hidden (Dashboard tab); done once it shows
+  if(dateStripCentered!==active&&host.clientWidth>0){
     const pill=host.querySelector('.date-pill.active');
     if(pill){
       const left=pill.offsetLeft-(host.clientWidth-pill.offsetWidth)/2;
-      // first paint jumps, later changes glide; the strip is centred only when the chosen date changes
       host.scrollTo({left:Math.max(0,left),behavior:dateStripCentered?'smooth':'auto'});
       dateStripCentered=active;
     }
@@ -552,7 +630,7 @@ function renderWorkoutHeatmap(entries) {
   if(analyticsPeriod==='daily')buckets=[{label:parseDateKey(entries[0]?.date||state.activeDate).toLocaleDateString('en-IN',{day:'numeric',month:'short'}),dates:entries.map(x=>x.date)}];
   else if(analyticsPeriod==='weekly')buckets=entries.map(x=>({label:parseDateKey(x.date).toLocaleDateString('en-IN',{weekday:'narrow'}),dates:[x.date]}));
   else {for(let i=0;i<entries.length;i+=7){const group=entries.slice(i,i+7);buckets.push({label:`W${buckets.length+1}`,dates:group.map(x=>x.date)});}}
-  const grid={};let any=false;for(const row of rows){grid[row]={};for(let i=0;i<buckets.length;i++){let count=0;for(const entry of entries.filter(x=>buckets[i].dates.includes(x.date))){if(!entry.log)continue;for(const session of workoutSessions(entry.log))for(const ex of session.exercises||[]){if(muscleHeatKey(ex.primary_muscle)!==row)continue;count+=(ex.sets||[]).filter(set=>set.completed).length;}}grid[row][i]=count;if(count)any=true;}}
+  const grid={};let any=false;forconst row of rows={};for(let i=0;i<buckets.length;i++){let count=0;for(const entry of entries.filter(x=>buckets[i].dates.includes(x.date))){if(!entry.log)continue;for(const session of workoutSessions(entry.log))for(const ex of session.exercises||[]){if(muscleHeatKey(ex.primary_muscle)!==row)continue;count+=(ex.sets||[]).filter(set=>set.completed).length;}}grid[row][i]=count;if(count)any=true;}}
   if(!any)return '<div class="empty-chart">Complete sets to see the heatmap.</div>';
   return `<div class="heatmap-wrap"><div class="heatmap-grid" style="--heat-cols:${buckets.length}"><div class="heatmap-corner"></div>${buckets.map(b=>`<div class="heatmap-day">${safe(b.label)}</div>`).join('')}${rows.map(row=>`<div class="heatmap-muscle">${row}</div>${buckets.map((_,i)=>{const v=grid[row][i];const opacity=v?Math.min(.95,.18+v*.12):.06;return `<div class="heatmap-cell" title="${row}: ${v} completed sets" style="--heat-alpha:${opacity}">${v||''}</div>`;}).join('')}`).join('')}</div><div class="heatmap-caption">Completed sets by body part · dates grouped by week in monthly view</div></div>`;
 }
@@ -624,7 +702,6 @@ function renderWaterAnalytics() {
     <div class="analysis-card"><div class="analysis-card-head"><div class="analysis-card-title">Days on target</div></div><div class="analysis-number-row"><div class="analysis-number">${completed}</div><div class="analysis-unit">of ${periods.length} days</div></div><div class="progress-track light"><div class="progress-fill water" style="width:${pct(completed,periods.length)}%"></div></div></div>
     <section class="insight-card"><div class="insight-title">${title}</div><div class="insight-body">${body}</div><div class="insight-foot">Needs vary</div></section>`;
 }
-// Modal shell and diet logging
 function showModal(html,size='') { $('modalRoot').innerHTML=`<div class="modal-backdrop" data-action="backdrop-close"><section class="modal-sheet ${size}" role="dialog" aria-modal="true">${html}</section></div>`; }
 function closeModal() {
   if(playerIdx>=0){leavePlayer();render();}
@@ -666,7 +743,6 @@ function searchScore(query,text) {
   if(t.startsWith(q))return 100-q.length/100;if(t.includes(q))return 80-q.length/100;
   const parts=q.split(/\s+/);let total=0;for(const part of parts){if(t.includes(part))total+=20;else{let best=0;for(let i=0;i<part.length;i++)if(t.includes(part.slice(0,part.length-i)))best=Math.max(best,(part.length-i)/part.length*10);total+=best;}}return total/parts.length;
 }
-/* ---------- Open Food Facts (online packaged products) ---------- */
 const OFF_FIELDS='code,product_name,generic_name,brands,quantity,serving_quantity,nutriments,image_front_small_url';
 async function offFetch(url) {
   const ctrl=new AbortController();const timer=setTimeout(()=>ctrl.abort(),12000);
@@ -884,8 +960,6 @@ function saveRecipe() {
   state.customFoods.push(item);state.recentFoodIds=recentIds(state.recentFoodIds,item.id);state.syncMeta.dirtyFoodIds=Array.from(new Set([...(state.syncMeta.dirtyFoodIds||[]),item.id]));scheduleSave(false);closeModal();openFoodModal('breakfast',item.id);toast('Recipe saved. Add it to any meal when ready.');
 }
 
-
-// Workout progression & execution
 function openWorkoutModal() { if(typeof genOpen==='function')genOpen(); else openExerciseSearchModal(); }
 function openExerciseSearchModal() {
   activeExerciseSelection=null;
@@ -1006,7 +1080,6 @@ function updateSetPreview() {
     host.innerHTML=Array.from({length:sets},(_,i)=>`<span>Set ${i+1}: <strong>${fmt(start+i*inc,1)} kg × ${reps}</strong></span>`).join('');
   } else host.innerHTML=`<span><strong>${sets} × ${mode==='time'?fmt(reps,1)+' min':reps+' reps'}</strong></span>`;
 }
-/* ---------- sessions ---------- */
 function findSession(sessionId) {
   const log=activeLog();
   if(log.workout_log&&log.workout_log.session_id===sessionId)return {session:log.workout_log,active:true,log};
@@ -1107,11 +1180,7 @@ function saveExerciseSetup() {
   workout.exercises.push({exercise_id:ex.id,mode,name:ex.name,primary_muscle:ex.primary_muscle,secondary_muscles:ex.secondary_muscles||[],equipment:ex.equipment,met_value:ex.met_value,default_rest_sec:ex.default_rest_sec,tracking_metrics:ex.tracking_metrics||['weight','reps'],sets,started:false,finished:false,rest_until:null,last_completed_set:null,created_at:new Date().toISOString()});
   state.selectedDomain='workout';state.selectedTab='timeline';scheduleSave();closeModal();render();toast(`${ex.name} added to your session.`);
 }
-/* ================= session clocks =================
-   Session time = now - start. Break time = every moment you are not doing a set:
-   the countdown between sets, the gap after saving an exercise, or time spent outside an exercise window.
-   `break_start` is set while a break is running, `break_ms` holds the finished breaks, so the stopwatch
-   is always computed from timestamps and stays right in the background. */
+
 const pad2=v=>String(v).padStart(2,'0');
 function clockText(ms) { const s=Math.max(0,Math.floor(ms/1000)),h=Math.floor(s/3600),m=Math.floor(s%3600/60);return h?`${h}:${pad2(m)}:${pad2(s%60)}`:`${pad2(m)}:${pad2(s%60)}`; }
 function breakTotalMs(w,now=Date.now()) { return n(w.break_ms)+(w.break_start?Math.max(0,now-n(w.break_start)):0); }
@@ -1120,24 +1189,27 @@ function endBreak(w,at=Date.now()) { if(w.break_start){w.break_ms=n(w.break_ms)+
 function ensureSessionStarted(w) { if(!w.start_ms){w.start_ms=Date.now();w.start_time=new Date(w.start_ms).toISOString();w.status='active';} }
 function liveWorkout() { return state.logs?.[state.activeDate]?.workout_log||null; }
 
-/* ================= exercise player (tap an exercise) ================= */
 let playerIdx=-1;
 const CHEERS=[(a,b)=>`Set ${a} done. Nice work! On to set ${b}.`,(a,b)=>`Strong set! Rest, then set ${b}.`,(a,b)=>`Set ${a} in the bank. Ready for set ${b}?`,(a,b)=>`That's the way. Next up: set ${b}.`,(a,b)=>`Clean rep work! Set ${b} is next.`];
 function playerExercise() { return liveWorkout()?.exercises?.[playerIdx]||null; }
+
 function openPlayer(index) {
+  enablePush().catch(console.error); // Trigger permission immediately on gesture
+
   const w=liveWorkout();const ex=w?.exercises?.[index];if(!ex)return;
   ensureSessionStarted(w);
   if(!ex.finished){
-    endBreak(w); // back to work: the break stopwatch stops here
+    endBreak(w);
     ex.started=true;ex.start_ms=ex.start_ms||Date.now();
     const next=ex.sets.find(s=>!s.completed);if(next&&!next.started_at)next.started_at=Date.now();
   }
   playerIdx=index;scheduleSave();showModal(playerHtml(ex,index),'player');syncPlayer();render();
 }
+
 function leavePlayer() {
   const w=liveWorkout();const ex=w?.exercises?.[playerIdx];playerIdx=-1;if(!w||!ex)return;
-  if(ex.rest_until){ex.rest_until=null;ex.last_completed_set=null;} // the countdown goes away, the break stopwatch carries on
-  if(!ex.finished)startBreak(w);                                      // leaving mid-exercise counts as break
+  if(ex.rest_until){ex.rest_until=null;ex.last_completed_set=null;} 
+  if(!ex.finished)startBreak(w);                                      
   scheduleSave();
 }
 function stepperHtml(field,i,value,unit) {
@@ -1185,7 +1257,7 @@ function playerHtml(ex,index) {
   <div class="pl-foot"><div class="pl-break" id="plBreak"><div class="pl-break-in"><button type="button" class="pl-bb" data-action="pl-rest" data-d="-30" aria-label="Shorten break by 30 seconds">−30</button><div class="pl-bt"><span>BREAK</span><strong id="plClock">00:00</strong></div><button type="button" class="pl-bb" data-action="pl-rest" data-d="30" aria-label="Lengthen break by 30 seconds">+30</button></div></div><button type="button" class="pl-save" id="plSave" data-action="pl-save">Save</button></div>
   <div class="pl-cheer" id="plCheer" role="status" aria-live="polite"></div></div>`;
 }
-/* redraws the parts of the player that depend on the sets (never the inputs while typing) */
+
 function syncPlayer() {
   const ex=playerExercise();if(!ex||!$('plRoot'))return;
   const done=ex.sets.filter(s=>s.completed).length,total=ex.sets.length,all=total>0&&done===total;
@@ -1197,24 +1269,35 @@ function syncPlayer() {
   tickAll();
 }
 function cheerPlayer(text) { const el=$('plCheer');if(!el)return;el.textContent=text;el.classList.add('on');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('on'),2300); }
+
 function playerTick(i,button) {
   const w=liveWorkout(),ex=w?.exercises?.[playerIdx],set=ex?.sets?.[i];if(!set)return;
   const now=Date.now();
   if(!set.completed){
     set.completed=true;set.completed_at=new Date(now).toISOString();set.duration_sec=Math.max(1,Math.round((now-n(set.started_at||now))/1000));
     const all=ex.sets.every(s=>s.completed);
-    if(ex.rest_until)endBreak(w,now); // ticked before the countdown ended: that break is over
-    if(!ex.finished&&!all){ex.rest_until=now+n(ex.break_sec||60)*1000;ex.last_completed_set=i;startBreak(w,now);}
-    else{ex.rest_until=null;ex.last_completed_set=null;}
+    if(ex.rest_until)endBreak(w,now); 
+    if(!ex.finished&&!all){
+      ex.rest_until=now+n(ex.break_sec||60)*1000;ex.last_completed_set=i;startBreak(w,now);
+      scheduleRestPush({ restSeconds: n(ex.break_sec||60), setNumber: i+1, exerciseName: ex.name });
+    }
+    else{
+      ex.rest_until=null;ex.last_completed_set=null;
+      cancelRestPush();
+    }
     const nextIdx=ex.sets.findIndex(s=>!s.completed);
     cheerPlayer(all?'All sets done! Save your progress.':CHEERS[Math.floor(Math.random()*CHEERS.length)](i+1,nextIdx+1));
     const r=button?.getBoundingClientRect();window.TimelyFX&&TimelyFX.burst(r?r.left+r.width/2:undefined,r?r.top+r.height/2:undefined);
   } else {
     set.completed=false;set.completed_at=null;set.duration_sec=null;set.started_at=now;
-    if(ex.rest_until&&ex.last_completed_set===i){endBreak(w,now);ex.rest_until=null;ex.last_completed_set=null;}
+    if(ex.rest_until&&ex.last_completed_set===i){
+      endBreak(w,now);ex.rest_until=null;ex.last_completed_set=null;
+      cancelRestPush();
+    }
   }
   scheduleSave();syncPlayer();
 }
+
 function playerStep(i,field,dir) {
   const ex=playerExercise(),set=ex?.sets?.[i];if(!set)return;const mode=entryMode(ex);
   const step=field==='weight'?2.5:(mode==='time'?.5:1);const cur=n(field==='weight'?set.weight:set.reps);
@@ -1223,12 +1306,22 @@ function playerStep(i,field,dir) {
   const input=document.querySelector(`#plSets input[data-role="pl-${field}"][data-set="${i}"]`);if(input)input.value=field==='weight'?set.weight:set.reps;
   scheduleSave();
 }
+
 function playerRest(delta) {
   const ex=playerExercise();if(!ex)return;
-  ex.break_sec=Math.max(15,n(ex.break_sec||60)+delta); // later breaks in this exercise use the new length too
-  if(ex.rest_until)ex.rest_until=Math.max(Date.now(),n(ex.rest_until)+delta*1000);
+  ex.break_sec=Math.max(15,n(ex.break_sec||60)+delta); 
+  if(ex.rest_until){
+    ex.rest_until=Math.max(Date.now(),n(ex.rest_until)+delta*1000);
+    const restSeconds = Math.ceil((n(ex.rest_until) - Date.now()) / 1000);
+    if (restSeconds > 0) {
+      scheduleRestPush({ restSeconds, setNumber: (ex.last_completed_set !== null ? ex.last_completed_set + 1 : 1), exerciseName: ex.name });
+    } else {
+      cancelRestPush();
+    }
+  }
   scheduleSave();tickAll();
 }
+
 function playerAddSet() {
   const w=liveWorkout(),ex=playerExercise();if(!ex)return;
   const last=ex.sets[ex.sets.length-1]||{weight:0,reps:10};const idle=!ex.rest_until&&ex.sets.every(s=>s.completed);
@@ -1243,19 +1336,23 @@ function playerUseLast() {
   ex.sets.forEach((s,i)=>{if(s.completed)return;const q=src[Math.min(i,src.length-1)];s.weight=n(q.weight);s.reps=n(q.reps);});
   scheduleSave();syncPlayer();cheerPlayer('Loaded your last numbers.');
 }
+
 function playerSave() {
   const w=liveWorkout(),ex=playerExercise();if(!w||!ex)return;
   if(ex.finished){closeModal();return;}
   if(!ex.sets.some(s=>s.completed)){toast('Tick at least one set to save.',true);return;}
+  
+  cancelRestPush();
+
   const now=Date.now(),count=ex.sets.filter(s=>s.completed).length;
   ex.sets=ex.sets.filter(s=>s.completed);ex.sets.forEach((s,i)=>{s.set_num=i+1;});
   ex.finished=true;ex.started=false;ex.finished_at=new Date(now).toISOString();ex.active_sec=ex.sets.reduce((a,s)=>a+n(s.duration_sec),0);
   ex.rest_until=null;ex.last_completed_set=null;
-  startBreak(w,now); // the gap before the next exercise is break time: the stopwatch runs from here
+  startBreak(w,now); 
   playerIdx=-1;scheduleSave();closeModal();render();
   toast(`${ex.name} saved · ${count} set${count===1?'':'s'}. Pick your next exercise.`);
 }
-/* one 250 ms heartbeat: session / break clocks on the timeline and the countdown inside the player */
+
 function tickAll() {
   const w=liveWorkout(),now=Date.now();
   if(w)document.querySelectorAll('[data-clock]').forEach(el=>{el.textContent=el.dataset.clock==='session'?clockText(now-n(w.start_ms)):clockText(breakTotalMs(w,now));});
@@ -1263,7 +1360,7 @@ function tickAll() {
   if(playerIdx>=0){
     const ex=w.exercises[playerIdx],panel=$('plBreak');if(!ex||!panel)return;
     const left=ex.rest_until?Math.ceil((n(ex.rest_until)-now)/1000):0;
-    if(ex.rest_until&&left<=0){ // break over: stop the break and start recording the next set
+    if(ex.rest_until&&left<=0){ 
       const endAt=n(ex.rest_until);endBreak(w,endAt);ex.rest_until=null;ex.last_completed_set=null;
       const idx=ex.sets.findIndex(s=>!s.completed);if(idx>=0)ex.sets[idx].started_at=endAt;
       scheduleSave();panel.classList.remove('on','warn');window.TimelyFX&&TimelyFX.beep('end');
@@ -1272,7 +1369,7 @@ function tickAll() {
     panel.classList.toggle('on',!!ex.rest_until);
     if(ex.rest_until){const c=$('plClock');if(c)c.textContent=clockText(left*1000);panel.classList.toggle('warn',left<=10);}
   } else {
-    w.exercises.forEach(ex=>{if(ex.rest_until){ex.rest_until=null;ex.last_completed_set=null;}}); // a stale countdown (e.g. after a reload) just stops
+    w.exercises.forEach(ex=>{if(ex.rest_until){ex.rest_until=null;ex.last_completed_set=null;}}); 
   }
 }
 setInterval(tickAll,250);
@@ -1308,7 +1405,6 @@ function showSessionSummary(s,hasMET) {
   window.TimelyFX&&TimelyFX.finale();
 }
 
-// Water and settings
 function addWater(amount) {
   if(amount==='custom') { showModal(`${sheetHead('Add water')}<div class="field"><label for="customWaterAmount">AMOUNT (ML)</label><input id="customWaterAmount" type="number" inputmode="numeric" min="1" step="25" placeholder="e.g. 350" autofocus /></div><div class="modal-actions"><button class="cancel" data-action="close-modal">Cancel</button><button class="save lime" data-action="save-custom-water">Add water</button></div>`);return; }
   const ml=Math.round(n(amount));if(ml<=0)return;currentLog().water_log.push({entry_id:uid('water'),timestamp:new Date().toISOString(),amount_ml:ml});scheduleSave();render();toast(`${fmt(ml)} ml water logged.`);
@@ -1419,7 +1515,6 @@ async function fetchCloudLogs(sinceTimestamp=null) {
 async function loadCloudData() {
   if(!supabaseClient||!authUser)return;
   const userId=authUser.id;state.syncMeta=state.syncMeta||freshState().syncMeta;
-  // Keep browser data separated when accounts change on a shared device.
   const previousOwner=state.syncMeta.userId;
   if(previousOwner&&previousOwner!==userId){
     const snapshot=JSON.parse(JSON.stringify(state));
@@ -1433,8 +1528,6 @@ async function loadCloudData() {
   }
   if(state.syncMeta.userId!==userId){state.syncMeta={...freshState().syncMeta,userId,hasCompletedSync:false,hasCompletedPull:false,lastCloudPullAt:null};}
   const meta=state.syncMeta;
-  // Only fetch the full timeline the first time this browser loads an account.
-  // Later logins transfer only date rows updated since the last successful pull.
   const needsFullPull=!meta.hasCompletedPull||!meta.lastCloudPullAt;
   const [remoteLogs,profileResult,foodsResult]=await Promise.all([
     fetchCloudLogs(needsFullPull?null:meta.lastCloudPullAt),
@@ -1452,11 +1545,9 @@ async function loadCloudData() {
       if(!local||(!dirty&&remoteTs>localTs))state.logs[row.date]=remoteLog;
       else if(localTs>remoteTs&&!dirty)meta.dirtyDates=Array.from(new Set([...(meta.dirtyDates||[]),row.date]));
     }
-    // Only a full pull can prove which local dates are absent in the cloud.
     if(needsFullPull){
       for(const date of Object.keys(state.logs)){
         const local=state.logs[date];
-        // Do not create cloud rows for auto-created but still-empty days.
         if(!remoteDates.has(date)&&(local.updated_at||logHasData(local)))meta.dirtyDates=Array.from(new Set([...(meta.dirtyDates||[]),date]));
       }
     }
@@ -1488,12 +1579,9 @@ async function syncNow() {
   try {
     clearTimeout(saveTimer);await (saveQueue=saveQueue.then(persistState));
     const meta=state.syncMeta;
-    // Send only date logs explicitly marked dirty. The initial cloud pull identifies local-only dates,
-    // so first sync does not need to rewrite every date already stored in Supabase.
     const selectedLogs=(meta.dirtyDates||[]).map(date=>state.logs[date]).filter(Boolean);
     const now=new Date().toISOString();
     const logRows=selectedLogs.map(log=>{
-      // date and updated_at already live in typed SQL columns; omit duplicate copies from JSONB.
       const content={...log};delete content.date;delete content.updated_at;
       return {user_id:authUser.id,date:log.date,content,updated_at:log.updated_at||now};
     });
@@ -1547,7 +1635,6 @@ async function handleAuth(mode) {
     const result=mode==='signup'?await supabaseClient.auth.signUp({email,password}):await supabaseClient.auth.signInWithPassword({email,password});
     if(result.error)throw result.error;
     if(mode==='signup'&&!result.data.session){toast('Account created. Check your email to confirm, then return here to sign in.');return;}
-    // The single auth-state listener performs the cloud pull, avoiding duplicate reads.
     toast(mode==='signup'?'Account created. Loading your Timely Fit workspace…':'Signed in. Loading your Timely Fit workspace…');
   } catch(error) { toast(error.message||'Authentication failed.',true); }
 }
@@ -1579,230 +1666,3 @@ async function saveNewPassword() {
   const password=$('newAccountPassword')?.value||'';if(password.length<8){toast('Use a password with at least 8 characters.',true);return;}
   try{const {error}=await supabaseClient.auth.updateUser({password});if(error)throw error;closeModal();render();toast('Password updated successfully.');}
   catch(error){toast(error.message||'Could not update password.',true);}
-}
-function exportData() {
-  const output={exported_at:new Date().toISOString(),schema_version:1,user_profile:state.profile,daily_logs:Object.values(state.logs).map(log=>{const totals=logTotals(log);return {user_id:'local_user',date:log.date,daily_totals:{net_calories:round(totals.net),protein_g:round(totals.protein,2),carbs_g:round(totals.carbs,2),fat_g:round(totals.fat,2),water_ml:Math.round(totals.water),calories_burned:Math.round(totals.burned)},diet_log:log.diet_log,workout_log:log.workout_log,workout_history:log.workout_history,water_log:log.water_log};}),user_custom_foods:state.customFoods};
-  const blob=new Blob([JSON.stringify(output,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`timely-fit-export-${toDateKey(new Date())}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);toast('Export prepared.');
-}
-
-// Event delegation
-
-document.addEventListener('click', async (event)=>{
-  const button=event.target.closest('[data-action]');if(!button)return;
-  const action=button.dataset.action;
-  if(action==='backdrop-close'&&event.target!==button)return;
-  if(action==='backdrop-close'){closeModal();return;}
-  if(action==='close-modal'){closeModal();return;}
-  event.preventDefault();
-  switch(action){
-    case 'domain': switchDomain(button.dataset.value);break;
-    case 'tab': openExIdx=-1;state.selectedTab=button.dataset.tab;expandedSessions.clear();render();persistState();break;
-    case 'choose-date': openExIdx=-1;state.activeDate=button.dataset.date;expandedSessions.clear();expandedWaterLog=false;currentLog();render();persistState();break;
-    case 'open-settings': openSettings();break;
-    case 'open-add': openCurrentAdd();break;
-    case 'open-food': openFoodModal(button.dataset.meal||'breakfast');break;
-    case 'select-food': selectFoodInPicker(button.dataset.id);break;
-    case 'confirm-add-food': addSelectedFood();break;
-    case 'edit-food': openEditFood(button.dataset.id);break;
-    case 'delete-food': removeFoodEntry(button.dataset.id);break;
-    case 'save-food-edit': saveFoodEdit();break;
-    case 'open-recipe': openRecipeModal();break;
-    case 'recipe-add-ingredient': recipeIngredients.push({foodId:'',amount:100,unit:'g',query:''});renderRecipeIngredients();break;
-    case 'recipe-select-ingredient': selectRecipeIngredient(n(button.dataset.index),button.dataset.id);break;
-    case 'recipe-remove-ingredient': recipeIngredients.splice(n(button.dataset.index),1);renderRecipeIngredients();break;
-    case 'save-recipe': saveRecipe();break;
-    case 'add-exercise': openWorkoutModal();break;
-    case 'open-generator': openWorkoutModal();break;
-    case 'toggle-profile-edit': $('profileView')?.classList.toggle('hidden');$('profileEdit')?.classList.toggle('hidden');break;
-    case 'select-exercise': activeExerciseSelection=button.dataset.id;updateExerciseDetail();break;
-    case 'exercise-back': activeExerciseSelection=null;updateExerciseDetail();renderExerciseResults($('exerciseSearch')?.value||'');break;
-    case 'ex-chip': { const input=$('exerciseSearch');if(input)input.value=button.dataset.q;document.querySelectorAll('[data-action="ex-chip"]').forEach(b=>b.classList.toggle('active',b===button));renderExerciseResults(button.dataset.q);break; }
-    case 'food-filter': activeFoodFilter=button.dataset.value;document.querySelectorAll('[data-action="food-filter"]').forEach(b=>b.classList.toggle('active',b===button));renderFoodResults($('foodSearch')?.value||'');break;
-    case 'food-back': showFoodStep(1);break;
-    case 'pick-meal': { const input=$('foodMeal');if(input)input.value=button.dataset.value;document.querySelectorAll('[data-action="pick-meal"]').forEach(b=>b.classList.toggle('active',b===button));break; }
-    case 'open-exercise-detail': openExerciseDetail(button.dataset.id);break;
-    case 'edit-exercise': openEditExercise(n(button.dataset.exIndex),button.dataset.session||null);break;
-    case 'food-menu': openFoodMenu(button.dataset.id);break;
-    case 'food-menu-back': openFoodMenu(foodMenuEntryId);break;
-    case 'food-menu-edit': openEditFood(foodMenuEntryId);break;
-    case 'food-menu-meal': openFoodMenu(foodMenuEntryId,'meal');break;
-    case 'food-menu-delete': openFoodMenu(foodMenuEntryId,'delete');break;
-    case 'food-move': moveFoodEntry(button.dataset.meal);break;
-    case 'food-delete-confirm': { const id=foodMenuEntryId;closeModal();removeFoodEntry(id);break; }
-    case 'scan-barcode': openScanner();break;
-    case 'barcode-lookup': lookupBarcode($('manualBarcode')?.value);break;
-    case 'toggle-session': { const id=button.dataset.id;if(expandedSessions.has(id))expandedSessions.delete(id);else expandedSessions.add(id);render();break; }
-    case 'session-menu': openSessionMenu(button.dataset.id);break;
-    case 'session-menu-back': openSessionMenu(sessionMenuId);break;
-    case 'session-edit': openEditSession(sessionMenuId);break;
-    case 'session-del-ex-view': openSessionMenu(sessionMenuId,'delete-ex');break;
-    case 'session-del-ex': openSessionMenu(sessionMenuId,'delete-ex-confirm',n(button.dataset.index));break;
-    case 'session-del-ex-confirm': deleteSessionExercise(n(button.dataset.index));break;
-    case 'session-del-view': openSessionMenu(sessionMenuId,'delete-session');break;
-    case 'session-del-confirm': deleteSession();break;
-    case 'session-template-view': openSessionMenu(sessionMenuId,'template');break;
-    case 'session-template-save': saveTemplate();break;
-    case 'save-session-edit': saveSessionEdit();break;
-    case 'open-templates': openTemplates();break;
-    case 'template-use': useTemplate(button.dataset.id);break;
-    case 'template-delete': deleteTemplate(button.dataset.id,button);break;
-    case 'edit-add-set': editExerciseAddSet();break;
-    case 'edit-remove-set': editExerciseRemoveSet(n(button.dataset.setIndex));break;
-    case 'save-exercise-edit': saveExerciseEdit();break;
-    case 'delete-exercise': deleteExerciseEntry(button);break;
-    case 'save-exercise': saveExerciseSetup();break;
-    case 'play-exercise': openPlayer(n(button.dataset.exIndex));break;
-    case 'pl-tick': playerTick(n(button.dataset.set),button);break;
-    case 'pl-step': playerStep(n(button.dataset.set),button.dataset.f,n(button.dataset.d));break;
-    case 'pl-rest': playerRest(n(button.dataset.d));break;
-    case 'pl-add': playerAddSet();break;
-    case 'pl-remove': playerRemoveSet();break;
-    case 'pl-uselast': playerUseLast();break;
-    case 'pl-save': playerSave();break;
-    case 'pl-feel': {const fx=playerExercise();if(fx){fx.feel=button.dataset.value;scheduleSave();document.querySelectorAll('.pl-feel .feel-chip').forEach(c=>c.classList.toggle('on',c===button));}break;}
-    case 'pl-gif': {const img=button.querySelector('img');if(img&&button.dataset.gif){const on=button.classList.toggle('playing');img.src=on?button.dataset.gif:button.dataset.img;}break;}
-    case 'finish-session': finishSession();break;
-    case 'add-water': addWater(button.dataset.amount);break;
-    case 'save-custom-water': saveCustomWater();break;
-    case 'toggle-water-log': expandedWaterLog=!expandedWaterLog;render();break;
-    case 'delete-water': deleteWater(button.dataset.id);break;
-    case 'edit-water': editWaterEntry(button.dataset.id);break;
-    case 'save-water-edit': saveWaterEdit(button.dataset.id);break;
-    case 'save-settings': saveSettings();break;
-    case 'previous-period': shiftAnalyticsPeriod(-1);break;
-    case 'next-period': shiftAnalyticsPeriod(1);break;
-    case 'auth-signin': await handleAuth('signin');break;
-    case 'auth-signup': await handleAuth('signup');break;
-    case 'auth-google': await handleGoogleAuth();break;
-    case 'auth-reset': await handlePasswordReset();break;
-    case 'save-new-password': await saveNewPassword();break;
-    case 'auth-signout': await signOut();break;
-    case 'sync-now': await syncNow();break;
-    case 'export-data': exportData();break;
-    case 'set-period': analyticsPeriod=button.dataset.value;render();break;
-  }
-});
-
-document.addEventListener('input',(event)=>{
-  const target=event.target;
-  if(target.id==='foodSearch'){renderFoodResults(target.value);return;}
-  if(target.id==='foodAmount'){updateSelectedFoodPreview();return;}
-  if(target.id==='foodUnit'){updateSelectedFoodPreview();return;}
-  if(target.dataset.role==='recipe-search'){const i=n(target.dataset.index);const ing=recipeIngredients[i];if(ing){ing.query=target.value;if(findFood(ing.foodId)?.name.toLowerCase()!==target.value.trim().toLowerCase())ing.foodId='';renderRecipeSearchResults(i,target.value);updateRecipePreview();}return;}
-  if(target.id==='exerciseSearch'){document.querySelectorAll('[data-action="ex-chip"]').forEach(b=>b.classList.toggle('active',b.dataset.q.toLowerCase()===target.value.trim().toLowerCase()));renderExerciseResults(target.value);return;}
-  if(['targetSets','targetReps','startingWeight','weightIncrement'].includes(target.id)||target.id==='progressiveToggle'){updateSetPreview();return;}
-  if(target.id==='recipeYield'){updateRecipePreview();return;}
-});
-document.addEventListener('change',(event)=>{
-  const target=event.target;
-  if(target.id==='themeToggle'){applyTheme(target.checked?'dark':'light');return;}
-  if(target.id==='onlineToggle'){setOnlineSearch(target.checked);return;}
-  if(target.id==='datePicker'&&target.value){state.activeDate=target.value;currentLog();render();persistState();return;}
-  if(target.id==='recipeYield'){updateRecipePreview();return;}
-  if(target.id==='progressiveToggle'){updateSetPreview();return;}
-  if(target.dataset.role==='recipe-unit'){const i=n(target.dataset.index);if(recipeIngredients[i]){recipeIngredients[i].unit=target.value;updateRecipePreview();}return;}
-  if(target.dataset.role==='recipe-amount'){const i=n(target.dataset.index);if(recipeIngredients[i]){recipeIngredients[i].amount=Math.max(.01,n(target.value));updateRecipePreview();}return;}
-  if(target.dataset.role==='pl-weight'||target.dataset.role==='pl-reps'){
-    const px=playerExercise();const ps=px?.sets?.[n(target.dataset.set)];if(!ps)return;
-    if(target.dataset.role==='pl-weight')ps.weight=Math.max(0,n(target.value));else ps.reps=Math.max(0,n(target.value));
-    scheduleSave();return;
-  }
-  if(target.dataset.role==='set-weight'||target.dataset.role==='set-reps'){
-    const ex=activeLog().workout_log?.exercises?.[n(target.dataset.exIndex)];const set=ex?.sets?.[n(target.dataset.setIndex)];if(!set)return;
-    if(target.dataset.role==='set-weight')set.weight=Math.max(0,n(target.value));else set.reps=Math.max(0,Math.round(n(target.value)));
-    scheduleSave();return;
-  }
-  if(target.id==='foodAmount')return;
-});
-$('prevDate').addEventListener('click',()=>{expandedSessions.clear();state.activeDate=shiftDate(state.activeDate,-1);currentLog();render();persistState();});
-$('nextDate').addEventListener('click',()=>{expandedSessions.clear();state.activeDate=shiftDate(state.activeDate,1);currentLog();render();persistState();});
-$('settingsButton').addEventListener('click',openSettings);
-$('globalAdd').addEventListener('click',openCurrentAdd);
-function openCurrentAdd() {
-  if(state.selectedTab==='dashboard'){state.selectedTab='timeline';render();persistState();}
-  if(state.selectedDomain==='diet')openFoodModal(autoMeal(),null,true);
-  else if(state.selectedDomain==='workout')openWorkoutModal();
-  else addWater('custom');
-}
-function toast(message,error=false) {
-  const region=$('toastRegion');if(!region)return;const el=document.createElement('div');el.className=`toast ${error?'error':''}`;el.textContent=message;region.appendChild(el);setTimeout(()=>{el.style.opacity='0';el.style.transform='translateY(5px)';setTimeout(()=>el.remove(),220);},2400);
-}
-
-// Keep the visible rest timer ticking without rebuilding inputs or losing focus.
-setInterval(()=>{
-  const clock=$('rest-clock');if(!clock)return;const seconds=Math.max(0,Math.ceil((n(clock.dataset.until)-Date.now())/1000));clock.textContent=`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;if(seconds===0)clock.style.color='var(--warn)';
-},500);
-
-// Batch background sync every five minutes after the user has completed the first explicit sync.
-setInterval(()=>{
-  const meta=state.syncMeta||{};
-  const pending=(meta.dirtyDates||[]).length||(meta.dirtyFoodIds||[]).length||meta.pendingProfile;
-  if(authUser&&!syncing&&meta.hasCompletedSync&&pending)syncNow();
-},300000);
-
-const supabaseSdkScript=$('supabaseSdk');
-if(supabaseSdkScript&&!window.supabase?.createClient){
-  supabaseSdkScript.addEventListener('load',async()=>{await initialiseSupabase();render();},{once:true});
-  supabaseSdkScript.addEventListener('error',()=>{updateAuthGate();}, {once:true});
-}
-/* ---------- always come back to today ---------- */
-let lastTodayKey=toDateKey(new Date());
-function modalIsOpen() { const host=$('modalRoot');return !!(host&&host.firstElementChild); }
-function goToToday() {
-  const today=toDateKey(new Date());
-  if(state.activeDate===today)return;
-  openExIdx=-1;state.activeDate=today;expandedSessions.clear();expandedWaterLog=false;currentLog();render();persistState();
-}
-// Reopening the app (or returning to it from another app) lands on today. A dialog that is open is never pulled away.
-document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'&&!modalIsOpen())goToToday(); });
-window.addEventListener('pageshow',event=>{ if(event.persisted&&!modalIsOpen())goToToday(); });
-// Midnight while the app stays open: if you were on today, you move to the new today.
-setInterval(()=>{
-  const now=toDateKey(new Date());if(now===lastTodayKey)return;
-  const wasToday=state.activeDate===lastTodayKey;lastTodayKey=now;
-  if(wasToday&&!modalIsOpen())goToToday();else render();
-},30000);
-
-/* ---------- swipe left/right to move Diet ⇄ Workout ⇄ Water ---------- */
-const DOMAIN_ORDER=['diet','workout','water'];
-function switchDomain(value,direction) {
-  if(!DOMAIN_ORDER.includes(value)||value===state.selectedDomain)return;
-  const dir=direction||(DOMAIN_ORDER.indexOf(value)>DOMAIN_ORDER.indexOf(state.selectedDomain)?1:-1);
-  openExIdx=-1;state.selectedDomain=value;expandedSessions.clear();render();persistState();
-  const host=$('mainContent');
-  if(host){host.classList.remove('slide-next','slide-prev');void host.offsetWidth;host.classList.add(dir>0?'slide-next':'slide-prev');}
-}
-function enableDomainSwipe() {
-  // Gestures that start on a control that scrolls sideways, a field or the camera view are left alone.
-  const IGNORE='input,textarea,select,[contenteditable],.date-options,.chip-row,.meal-chips,.g-row,.scan-view,[data-no-swipe]';
-  let x0=0,y0=0,t0=0,axis=null,live=false;
-  document.addEventListener('touchstart',event=>{
-    live=false;axis=null;
-    const shell=$('appShell');
-    if(event.touches.length!==1||!shell||shell.classList.contains('hidden')||modalIsOpen())return;
-    if(event.target.closest&&event.target.closest(IGNORE))return;
-    const touch=event.touches[0];x0=touch.clientX;y0=touch.clientY;t0=Date.now();live=true;
-  },{passive:true});
-  document.addEventListener('touchmove',event=>{
-    if(!live)return;
-    const touch=event.touches[0],dx=touch.clientX-x0,dy=touch.clientY-y0;
-    if(!axis){if(Math.abs(dx)>10&&Math.abs(dx)>Math.abs(dy)*1.3)axis='x';else if(Math.abs(dy)>10)axis='y';}
-    // a sideways drag never pans the page itself, so the screen stays fixed
-    if(axis==='x'&&event.cancelable)event.preventDefault();
-  },{passive:false});
-  document.addEventListener('touchend',event=>{
-    if(!live)return;live=false;
-    if(axis!=='x')return;
-    const touch=event.changedTouches[0],dx=touch.clientX-x0,dy=touch.clientY-y0;
-    if(Math.abs(dx)<60||Math.abs(dx)<Math.abs(dy)*1.5||Date.now()-t0>900)return;
-    const next=DOMAIN_ORDER[DOMAIN_ORDER.indexOf(state.selectedDomain)+(dx<0?1:-1)];
-    if(next)switchDomain(next,dx<0?1:-1);   // finger moves left = next tab, right = previous tab
-  },{passive:true});
-  document.addEventListener('touchcancel',()=>{live=false;axis=null;},{passive:true});
-}
-enableDomainSwipe();
-
-initialise();
-
-document.addEventListener('keydown',(event)=>{ if(event.key==='Enter'&&event.target.id==='manualBarcode'){event.preventDefault();lookupBarcode(event.target.value);} });
-applyTheme();
