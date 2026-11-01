@@ -467,25 +467,24 @@ function renderWorkout(log,totals) {
   const doneSets=(workout.exercises||[]).reduce((sum,ex)=>sum+ex.sets.filter(s=>s.completed).length,0);
   const allSets=(workout.exercises||[]).reduce((sum,ex)=>sum+ex.sets.length,0);
   const volume=(workout.exercises||[]).reduce((sum,ex)=>sum+ex.sets.reduce((s,set)=>s+n(set.weight)*n(set.reps)*(set.completed?1:0),0),0);
-  return `<section class="session-bar"><div><span class="session-label">${safe(sessionTitle(workout,completed.length))}</span><strong>${doneSets}/${allSets} sets</strong><span>${isStarted?durationLabel(Date.now()-workout.start_ms):'Not started'}${volume?` · ${fmt(volume)} kg volume`:''}</span></div><div class="session-bar-actions"><button class="primary-button ${isStarted?'lime':''}" data-action="${isStarted?'finish-session':'start-session'}">${isStarted?`${icon('stop')} Finish`:`${icon('play')} Start`}</button><button type="button" class="session-more" data-action="session-menu" data-id="${safe(workout.session_id)}" aria-label="Session options">${icon('more')}</button></div></section>
+  const breakNow=breakTotalMs(workout);const showBreak=isStarted&&((workout.exercises||[]).some(e=>e.finished)||breakNow>0);
+  return `<section class="session-bar live ${isStarted?'':'idle'}"><div class="sb-head"><span class="session-label">${safe(sessionTitle(workout,completed.length))}</span><div class="session-bar-actions">${isStarted?`<button class="primary-button lime" data-action="finish-session">${icon('stop')} Finish</button>`:''}<button type="button" class="session-more" data-action="session-menu" data-id="${safe(workout.session_id)}" aria-label="Session options">${icon('more')}</button></div></div>
+    ${isStarted?`<div class="sb-clock" data-clock="session" aria-label="Session time">${clockText(Date.now()-n(workout.start_ms))}</div><div class="sb-foot"><span class="sb-sets">${doneSets}/${allSets} sets${volume?` · ${fmt(volume)} kg`:''}</span>${showBreak?`<span class="sb-break ${workout.break_start?'run':''}" title="Total break time">${icon('timer')}<em>Break</em><b data-clock="break">${clockText(breakNow)}</b></span>`:''}</div>`:`<div class="sb-idle"><strong>Ready when you are</strong><span>Tap any exercise to start your session</span></div>`}</section>
     <div class="section-title-row"><h3>Exercises</h3><span class="row-links">${hasTemplates?`<button class="muted-link" data-action="open-templates">${icon('bookmark')} Templates</button>`:''}<button class="muted-link" data-action="add-exercise">${icon('plus')} Add</button></span></div>
     ${exerciseCards}${historyBlock}`;
 }
 function durationLabel(ms) { const mins=Math.max(0,Math.floor(ms/60000)); return mins>=60?`${Math.floor(mins/60)}h ${mins%60}m`:`${mins} min`; }
 function calcVolume(workout) { return fmt((workout.exercises||[]).reduce((sum,ex)=>sum+ex.sets.reduce((s,set)=>s+n(set.weight)*n(set.reps)*(set.completed?1:0),0),0)); }
 function renderExerciseCard(ex,index,workout) {
-  const started=!!ex.started && !ex.finished;
   const done=!!ex.finished;
   const mode=entryMode(ex);const withWeight=mode==='weight';
   const completedSets=ex.sets.filter(s=>s.completed).length;
   const totalVolume=ex.sets.reduce((sum,s)=>sum+(s.completed?n(s.weight)*n(s.reps):0),0);
-  const repsLabel=mode==='time'?'MIN':'REPS';
-  const sets=ex.sets.map((set,sidx)=>`<div class="set-row ${withWeight?'':'no-weight'}"><div class="set-num">${sidx+1}</div>${withWeight?`<select class="set-input set-select" aria-label="Weight for set ${sidx+1}" data-role="set-weight" data-ex-index="${index}" data-set-index="${sidx}" ${done?'disabled':''}>${weightOptions(set.weight)}</select>`:''}<input class="set-input" type="number" inputmode="decimal" min="0" step="${mode==='time'?'0.5':'1'}" aria-label="${mode==='time'?'Minutes':'Reps'} for set ${sidx+1}" value="${safe(set.reps??12)}" data-role="set-reps" data-ex-index="${index}" data-set-index="${sidx}" ${done?'disabled':''}/><button class="set-complete ${set.completed?'checked':''}" data-action="complete-set" data-ex-index="${index}" data-set-index="${sidx}" ${done?'disabled':''} aria-label="Mark set ${sidx+1} complete">${set.completed?icon('check'):''}</button></div>`).join('');
-  const restSec=n(ex.default_rest_sec||60);
   const reference=findExercise(ex.exercise_id)||ex;
-  return `<article class="exercise-card"><div class="exercise-card-header">${renderExerciseThumbnail(reference,'timeline')}<div class="exercise-main" data-action="toggle-exercise" data-ex-index="${index}"><div class="exercise-name">${safe(ex.name)}</div><div class="exercise-meta">${safe(ex.primary_muscle||'Full body')} · ${safe(ex.equipment||'Bodyweight')}</div></div><span class="exercise-state ${done?'done':''}" data-action="toggle-exercise" data-ex-index="${index}">${done?'DONE':`${completedSets}/${ex.sets.length}`}</span><button type="button" class="mini-icon" data-action="edit-exercise" data-ex-index="${index}" aria-label="Edit ${safe(ex.name)}">${icon('pencil')}</button></div>
-    <div class="exercise-start-row"><div class="exercise-stats">${ex.sets.length} sets${withWeight&&totalVolume?` · ${fmt(totalVolume)} kg`:''}</div><button class="exercise-start ${index===openExIdx?'running':''}" data-action="${started?'toggle-exercise':'start-exercise'}" data-ex-index="${index}" ${done?'disabled':''}>${done?`${icon('check')} Complete`:index===openExIdx?`${icon('chevron-down')} Hide sets`:started?`${icon('play')} Show sets`:`${icon('play')} Start`}</button></div>
-    ${done?renderFeelRow(ex,index):''}${index===openExIdx?`<div class="sets-panel"><div class="sets-header ${withWeight?'':'no-weight'}"><span>SET</span>${withWeight?'<span>KG</span>':''}<span>${repsLabel}</span><span></span></div>${sets}<div class="set-actions"><button class="outline-button full" data-action="add-set" data-ex-index="${index}">${icon('plus')} Add set</button><button class="outline-button full" data-action="finish-exercise" data-ex-index="${index}">Finish exercise</button></div>${ex.rest_until&&ex.last_completed_set!=null?`<div class="rest-timer"><div class="rest-timer-text">${icon('timer')} <span>Rest</span> <span class="rest-clock" id="rest-clock" data-until="${ex.rest_until}">--:--</span></div><div class="timer-adjust"><button data-action="adjust-rest" data-ex-index="${index}" data-seconds="-30">−30s</button><button data-action="adjust-rest" data-ex-index="${index}" data-seconds="30">+30s</button></div></div>`:''}</div>`:''}</article>`;
+  const pips=ex.sets.map(s=>`<i class="${s.completed?'on':''}"></i>`).join('');
+  const label=done?'Review':completedSets?'Resume':'Play';
+  return `<article class="exercise-card ${done?'is-done':''}"><div class="exercise-card-header">${renderExerciseThumbnail(reference,'timeline')}<div class="exercise-main" data-action="play-exercise" data-ex-index="${index}"><div class="exercise-name">${safe(ex.name)}</div><div class="exercise-meta">${safe(ex.primary_muscle||'Full body')} · ${safe(ex.equipment||'Bodyweight')}</div></div><span class="exercise-state ${done?'done':''}" data-action="play-exercise" data-ex-index="${index}">${done?'DONE':`${completedSets}/${ex.sets.length}`}</span><button type="button" class="mini-icon" data-action="edit-exercise" data-ex-index="${index}" aria-label="Edit ${safe(ex.name)}">${icon('pencil')}</button></div>
+    <div class="exercise-start-row"><div class="ex-pips" aria-label="${completedSets} of ${ex.sets.length} sets done">${pips}<span class="exercise-stats">${withWeight&&totalVolume?`${fmt(totalVolume)} kg`:`${ex.sets.length} sets`}</span></div><button class="exercise-start ${done?'running':''}" data-action="play-exercise" data-ex-index="${index}">${icon(done?'check':'play')} ${label}</button></div></article>`;
 }
 function renderFeelRow(ex,index) { return `<div class="feel-row"><span>How did it feel?</span>${[['easy','Easy'],['ok','Right'],['hard','Hard']].map(([v,l])=>`<button type="button" class="feel-chip ${(ex.feel||'ok')===v?'on':''}" data-action="set-feel" data-ex-index="${index}" data-value="${v}">${l}</button>`).join('')}</div>`; }
 function exerciseEmoji(muscle='') { const x=String(muscle).toLowerCase(); if(x.includes('chest'))return '🏋️';if(x.includes('back'))return '🧗';if(x.includes('leg')||x.includes('hamstring')||x.includes('glute'))return '🦵';if(x.includes('arm')||x.includes('bicep')||x.includes('tricep'))return '💪';if(x.includes('core'))return '🧘';if(x.includes('shoulder'))return '🏋️';if(x.includes('full'))return '🏃';return '🏋️'; }
@@ -628,6 +627,7 @@ function renderWaterAnalytics() {
 // Modal shell and diet logging
 function showModal(html,size='') { $('modalRoot').innerHTML=`<div class="modal-backdrop" data-action="backdrop-close"><section class="modal-sheet ${size}" role="dialog" aria-modal="true">${html}</section></div>`; }
 function closeModal() {
+  if(playerIdx>=0){leavePlayer();render();}
   if(typeof genCleanup==='function')genCleanup();
   stopScanner();$('modalRoot').innerHTML=''; activeFoodSelection=null; editFoodEntryId=null; activeRecipeIngredient=null; foodMenuEntryId=null; sessionMenuId=null; editSessionId=null;
   const returnState=exerciseDetailReturnState; exerciseDetailReturnState=null;
@@ -1021,9 +1021,9 @@ function setsSummary(ex) {
   return parts.every(x=>x===parts[0])?`${parts.length} × ${parts[0]}`:parts.join(' · ');
 }
 function renderSessionCard(session,index) {
-  const id=session.session_id;const open=expandedSessions.has(id);const exs=session.exercises||[];
+  const id=session.session_id;const open=expandedSessions.has(id);const exs=(session.exercises||[]).filter(ex=>(ex.sets||[]).some(s=>s.completed));
   const sets=exs.reduce((sum,ex)=>sum+(ex.sets||[]).filter(s=>s.completed).length,0);
-  const meta=[session.start_time?timeLabel(session.start_time):'',session.duration_minutes?`${fmt(session.duration_minutes)} min`:'',`${exs.length} exercise${exs.length===1?'':'s'}`,`${sets} sets`,n(session.total_calories_burned)?`${fmt(session.total_calories_burned)} kcal`:''].filter(Boolean).join(' · ');
+  const meta=[session.start_time?timeLabel(session.start_time):'',session.duration_minutes?`${fmt(session.duration_minutes)} min`:'',n(session.break_ms)>=60000?`${fmt(Math.round(n(session.break_ms)/60000))} min break`:'',`${exs.length} exercise${exs.length===1?'':'s'}`,`${sets} sets`,n(session.total_calories_burned)?`${fmt(session.total_calories_burned)} kcal`:''].filter(Boolean).join(' · ');
   const body=open?`<div class="session-body">${exs.map(ex=>`<div class="session-ex">${renderExerciseThumbnail(findExercise(ex.exercise_id)||ex,'timeline')}<div class="session-ex-copy"><strong>${safe(ex.name)}</strong><span>${safe(setsSummary(ex))}</span></div></div>`).join('')||'<div class="empty-state">No exercises in this session.</div>'}</div>`:'';
   return `<article class="session-card ${open?'open':''}"><div class="session-head"><button type="button" class="session-toggle" data-action="toggle-session" data-id="${safe(id)}" aria-expanded="${open}"><span class="session-ic">${icon('check-circle')}</span><span class="session-copy"><strong>${safe(sessionTitle(session,index))}</strong><small>${safe(meta)}</small></span><span class="session-chev">${icon('chevron-down')}</span></button><button type="button" class="mini-icon" data-action="session-menu" data-id="${safe(id)}" aria-label="Session options">${icon('more')}</button></div>${body}</article>`;
 }
@@ -1107,42 +1107,205 @@ function saveExerciseSetup() {
   workout.exercises.push({exercise_id:ex.id,mode,name:ex.name,primary_muscle:ex.primary_muscle,secondary_muscles:ex.secondary_muscles||[],equipment:ex.equipment,met_value:ex.met_value,default_rest_sec:ex.default_rest_sec,tracking_metrics:ex.tracking_metrics||['weight','reps'],sets,started:false,finished:false,rest_until:null,last_completed_set:null,created_at:new Date().toISOString()});
   state.selectedDomain='workout';state.selectedTab='timeline';scheduleSave();closeModal();render();toast(`${ex.name} added to your session.`);
 }
-function startSession() {
-  const workout=activeLog().workout_log;if(!workout||!workout.exercises.length){toast('Add an exercise first.',true);return;}
-  if(!workout.start_ms){workout.start_ms=Date.now();workout.start_time=new Date(workout.start_ms).toISOString();workout.status='active';}
-  scheduleSave();render();toast('Session started. Go one set at a time.');
+/* ================= session clocks =================
+   Session time = now - start. Break time = every moment you are not doing a set:
+   the countdown between sets, the gap after saving an exercise, or time spent outside an exercise window.
+   `break_start` is set while a break is running, `break_ms` holds the finished breaks, so the stopwatch
+   is always computed from timestamps and stays right in the background. */
+const pad2=v=>String(v).padStart(2,'0');
+function clockText(ms) { const s=Math.max(0,Math.floor(ms/1000)),h=Math.floor(s/3600),m=Math.floor(s%3600/60);return h?`${h}:${pad2(m)}:${pad2(s%60)}`:`${pad2(m)}:${pad2(s%60)}`; }
+function breakTotalMs(w,now=Date.now()) { return n(w.break_ms)+(w.break_start?Math.max(0,now-n(w.break_start)):0); }
+function startBreak(w,at=Date.now()) { if(!w.break_start)w.break_start=at; }
+function endBreak(w,at=Date.now()) { if(w.break_start){w.break_ms=n(w.break_ms)+Math.max(0,at-n(w.break_start));w.break_start=null;} }
+function ensureSessionStarted(w) { if(!w.start_ms){w.start_ms=Date.now();w.start_time=new Date(w.start_ms).toISOString();w.status='active';} }
+function liveWorkout() { return state.logs?.[state.activeDate]?.workout_log||null; }
+
+/* ================= exercise player (tap an exercise) ================= */
+let playerIdx=-1;
+const CHEERS=[(a,b)=>`Set ${a} done. Nice work! On to set ${b}.`,(a,b)=>`Strong set! Rest, then set ${b}.`,(a,b)=>`Set ${a} in the bank. Ready for set ${b}?`,(a,b)=>`That's the way. Next up: set ${b}.`,(a,b)=>`Clean rep work! Set ${b} is next.`];
+function playerExercise() { return liveWorkout()?.exercises?.[playerIdx]||null; }
+function openPlayer(index) {
+  const w=liveWorkout();const ex=w?.exercises?.[index];if(!ex)return;
+  ensureSessionStarted(w);
+  if(!ex.finished){
+    endBreak(w); // back to work: the break stopwatch stops here
+    ex.started=true;ex.start_ms=ex.start_ms||Date.now();
+    const next=ex.sets.find(s=>!s.completed);if(next&&!next.started_at)next.started_at=Date.now();
+  }
+  playerIdx=index;scheduleSave();showModal(playerHtml(ex,index),'player');syncPlayer();render();
 }
-function startExercise(index) {
-  const workout=activeLog().workout_log;if(!workout)return;const ex=workout.exercises[index];if(!ex||ex.finished)return;
-  if(!workout.start_ms){workout.start_ms=Date.now();workout.start_time=new Date(workout.start_ms).toISOString();workout.status='active';}
-  ex.started=true;ex.start_ms=ex.start_ms||Date.now();openExIdx=index;scheduleSave();render();
+function leavePlayer() {
+  const w=liveWorkout();const ex=w?.exercises?.[playerIdx];playerIdx=-1;if(!w||!ex)return;
+  if(ex.rest_until){ex.rest_until=null;ex.last_completed_set=null;} // the countdown goes away, the break stopwatch carries on
+  if(!ex.finished)startBreak(w);                                      // leaving mid-exercise counts as break
+  scheduleSave();
 }
-function completeSet(exIndex,setIndex) {
-  const workout=activeLog().workout_log;const ex=workout?.exercises?.[exIndex];const set=ex?.sets?.[setIndex];if(!set||ex.finished)return;
-  if(!workout.start_ms){workout.start_ms=Date.now();workout.start_time=new Date(workout.start_ms).toISOString();workout.status='active';}
-  ex.started=true;set.completed=!set.completed;set.completed_at=set.completed?new Date().toISOString():null;
-  if(set.completed&&n(ex.default_rest_sec)>0){ex.rest_until=Date.now()+n(ex.default_rest_sec)*1000;ex.last_completed_set=setIndex;startRestTicker();}
-  else if(!set.completed){ex.rest_until=null;ex.last_completed_set=null;}
-  scheduleSave();render();
+function stepperHtml(field,i,value,unit) {
+  return `<div class="pl-step"><button type="button" data-action="pl-step" data-f="${field}" data-set="${i}" data-d="-1" aria-label="Less ${field}">−</button><label><input type="number" inputmode="decimal" min="0" step="any" value="${safe(round(n(value),2))}" data-role="pl-${field}" data-set="${i}" aria-label="${field} for set ${i+1}"><small>${unit}</small></label><button type="button" data-action="pl-step" data-f="${field}" data-set="${i}" data-d="1" aria-label="More ${field}">+</button></div>`;
 }
-function startRestTicker() {
-  if(lastRestTick)return;
-  lastRestTick=setInterval(()=>{
-    const clock=$('rest-clock');if(!clock){clearInterval(lastRestTick);lastRestTick=null;return;}
-    const until=n(clock.dataset.until);const seconds=Math.max(0,Math.ceil((until-Date.now())/1000));clock.textContent=`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;
-    if(seconds<=0){clock.textContent='00:00';clock.style.color='#bb6541';}
-  },250);
+function playerSetsHtml(ex) {
+  const mode=entryMode(ex);const cur=ex.sets.findIndex(s=>!s.completed);
+  return ex.sets.map((s,i)=>`<div class="pl-set ${s.completed?'done':''} ${i===cur&&!ex.finished?'cur':''} ${mode==='weight'?'':'nw'}"><span class="pl-n">${i+1}</span>${mode==='weight'?stepperHtml('weight',i,s.weight,'kg'):''}${stepperHtml('reps',i,s.reps??12,mode==='time'?'min':'reps')}<button type="button" class="pl-tick" data-action="pl-tick" data-set="${i}" aria-label="${s.completed?'Undo':'Complete'} set ${i+1}">${icon('check')}</button></div>`).join('');
 }
-function adjustRest(index,delta) { const ex=activeLog().workout_log?.exercises?.[index];if(!ex?.rest_until)return;ex.rest_until=Math.max(Date.now(),ex.rest_until+n(delta)*1000);scheduleSave();render();startRestTicker(); }
-function addSet(index) { const ex=activeLog().workout_log?.exercises?.[index];if(!ex||ex.finished)return;const last=ex.sets[ex.sets.length-1]||{weight:0,reps:10};ex.sets.push({set_num:ex.sets.length+1,weight:n(last.weight),reps:n(last.reps),completed:false});scheduleSave();render(); }
-function finishExercise(index) { const ex=activeLog().workout_log?.exercises?.[index];if(!ex)return;if(openExIdx===index)openExIdx=-1;ex.finished=true;ex.started=false;ex.finished_at=new Date().toISOString();ex.rest_until=null;scheduleSave();render();toast(`${ex.name} finished.`); }
+function lastPerformance(exId) {
+  const cur=liveWorkout();
+  for(const date of Object.keys(state.logs||{}).sort().reverse()){
+    if(!state.logs[date])continue;const sessions=workoutSessions(state.logs[date]);
+    for(let k=sessions.length-1;k>=0;k--){
+      if(cur&&sessions[k]===cur)continue;
+      const ex=(sessions[k].exercises||[]).find(e=>e.exercise_id===exId&&(e.sets||[]).some(q=>q.completed));
+      if(ex)return {date,ex};
+    }
+  }
+  return null;
+}
+function lastCardHtml(ex) {
+  const L=lastPerformance(ex.exercise_id);
+  if(!L)return `<div class="pl-last empty"><span aria-hidden="true">🌱</span><div><strong>First time</strong><small>No earlier sets for this exercise. Start light and build up.</small></div></div>`;
+  const mode=entryMode(ex);
+  const chips=L.ex.sets.filter(s=>s.completed).map(s=>`<i>${mode==='weight'?`${fmt(s.weight,2)}<u>kg</u> × ${fmt(s.reps)}`:mode==='time'?`${fmt(s.reps,1)}<u>min</u>`:`${fmt(s.reps)}<u>reps</u>`}</i>`).join('');
+  return `<div class="pl-last"><div class="pl-last-top"><strong>Last time</strong><small>${safe(prettyShortDate(L.date))}</small><button type="button" data-action="pl-uselast">Use these</button></div><div class="pl-last-chips">${chips}</div></div>`;
+}
+function playerHtml(ex,index) {
+  const ref=findExercise(ex.exercise_id)||ex;const mode=entryMode(ex);const sec=(ex.secondary_muscles||[]).filter(Boolean);
+  const licensed=exerciseHasLicensedMedia(ref);
+  const thumb=licensed?`<img src="${safe(ref.image)}" alt="" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span hidden>${exerciseEmoji(ex.primary_muscle)}</span>`:`<span>${exerciseEmoji(ex.primary_muscle)}</span>`;
+  const desc=ref.description?`<p>${safe(ref.description)}</p>`:'<p>No written instructions for this exercise yet.</p>';
+  return `<div id="plRoot" class="pl"><div class="modal-handle"></div>
+  <div class="pl-head"><button type="button" class="pl-thumb" data-action="pl-gif" ${licensed?`data-gif="${safe(ref.gif_url)}" data-img="${safe(ref.image)}"`:'disabled'} aria-label="Play movement animation">${thumb}${licensed?'<b>▶</b>':''}</button><div class="pl-title"><h2>${safe(ex.name)}</h2><p>${safe(ex.primary_muscle||'Full body')} · ${safe(ex.equipment||'Bodyweight')}</p></div><button type="button" class="close-modal" data-action="close-modal" aria-label="Close">${icon('x')}</button></div>
+  <div class="pl-scroll" id="plScroll">
+    ${lastCardHtml(ex)}
+    <details class="pl-details"><summary>Exercise details</summary><div class="pl-d-body">${sec.length?`<div class="pl-d-chips"><span>${safe(ex.primary_muscle||'')}</span>${sec.map(m=>`<span class="sec">${safe(m)}</span>`).join('')}</div>`:''}${desc}</div></details>
+    <div class="pl-pips" id="plPips"></div>
+    <div class="pl-cols ${mode==='weight'?'':'no-weight'}"><span>SET</span>${mode==='weight'?'<span>KG</span>':''}<span>${mode==='time'?'MIN':'REPS'}</span><span></span></div>
+    <div id="plSets"></div>
+    <div class="pl-tools"><button type="button" data-action="pl-add">${icon('plus')} Add set</button><button type="button" data-action="pl-remove" id="plRemove">Remove last</button></div>
+    <div class="feel-row pl-feel"><span>How did it feel?</span>${[['easy','Easy'],['ok','Right'],['hard','Hard']].map(([v,l])=>`<button type="button" class="feel-chip ${(ex.feel||'ok')===v?'on':''}" data-action="pl-feel" data-value="${v}">${l}</button>`).join('')}</div>
+  </div>
+  <div class="pl-foot"><div class="pl-break" id="plBreak"><div class="pl-break-in"><button type="button" class="pl-bb" data-action="pl-rest" data-d="-30" aria-label="Shorten break by 30 seconds">−30</button><div class="pl-bt"><span>BREAK</span><strong id="plClock">00:00</strong></div><button type="button" class="pl-bb" data-action="pl-rest" data-d="30" aria-label="Lengthen break by 30 seconds">+30</button></div></div><button type="button" class="pl-save" id="plSave" data-action="pl-save">Save</button></div>
+  <div class="pl-cheer" id="plCheer" role="status" aria-live="polite"></div></div>`;
+}
+/* redraws the parts of the player that depend on the sets (never the inputs while typing) */
+function syncPlayer() {
+  const ex=playerExercise();if(!ex||!$('plRoot'))return;
+  const done=ex.sets.filter(s=>s.completed).length,total=ex.sets.length,all=total>0&&done===total;
+  $('plSets').innerHTML=playerSetsHtml(ex);
+  $('plPips').innerHTML=`<div class="pl-pip-row">${ex.sets.map(s=>`<i class="${s.completed?'on':''}"></i>`).join('')}</div><span>${done} of ${total} sets</span>`;
+  const save=$('plSave');save.disabled=!ex.finished&&!done;save.classList.toggle('ready',all&&!ex.finished);
+  save.innerHTML=ex.finished?`${icon('check')} Done`:done?`${icon('check')} Save · ${done}/${total} sets`:'Tick a set to save';
+  $('plRemove').disabled=total<=1||!!ex.sets[total-1].completed;
+  tickAll();
+}
+function cheerPlayer(text) { const el=$('plCheer');if(!el)return;el.textContent=text;el.classList.add('on');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('on'),2300); }
+function playerTick(i,button) {
+  const w=liveWorkout(),ex=w?.exercises?.[playerIdx],set=ex?.sets?.[i];if(!set)return;
+  const now=Date.now();
+  if(!set.completed){
+    set.completed=true;set.completed_at=new Date(now).toISOString();set.duration_sec=Math.max(1,Math.round((now-n(set.started_at||now))/1000));
+    const all=ex.sets.every(s=>s.completed);
+    if(ex.rest_until)endBreak(w,now); // ticked before the countdown ended: that break is over
+    if(!ex.finished&&!all){ex.rest_until=now+n(ex.break_sec||60)*1000;ex.last_completed_set=i;startBreak(w,now);}
+    else{ex.rest_until=null;ex.last_completed_set=null;}
+    const nextIdx=ex.sets.findIndex(s=>!s.completed);
+    cheerPlayer(all?'All sets done! Save your progress.':CHEERS[Math.floor(Math.random()*CHEERS.length)](i+1,nextIdx+1));
+    const r=button?.getBoundingClientRect();window.TimelyFX&&TimelyFX.burst(r?r.left+r.width/2:undefined,r?r.top+r.height/2:undefined);
+  } else {
+    set.completed=false;set.completed_at=null;set.duration_sec=null;set.started_at=now;
+    if(ex.rest_until&&ex.last_completed_set===i){endBreak(w,now);ex.rest_until=null;ex.last_completed_set=null;}
+  }
+  scheduleSave();syncPlayer();
+}
+function playerStep(i,field,dir) {
+  const ex=playerExercise(),set=ex?.sets?.[i];if(!set)return;const mode=entryMode(ex);
+  const step=field==='weight'?2.5:(mode==='time'?.5:1);const cur=n(field==='weight'?set.weight:set.reps);
+  const v=Math.max(0,round(cur+dir*step,2));
+  if(field==='weight')set.weight=v;else set.reps=mode==='time'?v:Math.round(v);
+  const input=document.querySelector(`#plSets input[data-role="pl-${field}"][data-set="${i}"]`);if(input)input.value=field==='weight'?set.weight:set.reps;
+  scheduleSave();
+}
+function playerRest(delta) {
+  const ex=playerExercise();if(!ex)return;
+  ex.break_sec=Math.max(15,n(ex.break_sec||60)+delta); // later breaks in this exercise use the new length too
+  if(ex.rest_until)ex.rest_until=Math.max(Date.now(),n(ex.rest_until)+delta*1000);
+  scheduleSave();tickAll();
+}
+function playerAddSet() {
+  const w=liveWorkout(),ex=playerExercise();if(!ex)return;
+  const last=ex.sets[ex.sets.length-1]||{weight:0,reps:10};const idle=!ex.rest_until&&ex.sets.every(s=>s.completed);
+  ex.sets.push({set_num:ex.sets.length+1,weight:n(last.weight),reps:n(last.reps),completed:false,started_at:idle&&!ex.finished?Date.now():null});
+  if(ex.finished&&w){/* editing a saved exercise */}
+  scheduleSave();syncPlayer();const sc=$('plScroll');if(sc)sc.scrollTo({top:sc.scrollHeight,behavior:'smooth'});
+}
+function playerRemoveSet() { const ex=playerExercise();if(!ex||ex.sets.length<=1||ex.sets[ex.sets.length-1].completed)return;ex.sets.pop();scheduleSave();syncPlayer(); }
+function playerUseLast() {
+  const ex=playerExercise();if(!ex)return;const L=lastPerformance(ex.exercise_id);if(!L)return;
+  const src=L.ex.sets.filter(s=>s.completed);if(!src.length)return;
+  ex.sets.forEach((s,i)=>{if(s.completed)return;const q=src[Math.min(i,src.length-1)];s.weight=n(q.weight);s.reps=n(q.reps);});
+  scheduleSave();syncPlayer();cheerPlayer('Loaded your last numbers.');
+}
+function playerSave() {
+  const w=liveWorkout(),ex=playerExercise();if(!w||!ex)return;
+  if(ex.finished){closeModal();return;}
+  if(!ex.sets.some(s=>s.completed)){toast('Tick at least one set to save.',true);return;}
+  const now=Date.now(),count=ex.sets.filter(s=>s.completed).length;
+  ex.sets=ex.sets.filter(s=>s.completed);ex.sets.forEach((s,i)=>{s.set_num=i+1;});
+  ex.finished=true;ex.started=false;ex.finished_at=new Date(now).toISOString();ex.active_sec=ex.sets.reduce((a,s)=>a+n(s.duration_sec),0);
+  ex.rest_until=null;ex.last_completed_set=null;
+  startBreak(w,now); // the gap before the next exercise is break time: the stopwatch runs from here
+  playerIdx=-1;scheduleSave();closeModal();render();
+  toast(`${ex.name} saved · ${count} set${count===1?'':'s'}. Pick your next exercise.`);
+}
+/* one 250 ms heartbeat: session / break clocks on the timeline and the countdown inside the player */
+function tickAll() {
+  const w=liveWorkout(),now=Date.now();
+  if(w)document.querySelectorAll('[data-clock]').forEach(el=>{el.textContent=el.dataset.clock==='session'?clockText(now-n(w.start_ms)):clockText(breakTotalMs(w,now));});
+  if(!w)return;
+  if(playerIdx>=0){
+    const ex=w.exercises[playerIdx],panel=$('plBreak');if(!ex||!panel)return;
+    const left=ex.rest_until?Math.ceil((n(ex.rest_until)-now)/1000):0;
+    if(ex.rest_until&&left<=0){ // break over: stop the break and start recording the next set
+      const endAt=n(ex.rest_until);endBreak(w,endAt);ex.rest_until=null;ex.last_completed_set=null;
+      const idx=ex.sets.findIndex(s=>!s.completed);if(idx>=0)ex.sets[idx].started_at=endAt;
+      scheduleSave();panel.classList.remove('on','warn');window.TimelyFX&&TimelyFX.beep('end');
+      cheerPlayer(idx>=0?`Break over. Go for set ${idx+1}!`:'Break over.');syncPlayer();return;
+    }
+    panel.classList.toggle('on',!!ex.rest_until);
+    if(ex.rest_until){const c=$('plClock');if(c)c.textContent=clockText(left*1000);panel.classList.toggle('warn',left<=10);}
+  } else {
+    w.exercises.forEach(ex=>{if(ex.rest_until){ex.rest_until=null;ex.last_completed_set=null;}}); // a stale countdown (e.g. after a reload) just stops
+  }
+}
+setInterval(tickAll,250);
+
 function finishSession() {
   const log=activeLog();const workout=log.workout_log;if(!workout)return;
-  if(!workout.start_ms){toast('Start the session before finishing it.',true);return;}
-  const end=Date.now();const hours=Math.max(0,(end-workout.start_ms)/3600000);const activeExercises=(workout.exercises||[]).filter(ex=>ex.started||ex.finished||ex.sets.some(s=>s.completed));const vals=activeExercises.map(ex=>Number(ex.met_value));const hasCompleteMET=activeExercises.length>0&&vals.every(value=>Number.isFinite(value)&&value>0);
+  if(!workout.start_ms){toast('Tap an exercise to start your session first.',true);return;}
+  if(!(workout.exercises||[]).some(ex=>ex.sets.some(s=>s.completed))){toast('Complete at least one set before finishing.',true);return;}
+  const end=Date.now();endBreak(workout,end);const hours=Math.max(0,(end-workout.start_ms)/3600000);const activeExercises=(workout.exercises||[]).filter(ex=>ex.started||ex.finished||ex.sets.some(s=>s.completed));const vals=activeExercises.map(ex=>Number(ex.met_value));const hasCompleteMET=activeExercises.length>0&&vals.every(value=>Number.isFinite(value)&&value>0);
   const averageMET=hasCompleteMET?vals.reduce((a,b)=>a+b,0)/vals.length:0;const burned=hasCompleteMET?round(averageMET*n(state.profile.weightKg)*hours):0;
-  workout.end_ms=end;workout.end_time=new Date(end).toISOString();workout.total_calories_burned=burned;workout.duration_minutes=round((end-workout.start_ms)/60000,1);workout.status='completed';workout.exercises.forEach(ex=>{ex.started=false;if(!ex.finished&&ex.sets.some(s=>s.completed))ex.finished=true;});
-  log.workout_history.push(workout);log.workout_log=null;scheduleSave();render();toast(hasCompleteMET?`Session saved · ${fmt(burned)} kcal estimated.`:'Session saved. Calorie estimate unavailable because one or more exercises have no MET values.');if(authUser)setTimeout(()=>syncNow(),350);
+  workout.end_ms=end;workout.end_time=new Date(end).toISOString();workout.total_calories_burned=burned;workout.duration_minutes=round((end-workout.start_ms)/60000,1);workout.break_minutes=round(n(workout.break_ms)/60000,1);workout.status='completed';
+  workout.exercises.forEach(ex=>{ex.started=false;ex.rest_until=null;if(!ex.finished&&ex.sets.some(s=>s.completed)){ex.sets=ex.sets.filter(s=>s.completed);ex.sets.forEach((s,i)=>{s.set_num=i+1;});ex.finished=true;ex.finished_at=new Date(end).toISOString();}});
+  log.workout_history.push(workout);log.workout_log=null;scheduleSave();render();
+  showSessionSummary(workout,hasCompleteMET);
+  if(authUser)setTimeout(()=>syncNow(),350);
+}
+function showSessionSummary(s,hasMET) {
+  const done=(s.exercises||[]).filter(e=>(e.sets||[]).some(x=>x.completed));
+  const sets=done.reduce((a,e)=>a+e.sets.filter(x=>x.completed).length,0);
+  const all=done.flatMap(e=>e.sets.filter(x=>x.completed).map(x=>({...x,name:e.name})));
+  const volume=all.reduce((a,x)=>a+n(x.weight)*n(x.reps),0);
+  const top=all.filter(x=>n(x.weight)>0).sort((a,b)=>n(b.weight)*n(b.reps)-n(a.weight)*n(a.reps))[0];
+  const total=n(s.end_ms)-n(s.start_ms),brk=n(s.break_ms),train=Math.max(0,total-brk);
+  const muscles=[...new Set(done.map(e=>e.primary_muscle).filter(Boolean))];
+  const line=sets>=20?'A big one. You earned this rest.':sets>=10?'Solid session. That is how progress is built.':'Every set counts. See you at the next one.';
+  const stat=(v,l)=>`<div><strong>${v}</strong><span>${l}</span></div>`;
+  showModal(`<div class="sum"><div class="sum-trophy" aria-hidden="true">🏆</div><h2>Workout complete!</h2><p class="sum-line">${line}</p>
+    <div class="sum-time"><strong>${clockText(total)}</strong><span>total session time</span></div>
+    <div class="sum-grid">${stat(clockText(train),'training')}${stat(clockText(brk),'breaks')}${stat(done.length,done.length===1?'exercise':'exercises')}${stat(sets,sets===1?'set':'sets')}${volume?stat(fmt(volume),'kg lifted'):''}${hasMET&&n(s.total_calories_burned)?stat(fmt(s.total_calories_burned),'kcal burned'):''}</div>
+    ${top?`<div class="sum-top">Heaviest set · <b>${safe(top.name)}</b> ${fmt(top.weight,2)} kg × ${fmt(top.reps)}</div>`:''}
+    ${muscles.length?`<div class="sum-muscles">${muscles.map(m=>`<span>${safe(m)}</span>`).join('')}</div>`:''}
+    <button type="button" class="save lime full sum-done" data-action="close-modal">Done</button></div>`,'summary');
+  window.TimelyFX&&TimelyFX.finale();
 }
 
 // Water and settings
@@ -1451,7 +1614,6 @@ document.addEventListener('click', async (event)=>{
     case 'add-exercise': openWorkoutModal();break;
     case 'open-generator': openWorkoutModal();break;
     case 'toggle-profile-edit': $('profileView')?.classList.toggle('hidden');$('profileEdit')?.classList.toggle('hidden');break;
-    case 'set-feel': {const fx=activeLog().workout_log?.exercises?.[n(button.dataset.exIndex)];if(fx){fx.feel=button.dataset.value;scheduleSave();render();}break;}
     case 'select-exercise': activeExerciseSelection=button.dataset.id;updateExerciseDetail();break;
     case 'exercise-back': activeExerciseSelection=null;updateExerciseDetail();renderExerciseResults($('exerciseSearch')?.value||'');break;
     case 'ex-chip': { const input=$('exerciseSearch');if(input)input.value=button.dataset.q;document.querySelectorAll('[data-action="ex-chip"]').forEach(b=>b.classList.toggle('active',b===button));renderExerciseResults(button.dataset.q);break; }
@@ -1489,14 +1651,17 @@ document.addEventListener('click', async (event)=>{
     case 'save-exercise-edit': saveExerciseEdit();break;
     case 'delete-exercise': deleteExerciseEntry(button);break;
     case 'save-exercise': saveExerciseSetup();break;
-    case 'start-session': startSession();break;
-    case 'start-exercise': startExercise(n(button.dataset.exIndex));break;
-    case 'toggle-exercise': { const i=n(button.dataset.exIndex);openExIdx=openExIdx===i?-1:i;render();break; }
-    case 'complete-set': completeSet(n(button.dataset.exIndex),n(button.dataset.setIndex));break;
-    case 'add-set': addSet(n(button.dataset.exIndex));break;
-    case 'finish-exercise': finishExercise(n(button.dataset.exIndex));break;
+    case 'play-exercise': openPlayer(n(button.dataset.exIndex));break;
+    case 'pl-tick': playerTick(n(button.dataset.set),button);break;
+    case 'pl-step': playerStep(n(button.dataset.set),button.dataset.f,n(button.dataset.d));break;
+    case 'pl-rest': playerRest(n(button.dataset.d));break;
+    case 'pl-add': playerAddSet();break;
+    case 'pl-remove': playerRemoveSet();break;
+    case 'pl-uselast': playerUseLast();break;
+    case 'pl-save': playerSave();break;
+    case 'pl-feel': {const fx=playerExercise();if(fx){fx.feel=button.dataset.value;scheduleSave();document.querySelectorAll('.pl-feel .feel-chip').forEach(c=>c.classList.toggle('on',c===button));}break;}
+    case 'pl-gif': {const img=button.querySelector('img');if(img&&button.dataset.gif){const on=button.classList.toggle('playing');img.src=on?button.dataset.gif:button.dataset.img;}break;}
     case 'finish-session': finishSession();break;
-    case 'adjust-rest': adjustRest(n(button.dataset.exIndex),n(button.dataset.seconds));break;
     case 'add-water': addWater(button.dataset.amount);break;
     case 'save-custom-water': saveCustomWater();break;
     case 'toggle-water-log': expandedWaterLog=!expandedWaterLog;render();break;
@@ -1537,6 +1702,11 @@ document.addEventListener('change',(event)=>{
   if(target.id==='progressiveToggle'){updateSetPreview();return;}
   if(target.dataset.role==='recipe-unit'){const i=n(target.dataset.index);if(recipeIngredients[i]){recipeIngredients[i].unit=target.value;updateRecipePreview();}return;}
   if(target.dataset.role==='recipe-amount'){const i=n(target.dataset.index);if(recipeIngredients[i]){recipeIngredients[i].amount=Math.max(.01,n(target.value));updateRecipePreview();}return;}
+  if(target.dataset.role==='pl-weight'||target.dataset.role==='pl-reps'){
+    const px=playerExercise();const ps=px?.sets?.[n(target.dataset.set)];if(!ps)return;
+    if(target.dataset.role==='pl-weight')ps.weight=Math.max(0,n(target.value));else ps.reps=Math.max(0,n(target.value));
+    scheduleSave();return;
+  }
   if(target.dataset.role==='set-weight'||target.dataset.role==='set-reps'){
     const ex=activeLog().workout_log?.exercises?.[n(target.dataset.exIndex)];const set=ex?.sets?.[n(target.dataset.setIndex)];if(!set)return;
     if(target.dataset.role==='set-weight')set.weight=Math.max(0,n(target.value));else set.reps=Math.max(0,Math.round(n(target.value)));
