@@ -1,0 +1,10 @@
+{
+  "name": "timely-fit",
+  "private": true,
+  "version": "5.7.0",
+  "dependencies": {
+    "web-push": "^3.6.7",
+    "@supabase/supabase-js": "^2.45.0",
+    "@upstash/qstash": "^2.7.0"
+  }
+}
