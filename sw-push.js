@@ -9,8 +9,8 @@ self.addEventListener('push', (event) => {
   const title = data.title || 'Break time has ended!';
   const options = {
     body: data.body || 'Time for your next set.',
-    icon: '/icons/icon-192.png',          // PNG, 192x192 (iOS ignores SVG here)
-    badge: '/icons/badge-96.png',         // monochrome PNG, used by Android
+    // The existing PWA ships icon.svg; do not reference PNG paths that may 404.
+    icon: './icon.svg',
     tag: data.tag || 'rest-timer',        // one rest notification at a time...
     renotify: true,                       // ...but still alert again if it is replaced
     requireInteraction: true,             // honoured on Android/desktop; iOS ignores it
@@ -26,10 +26,16 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const target = new URL((event.notification.data && event.notification.data.url) || '/', self.location.origin).href;
+  const requested = new URL((event.notification.data && event.notification.data.url) || './', self.registration.scope);
+  const target = requested.origin === self.location.origin ? requested.href : self.registration.scope;
   event.waitUntil((async () => {
     const wins = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-    for (const w of wins) { if ('focus' in w) { await w.focus(); return; } }
+    const sameApp = wins.find(w => w.url.startsWith(self.registration.scope));
+    if (sameApp && 'focus' in sameApp) {
+      await sameApp.focus();
+      if ('navigate' in sameApp && sameApp.url !== target) await sameApp.navigate(target);
+      return;
+    }
     await self.clients.openWindow(target);
   })());
 });
