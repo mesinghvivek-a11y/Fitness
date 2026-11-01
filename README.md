@@ -176,3 +176,15 @@ No architecture can guarantee that usage will stay inside the Free tier under ev
 - The Plan tab is always available. Without a generated plan it shows a search bar plus a horizontally scrolling row of muscle names; typing a name or tapping a muscle lists matching exercises, and + adds one to the plan (use this when a trainer gives you specific exercises).
 - Manually added exercises are locked, so Reroll and a new Generate keep them. Tapping a result's thumbnail previews the movement.
 - "Add to workout" works with generated, manual, or mixed plans. Cache name `timely-fit-shell-v5-4`.
+
+## v5.5 — generator rules, sync border, date strip, swipe
+
+- **`workout-engine.js`** holds the generation rules (A progressive pool, B variation killer, C compound first, D setup filtering). `node tests/workout-engine-check.mjs` checks them against `exercises.json`. `react-reference/useWorkoutGenerator.js` is the React hook.
+- `exercises.json` now carries `tier`, `base_family`, `angle`, `mechanic`, `unilateral`, `equipment_setup`.
+- Settings button border = sync state (red: unsynced, neutral: synced). Dates scroll sideways and every launch opens on today. Swipe left/right moves Diet ⇄ Workout ⇄ Water.
+
+## v5.6 — staged add-exercise, player, session clocks
+
+- Add exercise: muscles → equipment → Generate reveal one after another; ❤️‍🩹 toggles the 48h recovery rule; the Plan tab has tick-to-add selection.
+- Tap an exercise on the timeline to open the player (sets, last performance, break countdown, Save). Session time and break stopwatch are computed from timestamps (`break_ms`, `break_start`), so they stay right in the background.
+- `celebrate.js` draws the confetti / sparks. `exercises.json` carries the updated `met_value`s.
